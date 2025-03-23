@@ -1,21 +1,39 @@
 services:
-  # PostgreSQL database
-  postgres:
+  # Development database
+  db_development:
     image: postgres:latest
-    container_name: clinic-postgres
+    container_name: clinic-postgres-dev
     platform: linux/arm64/v8
     command: [ "--max_connections=1000" ]
     restart: always
     shm_size: 128mb
     environment:
-      POSTGRES_DB: clinic
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: clinic_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
     ports:
-      - "5435:5432"
+      - "5435:5432"  # Port 5435 on the development host
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  # Testing database
+  db_testing:
+    image: postgres:latest
+    container_name: clinic-postgres-test
+    platform: linux/arm64/v8
+    command: [ "--max_connections=1000" ]
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: clinic_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5436:5432"  # Port 5436 on the host for testing
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
 
 # Volumes for data persistence
 volumes:
-  postgres_data:
+  postgres_dev_data:
+  postgres_test_data:
