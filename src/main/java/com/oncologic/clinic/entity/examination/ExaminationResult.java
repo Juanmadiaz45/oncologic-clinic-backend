@@ -22,7 +22,6 @@ public class ExaminationResult {
     @Column(name = "generation_date", nullable = false)
     private LocalDateTime generationDate;
 
-    @Lob
     @Column(name = "results_report", nullable = false)
     private byte[] resultsReport;
 

@@ -15,6 +15,8 @@ services:
       - "5435:5432"  # Port 5435 on the development host
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
+      - ./src/main/resources/static:/docker-entrypoint-init-db.d/files  # Mapea la carpeta static
+
 
   # Testing database
   db_testing:
@@ -32,6 +34,8 @@ services:
       - "5436:5432"  # Port 5436 on the host for testing
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+      - ./src/main/resources/static:/docker-entrypoint-init-db.d/files  # Mapea la carpeta static
+
 
 # Volumes for data persistence
 volumes:
