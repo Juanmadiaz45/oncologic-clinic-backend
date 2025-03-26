@@ -123,6 +123,13 @@ public class RoleServiceImpl implements RoleService {
     public Role removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
         Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
+        // Verificar que todos los permisos existen para este rol
+        for (Long permissionId : permissionIds) {
+            if (!rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, permissionId))) {
+                throw new RuntimeException("Uno o más permisos no están asociados al rol");
+            }
+        }
+
         long remainingPermissions = rolePermissionRepository.countByRole(role) - permissionIds.size();
         if (remainingPermissions <= 0) {
             throw new IllegalStateException("Un rol debe tener al menos un permiso");
