@@ -1,44 +1,81 @@
 # Final Project
 
-## Commit Message Guidelines
+## JPA Workshop with Spring Boot
 
-We follow the **Conventional Commits** standard for writing commit messages.
-This ensures a clear and consistent history of changes.
+### Authors
 
-### Commit Structure
+- Santiago Valencia - A00395902
+- Juan Manuel Díaz - A00394477
+- Esteban Gaviria - A00396019
 
-```
-type(scope): short description
+### Description
 
-[optional body]
+This project is a backend developed with Spring Boot that allows consuming information from the final project database, Clínica OncoLogic, using Hibernate through Spring Data JPA.
 
-[optional footer]
-```
+The main objective is to learn how to integrate JPA into a realistic project, including entity configuration, relationship definition, and repository creation to handle data persistence.
 
-### Types
+### Technologies Used
 
-- `feat`: A new feature.
-- `fix`: A bug fix.
-- `docs`: Documentation changes.
-- `style`: Formatting or linting changes.
-- `refactor`: Code changes that neither fix a bug nor add a feature.
-- `test`: Adding or updating tests.
-- `chore`: Maintenance tasks.
-- `build`: Changes to the build system or dependencies.
-- `ci`: Changes to CI/CD configurations.
-- `perf`: Performance improvements.
-- `revert`: Reverts a previous commit.
+- Java 17
+- Spring Boot
+- Spring Data JPA
+- Hibernate
+- PostgreSQL
+- Docker and Docker Compose
+- JUnit (for unit testing)
+- JaCoCo (for code coverage measurement)
 
-### Examples
+### Installation and Execution
 
-- `feat(auth): add user authentication`
-- `fix(api): resolve null pointer exception in user endpoint`
-- `docs: update readme with installation instructions`
+1. **Clone the repository**
 
-### Best Practices
+    ```bash
+    git clone <REPOSITORY_URL>
+    cd <PROJECT_NAME>
+    ```
 
-1. Write commit messages in **lowercase**.
-2. Keep the short description under **50 characters**.
-3. Use the body to explain the **what** and **why** of the change.
-4. Reference issues or tickets in the footer (e.g., `closes #123`).
+2. **Set up the database with Docker**
 
+    This project uses PostgreSQL as the database. Two environments have been defined in `docker-compose.yml`: one for development (`clinic_dev`) and one for testing (`clinic_test`).
+
+    To start the PostgreSQL containers, run:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+    This will create two databases:
+
+    - Development: `clinic_dev` (port 5435)
+    - Testing: `clinic_test` (port 5436)
+
+3. **Compile and run the application**
+
+    ```bash
+    ./mvnw clean install
+    ./mvnw spring-boot:run
+    ```
+
+    The API will be available at: `http://localhost:8080`
+
+4. **Run tests and generate the report**
+
+    Run the unit tests with:
+
+    ```bash
+    ./mvnw test
+    ```
+
+    Then, generate the coverage report with:
+
+    ```bash
+    ./mvnw jacoco:report
+    ```
+
+5. **View the results**
+
+    The coverage report will be generated at:
+
+    `target/site/jacoco/index.html`
+
+    Open this file in a browser to view the code coverage.
