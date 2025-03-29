@@ -137,7 +137,7 @@ public class RoleServiceImpl implements RoleService {
     private void addPermissionsToRole(Role savedRole, Set<Permission> permissions) {
         for (Permission permission : permissions) {
             RolePermissionId id = new RolePermissionId(savedRole.getId(), permission.getId());
-            if (rolePermissionRepository.existsById(id)) {
+            if (!rolePermissionRepository.existsById(id)) {
                 RolePermission rolePermission = new RolePermission(id, savedRole, permission);
                 rolePermissionRepository.save(rolePermission);
             }
