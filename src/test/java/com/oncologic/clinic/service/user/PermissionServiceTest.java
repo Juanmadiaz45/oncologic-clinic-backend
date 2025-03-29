@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service;
+package com.oncologic.clinic.service.user;
 
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.repository.user.PermissionRepository;
@@ -48,18 +48,16 @@ public class PermissionServiceTest {
 
         verify(permissionRepository, times(1)).save(permission);
     }
-
     @Test
     void createPermission_WhenNullPermissionProvided_ThrowsIllegalArgumentException() {
-        // Arrange
-        when(permissionRepository.save(null)).thenThrow(IllegalArgumentException.class);
+        // Arrange - No necesario
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> permissionServiceImpl.createPermission(null));
 
-        verify(permissionRepository).save(null);
+        // Verifica que NUNCA se llamó al repositorio
+        verify(permissionRepository, never()).save(any());
     }
-
     @Test
     void updatePermission_WhenPermissionExists_ReturnsUpdatedPermission() {
         // Arrange

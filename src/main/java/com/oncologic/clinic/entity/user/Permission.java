@@ -1,20 +1,20 @@
 package com.oncologic.clinic.entity.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
+// Permission.java
 @Entity
 @Table(name = "PERMISSIONS")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"rolePermissions"})
+@ToString(exclude = {"rolePermissions"})
 public class Permission {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,4 +25,3 @@ public class Permission {
     @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RolePermission> rolePermissions = new HashSet<>();
 }
-

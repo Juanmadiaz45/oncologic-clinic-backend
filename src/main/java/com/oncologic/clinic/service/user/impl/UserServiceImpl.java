@@ -4,6 +4,7 @@ import com.oncologic.clinic.entity.user.*;
 import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
 import com.oncologic.clinic.service.user.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,17 +97,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User removeRolesFromUser(Long userId, Set<Long> roleIds) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        // Cargar el usuario con sus roles
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        long remainingRoles = userRoleRepository.countByUser(user) - roleIds.size();
-        if (remainingRoles <= 0) {
+        // Validar que no se eliminen todos los roles
+        long currentRoleCount = user.getUserRoles().size();
+        if (currentRoleCount - roleIds.size() <= 0) {
             throw new IllegalStateException("Un usuario debe tener al menos un rol");
         }
 
-        for (Long roleId : roleIds) {
-            userRoleRepository.deleteById(new UserRole.UserRoleId(userId, roleId));
-        }
+        // Crear copia para evitar ConcurrentModificationException
+        Set<UserRole> rolesToRemove = new HashSet<>();
+
+        // Identificar roles a eliminar
+        user.getUserRoles().forEach(userRole -> {
+            if (roleIds.contains(userRole.getRole().getId())) {
+                rolesToRemove.add(userRole);
+            }
+        });
+
+        // Eliminar los roles de la colección (orphanRemoval se encargará de la eliminación física)
+        rolesToRemove.forEach(userRole -> {
+            user.getUserRoles().remove(userRole);
+            userRole.setUser(null); // Romper relación bidireccional
+        });
 
         return userRepository.save(user);
     }
@@ -116,7 +133,7 @@ public class UserServiceImpl implements UserService {
             UserRoleId id = new UserRoleId(savedUser.getId(), role.getId());
             if (!userRoleRepository.existsById(id)) {
                 UserRole userRole = new UserRole(id, savedUser, role);
-                userRoleRepository.save(userRole);
+                savedUser.getUserRoles().add(userRole);
             }
         }
     }

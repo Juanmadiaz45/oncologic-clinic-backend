@@ -9,6 +9,7 @@ import com.oncologic.clinic.repository.user.RoleRepository;
 import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.entity.user.RolePermission.RolePermissionId;
 import com.oncologic.clinic.service.user.RoleService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,24 +113,38 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public Role removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        // Cargar el rol con sus permisos (usando fetch join para evitar N+1)
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado"));
 
-        // Verificar que todos los permisos existen para este rol
-        for (Long permissionId : permissionIds) {
-            if (!rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, permissionId))) {
-                throw new RuntimeException("Uno o más permisos no están asociados al rol");
-            }
-        }
-
-        long remainingPermissions = rolePermissionRepository.countByRole(role) - permissionIds.size();
-        if (remainingPermissions <= 0) {
+        // Validar que no se eliminen todos los permisos
+        long currentPermissionCount = role.getRolePermissions().size();
+        if (currentPermissionCount - permissionIds.size() <= 0) {
             throw new IllegalStateException("Un rol debe tener al menos un permiso");
         }
 
-        for (Long permissionId : permissionIds) {
-            rolePermissionRepository.deleteById(new RolePermission.RolePermissionId(roleId, permissionId));
+        // Crear copia para evitar ConcurrentModificationException
+        Set<RolePermission> permissionsToRemove = new HashSet<>();
+
+        // Identificar permisos a eliminar
+        role.getRolePermissions().forEach(rolePermission -> {
+            if (permissionIds.contains(rolePermission.getPermission().getId())) {
+                permissionsToRemove.add(rolePermission);
+            }
+        });
+
+        // Validar que todos los permisos solicitados existen en el rol
+        if (permissionsToRemove.size() != permissionIds.size()) {
+            throw new EntityNotFoundException("Uno o más permisos no están asociados al rol");
         }
+
+        // Eliminar los permisos de la colección (orphanRemoval se encargará de la eliminación física)
+        permissionsToRemove.forEach(rolePermission -> {
+            role.getRolePermissions().remove(rolePermission);
+            rolePermission.setRole(null); // Romper relación bidireccional
+        });
 
         return roleRepository.save(role);
     }
@@ -139,7 +154,7 @@ public class RoleServiceImpl implements RoleService {
             RolePermissionId id = new RolePermissionId(savedRole.getId(), permission.getId());
             if (!rolePermissionRepository.existsById(id)) {
                 RolePermission rolePermission = new RolePermission(id, savedRole, permission);
-                rolePermissionRepository.save(rolePermission);
+                savedRole.getRolePermissions().add(rolePermission);
             }
         }
     }

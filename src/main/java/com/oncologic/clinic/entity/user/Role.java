@@ -1,20 +1,20 @@
 package com.oncologic.clinic.entity.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
+// Role.java
 @Entity
 @Table(name = "ROLES")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"rolePermissions", "userRoles"})
+@ToString(exclude = {"rolePermissions", "userRoles"})
 public class Role {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

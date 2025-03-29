@@ -23,6 +23,16 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public Permission createPermission(Permission permission) {
+        if (permission == null) {
+            throw new IllegalArgumentException("El permiso no puede ser nulo");
+        }
+        if (permission.getName() == null || permission.getName().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del permiso no puede ser nulo o vacío");
+        }
+        // Verifica si el permiso ya existe
+        if (permissionRepository.existsByName(permission.getName())) {
+            throw new IllegalArgumentException("El permiso ya existe");
+        }
         return permissionRepository.save(permission);
     }
 

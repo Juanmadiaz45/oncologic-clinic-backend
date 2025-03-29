@@ -3,9 +3,7 @@ package com.oncologic.clinic.entity.user;
 import com.oncologic.clinic.entity.patient.Patient;
 import com.oncologic.clinic.entity.personal.Personal;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,6 +13,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"patient", "personal", "userRoles"})
+@ToString(exclude = {"userRoles"})
 public class User {
 
     @Id

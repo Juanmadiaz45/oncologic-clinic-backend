@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service;
+package com.oncologic.clinic.service.user;
 
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
@@ -7,6 +7,7 @@ import com.oncologic.clinic.repository.user.RoleRepository;
 import com.oncologic.clinic.repository.user.UserRepository;
 import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.service.user.impl.UserServiceImpl;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -97,7 +98,6 @@ public class UserServiceTest {
             savedUser.setId(1L);
             return savedUser;
         });
-        when(userRoleRepository.save(any(UserRole.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         User createdUser = userServiceImpl.createUser(user, roleIds);
@@ -109,7 +109,6 @@ public class UserServiceTest {
 
         verify(roleRepository, times(1)).findAllById(roleIds);
         verify(userRepository, times(1)).save(any(User.class));
-        verify(userRoleRepository, times(2)).save(any(UserRole.class));
     }
 
 
@@ -222,7 +221,6 @@ public class UserServiceTest {
         assertEquals("newPassword", result.getPassword());
 
         verify(userRoleRepository).deleteByUser(existingUser);
-        verify(userRoleRepository, times(2)).save(any(UserRole.class));
         verify(userRepository).save(existingUser);
     }
 
@@ -370,7 +368,6 @@ public class UserServiceTest {
 
         // Assert
         assertEquals(user, result);
-        verify(userRoleRepository, times(2)).save(any(UserRole.class));
         verify(userRepository).save(user);
     }
 
@@ -396,59 +393,112 @@ public class UserServiceTest {
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
-        Set<Long> roleIds = Set.of(1L, 2L);
+
+        // Configurar 2 roles para el usuario
+        Role role1 = new Role();
+        role1.setId(1L);
+        Role role2 = new Role();
+        role2.setId(2L);
+
+        UserRole userRole1 = new UserRole(new UserRole.UserRoleId(userId, 1L), user, role1);
+        UserRole userRole2 = new UserRole(new UserRole.UserRoleId(userId, 2L), user, role2);
+
+        user.setUserRoles(new HashSet<>(Set.of(userRole1, userRole2)));
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRoleRepository.countByUser(user)).thenReturn(2L);
 
         // Act & Assert
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> userServiceImpl.removeRolesFromUser(userId, roleIds));
+                () -> userServiceImpl.removeRolesFromUser(userId, Set.of(1L, 2L)));
 
         assertEquals("Un usuario debe tener al menos un rol", exception.getMessage());
         verify(userRoleRepository, never()).deleteById(any());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
     public void removeRolesFromUser_WhenValidRemoval_ShouldDeleteSpecifiedRoles() {
         // Arrange
         Long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        Set<Long> roleIds = Set.of(1L);
+        Long roleIdToRemove = 1L;
+
+        // Configurar usuario con roles
+        User user = getUser(userId, roleIdToRemove);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRoleRepository.countByUser(user)).thenReturn(3L);
         when(userRepository.save(user)).thenReturn(user);
 
         // Act
-        User result = userServiceImpl.removeRolesFromUser(userId, roleIds);
+        User result = userServiceImpl.removeRolesFromUser(userId, Set.of(roleIdToRemove));
 
         // Assert
         assertEquals(user, result);
-        verify(userRoleRepository).deleteById(new UserRole.UserRoleId(userId, 1L));
+        // Verificar que el rol fue eliminado de la colección
+        assertFalse(result.getUserRoles().stream()
+                .anyMatch(ur -> ur.getRole().getId().equals(roleIdToRemove)));
+        // Verificar que quedan 2 roles
+        assertEquals(2, result.getUserRoles().size());
         verify(userRepository).save(user);
     }
 
+    private static User getUser(Long userId, Long roleIdToRemove) {
+        User user = new User();
+        user.setId(userId);
+
+        // Crear roles mock
+        Role role1 = new Role();
+        role1.setId(roleIdToRemove);
+        Role role2 = new Role();
+        role2.setId(2L);
+        Role role3 = new Role();
+        role3.setId(3L);
+
+        // Crear UserRoles
+        UserRole userRole1 = new UserRole(new UserRole.UserRoleId(userId, roleIdToRemove), user, role1);
+        UserRole userRole2 = new UserRole(new UserRole.UserRoleId(userId, 2L), user, role2);
+        UserRole userRole3 = new UserRole(new UserRole.UserRoleId(userId, 3L), user, role3);
+
+        user.setUserRoles(new HashSet<>(Set.of(userRole1, userRole2, userRole3)));
+        return user;
+    }
+
     @Test
+    @Transactional
     public void removeRolesFromUser_WhenMultipleRoles_ShouldDeleteAllSpecifiedRoles() {
         // Arrange
         Long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        Set<Long> roleIds = Set.of(1L, 2L);
+        User user = getUser(userId);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRoleRepository.countByUser(user)).thenReturn(4L);
         when(userRepository.save(user)).thenReturn(user);
 
-        // Act
-        User result = userServiceImpl.removeRolesFromUser(userId, roleIds);
+        // Act - Eliminar 2 roles (quedarán 2)
+        User result = userServiceImpl.removeRolesFromUser(userId, Set.of(1L, 2L));
 
         // Assert
         assertEquals(user, result);
-        verify(userRoleRepository).deleteById(new UserRole.UserRoleId(userId, 1L));
-        verify(userRoleRepository).deleteById(new UserRole.UserRoleId(userId, 2L));
+        assertEquals(2, result.getUserRoles().size()); // Verificar que quedan 2 roles
+        assertFalse(result.getUserRoles().stream().anyMatch(ur -> ur.getRole().getId().equals(1L)));
+        assertFalse(result.getUserRoles().stream().anyMatch(ur -> ur.getRole().getId().equals(2L)));
         verify(userRepository).save(user);
+    }
+
+    private static User getUser(Long userId) {
+        User user = new User();
+        user.setId(userId);
+
+        // Crear 4 roles (3 se mantendrán, 2 se eliminarán)
+        Role role1 = new Role(1L, "ROLE_1", new HashSet<>(), new HashSet<>());
+        Role role2 = new Role(2L, "ROLE_2", new HashSet<>(), new HashSet<>());
+        Role role3 = new Role(3L, "ROLE_3", new HashSet<>(), new HashSet<>());
+        Role role4 = new Role(4L, "ROLE_4", new HashSet<>(), new HashSet<>());
+
+        UserRole ur1 = new UserRole(new UserRole.UserRoleId(userId, 1L), user, role1);
+        UserRole ur2 = new UserRole(new UserRole.UserRoleId(userId, 2L), user, role2);
+        UserRole ur3 = new UserRole(new UserRole.UserRoleId(userId, 3L), user, role3);
+        UserRole ur4 = new UserRole(new UserRole.UserRoleId(userId, 4L), user, role4);
+
+        user.setUserRoles(new HashSet<>(Set.of(ur1, ur2, ur3, ur4)));
+        return user;
     }
 }
