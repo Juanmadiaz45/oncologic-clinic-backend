@@ -7,6 +7,7 @@ import com.oncologic.clinic.repository.user.PermissionRepository;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.repository.user.RoleRepository;
 import com.oncologic.clinic.repository.user.UserRoleRepository;
+import com.oncologic.clinic.entity.user.RolePermission.RolePermissionId;
 import com.oncologic.clinic.service.user.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,13 +45,7 @@ public class RoleServiceImpl implements RoleService {
 
         Role savedRole = roleRepository.save(role);
 
-        for (Permission permission : permissions) {
-            RolePermission rolePermission = new RolePermission();
-            rolePermission.setId(new RolePermission.RolePermissionId(savedRole.getId(), permission.getId()));
-            rolePermission.setRole(savedRole);
-            rolePermission.setPermission(permission);
-            rolePermissionRepository.save(rolePermission);
-        }
+        addPermissionsToRole(savedRole, permissions);
 
         return savedRole;
     }
@@ -72,21 +67,14 @@ public class RoleServiceImpl implements RoleService {
 
         rolePermissionRepository.deleteByRole(existingRole);
 
-        for (Permission permission : permissions) {
-            RolePermission rolePermission = new RolePermission();
-            rolePermission.setId(new RolePermission.RolePermissionId(existingRole.getId(), permission.getId()));
-            rolePermission.setRole(existingRole);
-            rolePermission.setPermission(permission);
-            rolePermissionRepository.save(rolePermission);
-        }
+        addPermissionsToRole(existingRole, permissions);
 
         return roleRepository.save(existingRole);
     }
 
     @Override
     public void deleteRole(Long id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         // Verifica si hay usuarios asignados a través de UserRole
         boolean hasUsers = userRoleRepository.existsByRoleId(id);
@@ -118,13 +106,7 @@ public class RoleServiceImpl implements RoleService {
 
         Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(permissionIds));
 
-        for (Permission permission : permissions) {
-            RolePermission rolePermission = new RolePermission();
-            rolePermission.setId(new RolePermission.RolePermissionId(role.getId(), permission.getId()));
-            rolePermission.setRole(role);
-            rolePermission.setPermission(permission);
-            rolePermissionRepository.save(rolePermission);
-        }
+        addPermissionsToRole(role, permissions);
 
         return roleRepository.save(role);
     }
@@ -150,6 +132,16 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return roleRepository.save(role);
+    }
+
+    private void addPermissionsToRole(Role savedRole, Set<Permission> permissions) {
+        for (Permission permission : permissions) {
+            RolePermissionId id = new RolePermissionId(savedRole.getId(), permission.getId());
+            if (rolePermissionRepository.existsById(id)) {
+                RolePermission rolePermission = new RolePermission(id, savedRole, permission);
+                rolePermissionRepository.save(rolePermission);
+            }
+        }
     }
 
 }

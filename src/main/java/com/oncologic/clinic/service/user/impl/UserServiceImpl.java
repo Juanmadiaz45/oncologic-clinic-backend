@@ -1,6 +1,7 @@
 package com.oncologic.clinic.service.user.impl;
 
 import com.oncologic.clinic.entity.user.*;
+import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
 import com.oncologic.clinic.service.user.UserService;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,7 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
 
-        for (Role role : roles) {
-            UserRole userRole = new UserRole();
-            userRole.setId(new UserRole.UserRoleId(savedUser.getId(), role.getId()));
-            userRole.setUser(savedUser);
-            userRole.setRole(role);
-            userRoleRepository.save(userRole);
-        }
+        addRolesToUser(savedUser, roles);
 
         return savedUser;
     }
@@ -66,13 +61,7 @@ public class UserServiceImpl implements UserService {
 
         userRoleRepository.deleteByUser(existingUser);
 
-        for (Role role : roles) {
-            UserRole userRole = new UserRole();
-            userRole.setId(new UserRole.UserRoleId(existingUser.getId(), role.getId()));
-            userRole.setUser(existingUser);
-            userRole.setRole(role);
-            userRoleRepository.save(userRole);
-        }
+        addRolesToUser(existingUser, roles);
 
         return userRepository.save(existingUser);
     }
@@ -101,13 +90,7 @@ public class UserServiceImpl implements UserService {
 
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
 
-        for (Role role : roles) {
-            UserRole userRole = new UserRole();
-            userRole.setId(new UserRole.UserRoleId(user.getId(), role.getId()));
-            userRole.setUser(user);
-            userRole.setRole(role);
-            userRoleRepository.save(userRole);
-        }
+        addRolesToUser(user, roles);
 
         return userRepository.save(user);
     }
@@ -126,5 +109,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    private void addRolesToUser(User savedUser, Set<Role> roles) {
+        for (Role role : roles) {
+            UserRoleId id = new UserRoleId(savedUser.getId(), role.getId());
+            if (!userRoleRepository.existsById(id)) {
+                UserRole userRole = new UserRole(id, savedUser, role);
+                userRoleRepository.save(userRole);
+            }
+        }
     }
 }
