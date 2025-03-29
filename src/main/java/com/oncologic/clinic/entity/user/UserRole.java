@@ -17,12 +17,12 @@ public class UserRole {
     @EmbeddedId
     private UserRoleId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("roleId")
     @JoinColumn(name = "role_id")
     private Role role;
@@ -36,10 +36,10 @@ public class UserRole {
         @Serial
         private static final long serialVersionUID = 1L;
 
-        @Column(name = "user_id")
+        @Column(name = "user_id", nullable = false)
         private Long userId;
 
-        @Column(name = "role_id")
+        @Column(name = "role_id", nullable = false)
         private Long roleId;
     }
 }

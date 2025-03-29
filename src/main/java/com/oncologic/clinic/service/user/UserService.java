@@ -7,10 +7,16 @@ import java.util.Set;
 
 public interface UserService {
     User createUser(User user, Set<Long> roleIds);
+
     User updateUser(User user, Set<Long> roleIds);
+
     void deleteUser(Long id);
+
     User getUserById(Long id);
+
     List<User> getAllUsers();
+
     User addRolesToUser(Long userId, Set<Long> roleIds);
+
     User removeRolesFromUser(Long userId, Set<Long> roleIds);
 }

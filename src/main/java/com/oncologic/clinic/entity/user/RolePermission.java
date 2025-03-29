@@ -36,10 +36,10 @@ public class RolePermission {
         @Serial
         private static final long serialVersionUID = 1L;
 
-        @Column(name = "role_id")
+        @Column(name = "role_id", nullable = false)
         private Long roleId;
 
-        @Column(name = "permission_id")
+        @Column(name = "permission_id", nullable = false)
         private Long permissionId;
     }
 }

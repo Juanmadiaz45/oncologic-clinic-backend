@@ -10,6 +10,10 @@ import java.util.List;
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRole.UserRoleId> {
     List<UserRole> findByUser(User user);
+
     void deleteByUser(User user);
+
     long countByUser(User user);
+
+    boolean existsByRoleId(Long roleId);
 }

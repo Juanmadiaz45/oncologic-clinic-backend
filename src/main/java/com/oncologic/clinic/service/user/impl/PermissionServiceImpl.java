@@ -1,6 +1,7 @@
 package com.oncologic.clinic.service.user.impl;
 
 import com.oncologic.clinic.entity.user.Permission;
+import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.service.user.PermissionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +14,11 @@ import java.util.List;
 public class PermissionServiceImpl implements PermissionService {
 
     private final PermissionRepository permissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository) {
+    public PermissionServiceImpl(PermissionRepository permissionRepository, RolePermissionRepository rolePermissionRepository) {
         this.permissionRepository = permissionRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
     }
 
     @Override
@@ -33,9 +36,13 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public void deletePermission(Long id) {
-        Permission permission = permissionRepository.findById(id).orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
+        Permission permission = permissionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
 
-        if (!permission.getRoles().isEmpty()) {
+        // Verifica si el permiso está asignado a algún rol a través de RolePermission
+        boolean isAssignedToRole = rolePermissionRepository.existsByPermissionId(id);
+
+        if (isAssignedToRole) {
             throw new IllegalStateException("No se puede eliminar el permiso porque está asignado a roles");
         }
 

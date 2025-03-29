@@ -33,7 +33,7 @@ public class User {
     @OneToOne(mappedBy = "user")
     private Personal personal;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 }
 

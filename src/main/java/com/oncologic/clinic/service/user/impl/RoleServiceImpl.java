@@ -6,6 +6,7 @@ import com.oncologic.clinic.entity.user.RolePermission;
 import com.oncologic.clinic.repository.user.PermissionRepository;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.repository.user.RoleRepository;
+import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.service.user.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +22,13 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public RoleServiceImpl(RoleRepository roleRepository, PermissionRepository permissionRepository, RolePermissionRepository rolePermissionRepository) {
+    public RoleServiceImpl(RoleRepository roleRepository, PermissionRepository permissionRepository, RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -82,13 +85,20 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void deleteRole(Long id) {
-        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        if (!role.getUsers().isEmpty()) {
+        // Verifica si hay usuarios asignados a través de UserRole
+        boolean hasUsers = userRoleRepository.existsByRoleId(id);
+
+        if (hasUsers) {
             throw new RuntimeException("No se puede eliminar el rol porque tiene usuarios asignados");
         }
 
+        // Elimina primero las relaciones con permisos
         rolePermissionRepository.deleteByRole(role);
+
+        // Finalmente elimina el rol
         roleRepository.delete(role);
     }
 

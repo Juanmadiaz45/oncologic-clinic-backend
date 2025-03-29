@@ -37,11 +37,10 @@ public class UserServiceTest {
     public void createUser_WhenRoleIdsIsNull_ShouldThrowIllegalArgumentException() {
         // Arrange
         User user = new User();
-        Set<Long> roleIds = null;
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userServiceImpl.createUser(user, roleIds));
+                () -> userServiceImpl.createUser(user, null));
 
         assertEquals("Un usuario debe tener al menos un rol", exception.getMessage());
     }
@@ -81,8 +80,6 @@ public class UserServiceTest {
         user.setUsername("testuser");
         user.setPassword("password");
 
-        Set<Long> roleIds = Set.of(1L, 2L);
-
         Role role1 = new Role();
         role1.setId(1L);
         role1.setName("ROLE_ADMIN");
@@ -91,37 +88,40 @@ public class UserServiceTest {
         role2.setId(2L);
         role2.setName("ROLE_USER");
 
+        Set<Long> roleIds = Set.of(role1.getId(), role2.getId());
         List<Role> roles = List.of(role1, role2);
 
-        User savedUser = new User();
-        savedUser.setId(1L);
-        savedUser.setUsername("testuser");
-        savedUser.setPassword("password");
-
         when(roleRepository.findAllById(roleIds)).thenReturn(roles);
-        when(userRepository.save(user)).thenReturn(savedUser);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User savedUser = invocation.getArgument(0);
+            savedUser.setId(1L);
+            return savedUser;
+        });
+        when(userRoleRepository.save(any(UserRole.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        User result = userServiceImpl.createUser(user, roleIds);
+        User createdUser = userServiceImpl.createUser(user, roleIds);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(savedUser, result);
+        assertNotNull(createdUser);
+        assertEquals("testuser", createdUser.getUsername());
+        assert createdUser.getId() == 1L;
 
-        verify(userRepository, times(1)).save(user);
+        verify(roleRepository, times(1)).findAllById(roleIds);
+        verify(userRepository, times(1)).save(any(User.class));
         verify(userRoleRepository, times(2)).save(any(UserRole.class));
     }
+
 
     @Test
     public void updateUser_WhenRoleIdsIsNull_ShouldThrowIllegalArgumentException() {
         // Arrange
         User user = new User();
         user.setId(1L);
-        Set<Long> roleIds = null;
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userServiceImpl.updateUser(user, roleIds));
+                () -> userServiceImpl.updateUser(user, null));
 
         assertEquals("Un usuario debe tener al menos un rol", exception.getMessage());
         verify(userRepository, never()).findById(anyLong());

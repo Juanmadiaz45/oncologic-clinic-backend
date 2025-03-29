@@ -22,7 +22,7 @@ public class Permission {
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
-    @ManyToMany(mappedBy = "permissions")
-    private Set<Role> roles = new HashSet<>();
+    @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RolePermission> rolePermissions = new HashSet<>();
 }
 
