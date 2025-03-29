@@ -12,8 +12,6 @@
 
 This project is a backend developed with Spring Boot that allows consuming information from the final project database, Clínica OncoLogic, using Hibernate through Spring Data JPA.
 
-The main objective is to learn how to integrate JPA into a realistic project, including entity configuration, relationship definition, and repository creation to handle data persistence.
-
 ### Technologies Used
 
 - Java 17
