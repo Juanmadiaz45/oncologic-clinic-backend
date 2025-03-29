@@ -377,15 +377,20 @@ public class RoleServiceTest {
     void removePermissionsFromRole_WhenRoleExistsAndHasRemainingPermissions_ShouldRemovePermissions() {
         // Arrange
         Long roleId = 1L;
-        Set<Long> permissionIds = new HashSet<>();
-        permissionIds.add(10L);
-        permissionIds.add(20L);
+        Set<Long> permissionIds = new HashSet<>(Arrays.asList(10L, 20L));
 
         Role role = new Role();
         role.setId(roleId);
         role.setName("ADMIN");
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
+
+        // Mockear la existencia de los permisos
+        when(rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, 10L)))
+                .thenReturn(true);
+        when(rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, 20L)))
+                .thenReturn(true);
+
         when(rolePermissionRepository.countByRole(role)).thenReturn(3L); // Quedan permisos suficientes
         when(roleRepository.save(role)).thenReturn(role);
 
@@ -395,6 +400,7 @@ public class RoleServiceTest {
         // Assert
         assertNotNull(updatedRole);
         verify(roleRepository).findById(roleId);
+        verify(rolePermissionRepository, times(2)).existsById(any());
         verify(rolePermissionRepository).countByRole(role);
         verify(rolePermissionRepository, times(2)).deleteById(any(RolePermission.RolePermissionId.class));
         verify(roleRepository).save(role);
@@ -431,6 +437,12 @@ public class RoleServiceTest {
         mockRole.setName("ADMIN");
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(mockRole));
+        
+        when(rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, 1L)))
+                .thenReturn(true);
+        when(rolePermissionRepository.existsById(new RolePermission.RolePermissionId(roleId, 2L)))
+                .thenReturn(true);
+
         when(rolePermissionRepository.countByRole(mockRole)).thenReturn(2L); // Exactamente igual al tamaño de permissionIds
 
         // Act & Assert
@@ -440,6 +452,7 @@ public class RoleServiceTest {
 
         assertEquals("Un rol debe tener al menos un permiso", exception.getMessage());
         verify(roleRepository, times(1)).findById(roleId);
+        verify(rolePermissionRepository, times(2)).existsById(any());
         verify(rolePermissionRepository, times(1)).countByRole(mockRole);
         verify(rolePermissionRepository, never()).deleteById(any());
         verify(roleRepository, never()).save(any());
