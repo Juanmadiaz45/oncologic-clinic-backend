@@ -1,18 +1,18 @@
 -- Inicialización de USERS
 INSERT INTO USERS (id, username, password)
-VALUES (1, 'admin', '$2a$10$Oz0mWiX8QS6B9R.Vh3StLenQQCTTJZY4VYXz9Yh.X7TJz3c8yKzUO'); -- password: admin123
+VALUES (1, 'admin', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9cS'); -- password: admin123
 INSERT INTO USERS (id, username, password)
-VALUES (2, 'doctor1', '$2a$10$JsXH5EYedFX.rYnGHipQUuNnLCFB6MnvBF/oLWVGrjDMPUfimGZGi'); -- password: doctor123
+VALUES (2, 'doctor1', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW'); -- password: doctor123
 INSERT INTO USERS (id, username, password)
-VALUES (3, 'nurse1', '$2a$10$3tBjtnqRAzWp7VGgcqI.peVm9pvQCgc/DP7THESg4qE2EXqTHfbae'); -- password: nurse123
+VALUES (3, 'nurse1', '$2a$12$k8eIdjimmrCahaVJib82cOhLDhaeBR5AhMrqp6p/F/IJySpxQk0a.'); -- password: nurse123
 INSERT INTO USERS (id, username, password)
-VALUES (4, 'patient1', '$2a$10$O0tUm4o9xL/mPf.2pRlNfee35GWvs1ZRVOm1i5qtx8buTZg.dOaHC'); -- password: patient123
+VALUES (4, 'patient1', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
 INSERT INTO USERS (id, username, password)
-VALUES (5, 'patient2', '$2a$10$O0tUm4o9xL/mPf.2pRlNfee35GWvs1ZRVOm1i5qtx8buTZg.dOaHC'); -- password: patient123
+VALUES (5, 'patient2', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
 INSERT INTO USERS (id, username, password)
-VALUES (6, 'admin2', '$2a$10$Oz0mWiX8QS6B9R.Vh3StLenQQCTTJZY4VYXz9Yh.X7TJz3c8yKzUO'); -- password: admin123
+VALUES (6, 'admin2', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9cS'); -- password: admin123
 INSERT INTO USERS (id, username, password)
-VALUES (7, 'doctor2', '$2a$10$JsXH5EYedFX.rYnGHipQUuNnLCFB6MnvBF/oLWVGrjDMPUfimGZGi');
+VALUES (7, 'doctor2', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW');
 -- password: doctor123
 
 -- Inicialización de ROLES

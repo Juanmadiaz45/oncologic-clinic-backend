@@ -1,0 +1,46 @@
+.login-body {
+    background: linear-gradient(to right, #e3f2fd, #ffffff);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    border: none;
+    border-radius: 15px;
+    background-color: #ffffff;
+    padding: 2rem;
+}
+
+.logo {
+    max-width: 200px;
+    height: auto;
+}
+
+.title {
+    font-weight: 600;
+    color: #2e93cd; /* Color personalizado */
+    margin-bottom: 0;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: #6c757d;
+}
+
+.btn-primary {
+    background-color: #2e93cd;
+    border-color: #2e93cd;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #247bad;
+    border-color: #247bad;
+}
+
+.form-control {
+    border-radius: 8px;
+    font-size: 0.95rem;
+}

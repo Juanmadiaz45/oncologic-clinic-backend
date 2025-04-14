@@ -14,6 +14,8 @@ public interface UserService {
 
     User getUserById(Long id);
 
+    User getUserByUsername(String username);
+
     List<User> getAllUsers();
 
     User addRolesToUser(Long userId, Set<Long> roleIds);
