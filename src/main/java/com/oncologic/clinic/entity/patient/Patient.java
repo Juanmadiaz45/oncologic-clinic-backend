@@ -23,9 +23,6 @@ public class Patient {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "medical_history_id", nullable = false, unique = true)
-    private Long medicalHistoryId;
-
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
@@ -44,6 +41,6 @@ public class Patient {
     @Column(name = "email", nullable = false, length = 200)
     private String email;
 
-    @OneToOne(mappedBy = "patient")
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private MedicalHistory medicalHistory;
 }

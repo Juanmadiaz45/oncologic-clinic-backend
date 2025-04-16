@@ -1,10 +1,13 @@
 package com.oncologic.clinic.service.user.impl;
 
+import com.oncologic.clinic.dto.register.RegisterUserDTO;
 import com.oncologic.clinic.entity.user.*;
 import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
 import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,9 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -27,15 +33,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(User user, Set<Long> roleIds) {
-        if (roleIds == null || roleIds.isEmpty()) {
+    @Transactional
+    public User registerUser(RegisterUserDTO userDTO) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+        }
+
+        if (userDTO.getRoleIds() == null || userDTO.getRoleIds().isEmpty()) {
             throw new IllegalArgumentException("Un usuario debe tener al menos un rol");
         }
 
-        Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
+        Set<Role> roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
         if (roles.isEmpty()) {
             throw new IllegalArgumentException("Los roles proporcionados no existen");
         }
+
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
 
@@ -43,6 +58,7 @@ public class UserServiceImpl implements UserService {
 
         return savedUser;
     }
+
 
     @Override
     public User updateUser(User user, Set<Long> roleIds) {

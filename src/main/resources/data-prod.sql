@@ -4,7 +4,7 @@ VALUES (1, 'admin', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9c
 INSERT INTO USERS (id, username, password)
 VALUES (2, 'doctor1', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW'); -- password: doctor123
 INSERT INTO USERS (id, username, password)
-VALUES (3, 'nurse1', '$2a$12$k8eIdjimmrCahaVJib82cOhLDhaeBR5AhMrqp6p/F/IJySpxQk0a.'); -- password: nurse123
+VALUES (3, 'doctor2', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW'); -- password: doctor123
 INSERT INTO USERS (id, username, password)
 VALUES (4, 'patient1', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
 INSERT INTO USERS (id, username, password)
@@ -12,7 +12,7 @@ VALUES (5, 'patient2', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfy
 INSERT INTO USERS (id, username, password)
 VALUES (6, 'admin2', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9cS'); -- password: admin123
 INSERT INTO USERS (id, username, password)
-VALUES (7, 'doctor2', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW');
+VALUES (7, 'doctor3', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW');
 -- password: doctor123
 
 -- Inicialización de ROLES
@@ -21,9 +21,7 @@ VALUES (1, 'ROLE_ADMIN');
 INSERT INTO ROLES (id, name)
 VALUES (2, 'ROLE_DOCTOR');
 INSERT INTO ROLES (id, name)
-VALUES (3, 'ROLE_NURSE');
-INSERT INTO ROLES (id, name)
-VALUES (4, 'ROLE_PATIENT');
+VALUES (3, 'ROLE_PATIENT');
 
 -- Inicialización de USER_ROLES
 INSERT INTO USER_ROLES (user_id, role_id)
@@ -31,11 +29,11 @@ VALUES (1, 1);
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (2, 2);
 INSERT INTO USER_ROLES (user_id, role_id)
-VALUES (3, 3);
+VALUES (3, 2);
 INSERT INTO USER_ROLES (user_id, role_id)
-VALUES (4, 4);
+VALUES (4, 3);
 INSERT INTO USER_ROLES (user_id, role_id)
-VALUES (5, 4);
+VALUES (5, 3);
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (6, 1);
 INSERT INTO USER_ROLES (user_id, role_id)
@@ -87,15 +85,7 @@ VALUES (2, 9);
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
 VALUES (2, 10);
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
-VALUES (3, 3);
-INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
-VALUES (3, 5);
-INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
-VALUES (3, 7);
-INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
-VALUES (3, 9);
-INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
-VALUES (4, 11);
+VALUES (3, 11);
 
 -- Inicialización de PERSONALS
 INSERT INTO PERSONAL (id, id_number, name, last_name, email, phone_number, date_of_hiring, status, user_id)
@@ -130,12 +120,12 @@ INSERT INTO ADMINISTRATIVE (id, position, department)
 VALUES (4, 'Asistente', 'Recursos Humanos');
 
 -- Inicialización de PATIENTS
-INSERT INTO PATIENTS (id, user_id, medical_history_id, name, birthdate, gender, address, phone_number, email)
-VALUES (1, 4, 1, 'Ana López', TIMESTAMP '1985-05-10 00:00:00', 'F', 'Calle Principal 123', '555-6789',
+INSERT INTO PATIENTS (id, user_id, name, birthdate, gender, address, phone_number, email)
+VALUES (1, 4, 'Ana López', TIMESTAMP '1985-05-10 00:00:00', 'F', 'Calle Principal 123', '555-6789',
         'ana.lopez@email.com');
 
-INSERT INTO PATIENTS (id, user_id, medical_history_id, name, birthdate, gender, address, phone_number, email)
-VALUES (2, 5, 2, 'Roberto Fernández', TIMESTAMP '1978-08-15 00:00:00', 'M', 'Avenida Central 456', '555-7890',
+INSERT INTO PATIENTS (id, user_id, name, birthdate, gender, address, phone_number, email)
+VALUES (2, 5, 'Roberto Fernández', TIMESTAMP '1978-08-15 00:00:00', 'M', 'Avenida Central 456', '555-7890',
         'roberto.fernandez@email.com');
 
 -- Inicialización de MEDICAL_HISTORIES
@@ -272,3 +262,27 @@ INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
 VALUES (2, 1);
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
 VALUES (2, 3);
+
+-- Sincronizar secuencias con el valor máximo actual
+
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles));
+SELECT setval('permissions_id_seq', (SELECT MAX(id) FROM permissions));
+SELECT setval('personal_id_seq', (SELECT MAX(id) FROM personal));
+SELECT setval('patients_id_seq', (SELECT MAX(id) FROM patients));
+SELECT setval('medical_histories_id_seq', (SELECT MAX(id) FROM medical_histories));
+SELECT setval('availabilities_id_seq', (SELECT MAX(id) FROM availabilities));
+SELECT setval('statuses_id_seq', (SELECT MAX(id) FROM statuses));
+SELECT setval('type_of_medical_appointments_id_seq', (SELECT MAX(id) FROM type_of_medical_appointments));
+SELECT setval('appointment_results_id_seq', (SELECT MAX(id) FROM appointment_results));
+SELECT setval('observations_id_seq', (SELECT MAX(id) FROM observations));
+SELECT setval('treatments_id_seq', (SELECT MAX(id) FROM treatments));
+SELECT setval('medical_appointments_id_seq', (SELECT MAX(id) FROM medical_appointments));
+SELECT setval('medical_offices_id_seq', (SELECT MAX(id) FROM medical_offices));
+SELECT setval('laboratories_id_seq', (SELECT MAX(id) FROM laboratories));
+SELECT setval('type_of_exams_id_seq', (SELECT MAX(id) FROM type_of_exams));
+SELECT setval('examination_results_id_seq', (SELECT MAX(id) FROM examination_results));
+SELECT setval('prescribed_medicines_id_seq', (SELECT MAX(id) FROM prescribed_medicines));
+SELECT setval('type_of_treatments_id_seq', (SELECT MAX(id) FROM type_of_treatments));
+SELECT setval('specialities_id_seq', (SELECT MAX(id) FROM specialities));
+SELECT setval('medical_tasks_id_seq', (SELECT MAX(id) FROM medical_tasks));

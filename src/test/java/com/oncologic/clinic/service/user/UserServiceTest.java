@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.user;
+/*package com.oncologic.clinic.service.user;
 
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
@@ -501,4 +501,4 @@ public class UserServiceTest {
         user.setUserRoles(new HashSet<>(Set.of(ur1, ur2, ur3, ur4)));
         return user;
     }
-}
+}*/

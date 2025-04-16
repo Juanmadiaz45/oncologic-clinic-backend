@@ -6,7 +6,7 @@
     <title>Inicio | Clínica OncoLogic</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body class="home-body">
     <!-- Sidebar overlay -->
@@ -39,11 +39,53 @@
         </div>
     </nav>
 
-
     <div class="container mt-5 mb-5">
         <h2 class="text-center mb-4 title">Panel de Administración</h2>
 
         <div class="row g-4">
+            <!-- Registro de Paciente -->
+            <div class="col-md-4">
+                <div class="card option-card shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-heart fs-1 text-primary-clinic mb-2"></i>
+                        <h5 class="card-title">Registrar Paciente</h5>
+                        <p class="card-text">Crear un nuevo paciente en el sistema.</p>
+                        <a th:href="@{/users/patient}" class="btn btn-primary-clinic">
+                            <i class="bi bi-plus-circle me-1"></i> Registrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro de Doctor -->
+            <div class="col-md-4">
+                <div class="card option-card shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-heart-pulse fs-1 text-primary-clinic mb-2"></i>
+                        <h5 class="card-title">Registrar Doctor</h5>
+                        <p class="card-text">Agregar un nuevo médico al equipo.</p>
+                        <a th:href="@{/users/doctor}" class="btn btn-primary-clinic">
+                            <i class="bi bi-plus-circle me-1"></i> Registrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro de Administrativo -->
+            <div class="col-md-4">
+                <div class="card option-card shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-vcard fs-1 text-primary-clinic mb-2"></i>
+                        <h5 class="card-title">Registrar Administrativo</h5>
+                        <p class="card-text">Añadir personal administrativo.</p>
+                        <a th:href="@{/users/administrative}" class="btn btn-primary-clinic">
+                            <i class="bi bi-plus-circle me-1"></i> Registrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Otras opciones del dashboard -->
             <div class="col-md-6">
                 <div class="card option-card shadow-sm">
                     <div class="card-body text-center">
@@ -117,6 +159,6 @@
         <p class="text-muted small mb-0">© 2025 Clínica OncoLogic. Todos los derechos reservados.</p>
     </footer>
 
-    <script th:src="@{/js/home.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>
