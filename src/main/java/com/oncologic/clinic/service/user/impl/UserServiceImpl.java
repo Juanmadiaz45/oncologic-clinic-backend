@@ -135,9 +135,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User removeRolesFromUser(Long userId, Set<Long> roleIds) {
-        // Cargar el usuario con sus roles
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userId));
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos un rol a eliminar");
+        }
 
         // Validar que no se eliminen todos los roles
         long currentRoleCount = user.getUserRoles().size();
@@ -154,6 +157,17 @@ public class UserServiceImpl implements UserService {
                 rolesToRemove.add(userRole);
             }
         });
+
+        // Verificar que todos los roles a eliminar existen en el usuario
+        if (rolesToRemove.size() != roleIds.size()) {
+            Set<Long> existingRoleIds = rolesToRemove.stream()
+                    .map(ur -> ur.getRole().getId())
+                    .collect(Collectors.toSet());
+            Set<Long> missingRoleIds = roleIds.stream()
+                    .filter(id -> !existingRoleIds.contains(id))
+                    .collect(Collectors.toSet());
+            throw new EntityNotFoundException("El usuario no tiene los siguientes roles: " + missingRoleIds);
+        }
 
         // Eliminar los roles de la colección (orphanRemoval se encargará de la eliminación física)
         rolesToRemove.forEach(userRole -> {
