@@ -1,6 +1,6 @@
 package com.oncologic.clinic.service.patient.impl;
 
-import com.oncologic.clinic.dto.register.RegisterPatientDTO;
+import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Patient;
 import com.oncologic.clinic.entity.user.User;

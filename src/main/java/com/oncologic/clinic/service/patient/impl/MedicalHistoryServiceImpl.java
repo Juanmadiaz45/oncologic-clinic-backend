@@ -18,7 +18,6 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     }
 
     @Override
-    @Transactional
     public MedicalHistory registerMedicalHistory(Patient patient, String currentHealthStatus) {
         MedicalHistory medicalHistory = new MedicalHistory();
         medicalHistory.setPatient(patient);

@@ -1,6 +1,6 @@
 package com.oncologic.clinic.service.personal.impl;
 
-import com.oncologic.clinic.dto.register.RegisterAdministrativeDTO;
+import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.repository.personal.AdministrativeRepository;

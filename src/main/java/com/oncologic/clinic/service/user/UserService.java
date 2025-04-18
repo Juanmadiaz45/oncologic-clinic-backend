@@ -1,6 +1,7 @@
 package com.oncologic.clinic.service.user;
 
-import com.oncologic.clinic.dto.register.RegisterUserDTO;
+import com.oncologic.clinic.dto.info.UserListGroupedDTO;
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
 import com.oncologic.clinic.entity.user.User;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public interface UserService {
     User getUserByUsername(String username);
 
     List<User> getAllUsers();
+
+    UserListGroupedDTO listUsersGroupedByType();
 
     User addRolesToUser(Long userId, Set<Long> roleIds);
 

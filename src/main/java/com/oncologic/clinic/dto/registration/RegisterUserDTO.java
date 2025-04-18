@@ -1,4 +1,4 @@
-package com.oncologic.clinic.dto.register;
+package com.oncologic.clinic.dto.registration;
 
 import lombok.Data;
 

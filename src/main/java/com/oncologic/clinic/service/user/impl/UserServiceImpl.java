@@ -1,6 +1,12 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.register.RegisterUserDTO;
+import com.oncologic.clinic.dto.info.UserInfoDTO;
+import com.oncologic.clinic.dto.info.UserListGroupedDTO;
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
+import com.oncologic.clinic.entity.patient.Patient;
+import com.oncologic.clinic.entity.personal.Administrative;
+import com.oncologic.clinic.entity.personal.Doctor;
+import com.oncologic.clinic.entity.personal.Personal;
 import com.oncologic.clinic.entity.user.*;
 import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
@@ -11,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +41,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public User registerUser(RegisterUserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
@@ -105,6 +111,57 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    private List<String> extractRoles(User user) {
+        return user.getUserRoles()
+                .stream()
+                .map(userRole -> userRole.getRole().getName())
+                .toList();
+    }
+
+    @Override
+    public UserListGroupedDTO listUsersGroupedByType() {
+        List<User> allUsers = userRepository.findAll();
+
+        List<UserInfoDTO> doctors = new ArrayList<>();
+        List<UserInfoDTO> administratives = new ArrayList<>();
+        List<UserInfoDTO> patients = new ArrayList<>();
+
+        for (User user : allUsers) {
+            List<String> roles = extractRoles(user);
+
+            if (user.getPatient() != null){
+                Patient patient = user.getPatient();
+                patients.add(new UserInfoDTO(
+                        user.getUsername(),
+                        patient.getName(),
+                        patient.getPhoneNumber(),
+                        patient.getEmail(),
+                        roles
+                ));
+            } else if (user.getPersonal() != null) {
+                Personal personal = user.getPersonal();
+                if (personal instanceof Doctor doctor) {
+                    doctors.add(new UserInfoDTO(
+                            user.getUsername(),
+                            doctor.getName() + " " + doctor.getLastName(),
+                            doctor.getPhoneNumber(),
+                            doctor.getEmail(),
+                            roles
+                    ));
+                } else if (personal instanceof Administrative administrative) {
+                    administratives.add(new UserInfoDTO(
+                            user.getUsername(),
+                            administrative.getName() + " " + administrative.getLastName(),
+                            administrative.getPhoneNumber(),
+                            administrative.getEmail(),
+                            roles
+                    ));
+                }
+            }
+        }
+        return new UserListGroupedDTO(doctors, administratives, patients);
     }
 
     @Override
