@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -107,10 +108,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User addRolesToUser(Long userId, Set<Long> roleIds) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userId));
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos un rol");
+        }
 
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
+
+        if (roles.size() != roleIds.size()) {
+            Set<Long> foundRoleIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
+            Set<Long> missingRoleIds = roleIds.stream()
+                    .filter(id -> !foundRoleIds.contains(id))
+                    .collect(Collectors.toSet());
+            throw new EntityNotFoundException("Los siguientes roles no existen: " + missingRoleIds);
+        }
 
         addRolesToUser(user, roles);
 
@@ -149,13 +164,19 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    private void addRolesToUser(User savedUser, Set<Role> roles) {
+    private void addRolesToUser(User user, Set<Role> roles) {
+        Set<Long> existingRoleIds = user.getUserRoles().stream()
+                .map(ur -> ur.getRole().getId())
+                .collect(Collectors.toSet());
+
         for (Role role : roles) {
-            UserRoleId id = new UserRoleId(savedUser.getId(), role.getId());
-            if (!userRoleRepository.existsById(id)) {
-                UserRole userRole = new UserRole(id, savedUser, role);
-                savedUser.getUserRoles().add(userRole);
+            if (existingRoleIds.contains(role.getId())) {
+                throw new IllegalArgumentException("El usuario ya tiene asignado el rol: " + role.getName());
             }
+
+            UserRoleId id = new UserRoleId(user.getId(), role.getId());
+            UserRole userRole = new UserRole(id, user, role);
+            user.getUserRoles().add(userRole);
         }
     }
 }
