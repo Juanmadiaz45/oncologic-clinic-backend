@@ -1,0 +1,288 @@
+/* Estilos base comunes para toda la aplicación */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos para el navbar */
+.navbar {
+    background-color: #ffffff;
+    padding: 0.8rem 0;
+}
+
+.logo-navbar {
+    height: 40px;
+    object-fit: contain;
+}
+
+/* Colores primarios y secundarios */
+.text-primary-clinic {
+    color: #2e93cd !important;
+}
+
+.bg-primary-clinic {
+    background-color: #2e93cd !important;
+    border-color: #2e93cd !important;
+}
+
+.btn-primary-clinic {
+    background-color: #2e93cd;
+    border-color: #2e93cd;
+    border-radius: 8px;
+    color: white;
+    padding: 0.5rem 1.5rem;
+}
+
+.btn-primary-clinic:hover {
+    background-color: #247bad;
+    border-color: #247bad;
+    color: white;
+}
+
+.btn-outline-primary-clinic {
+    color: #2e93cd;
+    border-color: #2e93cd;
+    border-radius: 8px;
+    padding: 0.375rem 0.75rem;
+}
+
+.btn-outline-primary-clinic:hover {
+    background-color: #2e93cd;
+    color: white;
+}
+
+/* Estilos para tarjetas */
+.option-card,
+.registration-card,
+.remove-role-card,
+.assign-role-card {
+    border-radius: 15px;
+    border: none;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.option-card:hover,
+.registration-card:hover,
+.remove-role-card:hover,
+.assign-role-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.registration-card .card-header,
+.remove-role-header,
+.assign-role-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.2rem;
+}
+
+.remove-role-header {
+    background-color: #dc3545 !important;
+}
+
+.assign-role-header {
+    background-color: #2e93cd !important;
+}
+
+/* Títulos y secciones */
+.title {
+    color: #2e93cd;
+    font-weight: 600;
+}
+
+.section-title {
+    color: #2e93cd;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Formularios */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #2e93cd;
+    box-shadow: 0 0 0 0.25rem rgba(46, 147, 205, 0.25);
+}
+
+.invalid-feedback {
+    font-size: 0.85rem;
+}
+
+/* Listas de roles */
+.roles-list-container,
+.roles-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.role-item,
+.role-item-remove {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.role-item:hover {
+    background-color: #e9ecef;
+}
+
+.role-item-remove {
+    border-left: 4px solid #dc3545;
+}
+
+.no-roles-message {
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Botones especiales */
+.btn-assign,
+.btn-remove {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-assign {
+    background-color: #2e93cd;
+    border-color: #2e93cd;
+}
+
+.btn-assign:hover {
+    background-color: #247bad;
+    border-color: #247bad;
+}
+
+.btn-remove {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-remove:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+}
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    margin-top: auto;
+    padding: 0.5rem 0;
+}
+
+/* Sidebar */
+.sidebar-menu {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    height: 100%;
+    background-color: #ffffff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transition: all 0.3s ease-in-out;
+    padding-top: 70px;
+}
+
+.sidebar-menu.active {
+    left: 0;
+}
+
+.sidebar-menu ul li {
+    padding: 15px 10px;
+    cursor: pointer;
+}
+
+.sidebar-menu ul li:hover {
+    background-color: #f1f1f1;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    z-index: 1049;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* Backgrounds */
+.home-body {
+    background: linear-gradient(to right, #e3f2fd, #ffffff);
+}
+
+.register-body {
+    background: linear-gradient(to right, #e3f2fd, #ffffff);
+}
+
+.user-list-body {
+    background: linear-gradient(to right, #f3faff, #ffffff);
+}
+
+/* Animaciones */
+.custom-alert {
+    animation: slideIn 0.5s forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.btn-close {
+    padding: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .registration-card,
+    .option-card,
+    .remove-role-card,
+    .assign-role-card {
+        margin-top: 1rem;
+    }
+
+    .section-title {
+        margin-top: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.4rem;
+    }
+
+    .btn-outline-primary-clinic {
+        font-size: 0.9rem;
+        padding: 0.35rem 0.6rem;
+    }
+}
