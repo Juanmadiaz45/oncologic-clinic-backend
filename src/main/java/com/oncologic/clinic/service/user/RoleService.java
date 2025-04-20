@@ -1,5 +1,6 @@
 package com.oncologic.clinic.service.user;
 
+import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface RoleService {
     Role addPermissionsToRole(Long roleId, Set<Long> permissionIds);
 
     Role removePermissionsFromRole(Long roleId, Set<Long> permissionIds);
+
+    List<Permission> getPermissionsByRoleId(Long roleId);
 }

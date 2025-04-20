@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -147,6 +148,13 @@ public class RoleServiceImpl implements RoleService {
         });
 
         return roleRepository.save(role);
+    }
+
+    @Override
+    public List<Permission> getPermissionsByRoleId(Long roleId) {
+        return rolePermissionRepository.findPermissionsByRoleId(roleId).stream()
+                .map(RolePermission::getPermission)
+                .collect(Collectors.toList());
     }
 
     private void addPermissionsToRole(Role savedRole, Set<Permission> permissions) {

@@ -9,11 +9,13 @@ import java.util.List;
 
 @Repository
 public interface RolePermissionRepository extends JpaRepository<RolePermission, RolePermission.RolePermissionId> {
-    List<RolePermission> findByRole(Role role);
+
+    List<RolePermission> findPermissionsByRoleId(Long roleId);
 
     void deleteByRole(Role existingRole);
 
-    long countByRole(Role role);
+    void countByRole(Role role);
 
     boolean existsByPermissionId(Long permissionId);
+
 }

@@ -1,5 +1,6 @@
 package com.oncologic.clinic.controller;
 
+import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.service.user.PermissionService;
 import com.oncologic.clinic.service.user.RoleService;
@@ -8,6 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -47,9 +50,40 @@ public class RoleController {
     }
 
     @GetMapping("/permissions")
-    public String manageRolePermissions(Model model) {
-        // Implementar lógica para gestionar permisos de roles
+    public String manageRolePermissions(
+            @RequestParam(required = false) Long roleId,
+            Model model) {
+
+        model.addAttribute("allRoles", roleService.getAllRoles());
+
+        if (roleId != null) {
+            Role role = roleService.getRoleById(roleId);
+            model.addAttribute("selectedRole", role);
+
+            List<Permission> permissions = roleService.getPermissionsByRoleId(roleId);
+            model.addAttribute("selectedPermissions", permissions);
+        }
+
+        model.addAttribute("allPermissions", permissionService.getAllPermissions());
+
         return "role-permissions";
+    }
+
+    @PostMapping("/permissions/update")
+    public String updateRolePermissions(
+            @RequestParam Long roleId,
+            @RequestParam(required = false) Set<Long> permissionIds,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            Role role = roleService.getRoleById(roleId);
+            roleService.updateRole(role, permissionIds != null ? permissionIds : new HashSet<>());
+            redirectAttributes.addFlashAttribute("successMessage", "Permisos actualizados correctamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar permisos: " + e.getMessage());
+        }
+
+        return "redirect:/roles/permissions?roleId=" + roleId;
     }
 
     @PostMapping("/delete")
