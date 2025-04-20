@@ -1,5 +1,7 @@
 package com.oncologic.clinic.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.service.user.RoleService;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/users/roles")
@@ -24,9 +27,24 @@ public class UserRoleController {
     }
 
     @GetMapping("/assign")
-    public String showAssignRoleForm(Model model) {
+    public String showAssignRoleForm(Model model) throws JsonProcessingException {
+        List<User> users = userService.getAllUsers();
         model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("roles", roleService.getAllRoles());
+        Map<Long, List<Long>> userRolesMap = new HashMap<>();
+
+        for (User user : users) {
+            List<Long> roleIds = user.getUserRoles().stream()
+                    .map(userRole -> userRole.getRole().getId())
+                    .collect(Collectors.toList());
+
+            userRolesMap.put(user.getId(), roleIds);
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        String userRolesMapJson = mapper.writeValueAsString(userRolesMap);
+
+        model.addAttribute("userRolesMapJson", userRolesMapJson);
         return "assign-role";
     }
 

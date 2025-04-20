@@ -1,18 +1,44 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const userSelect = document.querySelector("#user");
     const form = document.querySelector("form");
-    form.addEventListener("submit", function (event) {
-        const selectedUser = document.querySelector("#user").value;
-        const selectedRoles = document.querySelectorAll("input[name='roleIds']:checked");
+
+    function updateRoles() {
+        const userId = parseInt(userSelect.value);
+
+        if (!userId) {
+            document.querySelectorAll("input[name='roleIds']").forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.disabled = false;
+            });
+            return;
+        }
+
+        const userRoles = userRolesMap[userId] || [];
+
+        document.querySelectorAll("input[name='roleIds']").forEach(checkbox => {
+            const roleId = parseInt(checkbox.value);
+
+            if (userRoles.includes(roleId)) {
+                checkbox.checked = true;
+                checkbox.disabled = true;
+            } else {
+                checkbox.checked = false;
+                checkbox.disabled = false;
+            }
+        });
+    }
+
+    userSelect.addEventListener("change", updateRoles);
+
+    form.addEventListener("submit", function(event) {
+        const selectedUser = userSelect.value;
 
         if (!selectedUser) {
             event.preventDefault();
             alert("Debe seleccionar un usuario");
             return;
         }
-
-        if (selectedRoles.length === 0) {
-            event.preventDefault();
-            alert("Debe seleccionar al menos un rol");
-        }
     });
+
+    updateRoles();
 });
