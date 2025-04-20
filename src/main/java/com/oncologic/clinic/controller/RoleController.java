@@ -86,15 +86,30 @@ public class RoleController {
         return "redirect:/roles/permissions?roleId=" + roleId;
     }
 
-    @PostMapping("/delete")
-    public String deleteRole(@RequestParam Long roleId,
-                             RedirectAttributes redirectAttributes) {
-        try {
-            roleService.deleteRole(roleId);
-            redirectAttributes.addFlashAttribute("successMessage", "Rol eliminado exitosamente");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+    @GetMapping("/delete")
+    public String showDeleteRoleForm(@RequestParam(required = false) Long roleId, Model model) {
+        model.addAttribute("allRoles", roleService.getAllRoles());
+        if (roleId != null) {
+            model.addAttribute("selectedRole", roleService.getRoleById(roleId));
         }
-        return "redirect:/dashboard";
+        return "delete-role";
+    }
+
+    @PostMapping("/delete")
+    public String deleteRole(
+            @RequestParam Long roleId,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            String roleName = roleService.getRoleById(roleId).getName();
+            roleService.deleteRole(roleId);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Rol '" + roleName + "' eliminado correctamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error al eliminar rol: " + e.getMessage());
+        }
+
+        return "redirect:/roles/delete";
     }
 }
