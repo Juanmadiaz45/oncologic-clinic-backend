@@ -29,7 +29,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public Patient registerPatient(RegisterPatientDTO patientDTO){
-        User user = userService.registerUser(patientDTO);
+        User user = userService.createUser(patientDTO);
 
         Patient patient = new Patient();
         patient.setUser(user);

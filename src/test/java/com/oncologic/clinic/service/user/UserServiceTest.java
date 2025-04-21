@@ -1,5 +1,6 @@
-/*package com.oncologic.clinic.service.user;
+package com.oncologic.clinic.service.user;
 
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.entity.user.UserRole;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
 
@@ -31,17 +33,23 @@ public class UserServiceTest {
     @Mock
     private UserRoleRepository userRoleRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userServiceImpl;
 
     @Test
     public void createUser_WhenRoleIdsIsNull_ShouldThrowIllegalArgumentException() {
         // Arrange
-        User user = new User();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
+        userDTO.setUsername("testuser");
+        userDTO.setPassword("password");
+        userDTO.setRoleIds(null);
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userServiceImpl.createUser(user, null));
+                () -> userServiceImpl.createUser(userDTO));
 
         assertEquals("Un usuario debe tener al menos un rol", exception.getMessage());
     }
@@ -49,12 +57,14 @@ public class UserServiceTest {
     @Test
     void createUser_WhenRoleIdsIsEmpty_ShouldThrowException() {
         // Arrange
-        User user = new User();
-        Set<Long> emptyRoles = Set.of();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
+        userDTO.setUsername("testuser");
+        userDTO.setPassword("password");
+        userDTO.setRoleIds(Collections.emptySet());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userServiceImpl.createUser(user, emptyRoles));
+                () -> userServiceImpl.createUser(userDTO));
 
         assertEquals("Un usuario debe tener al menos un rol", exception.getMessage());
     }
@@ -62,24 +72,44 @@ public class UserServiceTest {
     @Test
     public void createUser_WhenRolesDontExist_ShouldThrowIllegalArgumentException() {
         // Arrange
-        User user = new User();
-        Set<Long> roleIds = Set.of(1L, 2L);
+        RegisterUserDTO userDTO = new RegisterUserDTO();
+        userDTO.setUsername("testuser");
+        userDTO.setPassword("password");
+        userDTO.setRoleIds(Set.of(1L, 2L));
 
-        when(roleRepository.findAllById(roleIds)).thenReturn(new ArrayList<>());
+        when(roleRepository.findAllById(userDTO.getRoleIds())).thenReturn(new ArrayList<>());
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> userServiceImpl.createUser(user, roleIds));
+                () -> userServiceImpl.createUser(userDTO));
 
         assertEquals("Los roles proporcionados no existen", exception.getMessage());
     }
 
     @Test
+    public void createUser_WhenUsernameExists_ShouldThrowIllegalArgumentException() {
+        // Arrange
+        RegisterUserDTO userDTO = new RegisterUserDTO();
+        userDTO.setUsername("existinguser");
+        userDTO.setPassword("password");
+        userDTO.setRoleIds(Set.of(1L));
+
+        when(userRepository.existsByUsername(userDTO.getUsername())).thenReturn(true);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> userServiceImpl.createUser(userDTO));
+
+        assertEquals("El nombre de usuario ya está en uso", exception.getMessage());
+    }
+
+    @Test
     public void createUser_WhenValidUserAndRoles_ShouldCreateUserAndUserRoles() {
         // Arrange
-        User user = new User();
-        user.setUsername("testuser");
-        user.setPassword("password");
+        RegisterUserDTO userDTO = new RegisterUserDTO();
+        userDTO.setUsername("testuser");
+        userDTO.setPassword("password");
+        userDTO.setRoleIds(Set.of(1L, 2L));
 
         Role role1 = new Role();
         role1.setId(1L);
@@ -89,10 +119,11 @@ public class UserServiceTest {
         role2.setId(2L);
         role2.setName("ROLE_USER");
 
-        Set<Long> roleIds = Set.of(role1.getId(), role2.getId());
         List<Role> roles = List.of(role1, role2);
 
-        when(roleRepository.findAllById(roleIds)).thenReturn(roles);
+        when(userRepository.existsByUsername(userDTO.getUsername())).thenReturn(false);
+        when(roleRepository.findAllById(userDTO.getRoleIds())).thenReturn(roles);
+        when(passwordEncoder.encode(userDTO.getPassword())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             savedUser.setId(1L);
@@ -100,17 +131,19 @@ public class UserServiceTest {
         });
 
         // Act
-        User createdUser = userServiceImpl.createUser(user, roleIds);
+        User createdUser = userServiceImpl.createUser(userDTO);
 
         // Assert
         assertNotNull(createdUser);
         assertEquals("testuser", createdUser.getUsername());
-        assert createdUser.getId() == 1L;
+        assertEquals("encodedPassword", createdUser.getPassword());
+        assertEquals(1L, createdUser.getId());
 
-        verify(roleRepository, times(1)).findAllById(roleIds);
+        verify(userRepository, times(1)).existsByUsername(userDTO.getUsername());
+        verify(roleRepository, times(1)).findAllById(userDTO.getRoleIds());
+        verify(passwordEncoder, times(1)).encode(userDTO.getPassword());
         verify(userRepository, times(1)).save(any(User.class));
     }
-
 
     @Test
     public void updateUser_WhenRoleIdsIsNull_ShouldThrowIllegalArgumentException() {
@@ -342,7 +375,7 @@ public class UserServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> userServiceImpl.addRolesToUser(userId, roleIds));
 
-        assertEquals("Usuario no encontrado", exception.getMessage());
+        assertEquals("Usuario no encontrado con ID: " + userId, exception.getMessage());
         verify(roleRepository, never()).findAllById(any());
     }
 
@@ -383,7 +416,7 @@ public class UserServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> userServiceImpl.removeRolesFromUser(userId, roleIds));
 
-        assertEquals("Usuario no encontrado", exception.getMessage());
+        assertEquals("Usuario no encontrado con ID: " + userId, exception.getMessage());
         verify(userRoleRepository, never()).countByUser(any());
     }
 
@@ -501,4 +534,4 @@ public class UserServiceTest {
         user.setUserRoles(new HashSet<>(Set.of(ur1, ur2, ur3, ur4)));
         return user;
     }
-}*/
+}

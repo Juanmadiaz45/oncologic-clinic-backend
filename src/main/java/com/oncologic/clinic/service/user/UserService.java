@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-    User registerUser(RegisterUserDTO userDTO);
+    User createUser(RegisterUserDTO userDTO);
 
     User updateUser(User user, Set<Long> roleIds);
 

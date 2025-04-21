@@ -12,7 +12,6 @@ import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
 import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,18 +29,17 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public User registerUser(RegisterUserDTO userDTO) {
+    public User createUser(RegisterUserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
@@ -131,7 +129,7 @@ public class UserServiceImpl implements UserService {
         for (User user : allUsers) {
             List<String> roles = extractRoles(user);
 
-            if (user.getPatient() != null){
+            if (user.getPatient() != null) {
                 Patient patient = user.getPatient();
                 patients.add(new UserInfoDTO(
                         user.getUsername(),
@@ -235,19 +233,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    private void addRolesToUser(User user, Set<Role> roles) {
-        Set<Long> existingRoleIds = user.getUserRoles().stream()
-                .map(ur -> ur.getRole().getId())
-                .collect(Collectors.toSet());
-
+    private void addRolesToUser(User savedUser, Set<Role> roles) {
         for (Role role : roles) {
-            if (existingRoleIds.contains(role.getId())) {
-                throw new IllegalArgumentException("El usuario ya tiene asignado el rol: " + role.getName());
+            UserRoleId id = new UserRoleId(savedUser.getId(), role.getId());
+            if (!userRoleRepository.existsById(id)) {
+                UserRole userRole = new UserRole(id, savedUser, role);
+                savedUser.getUserRoles().add(userRole);
             }
-
-            UserRoleId id = new UserRoleId(user.getId(), role.getId());
-            UserRole userRole = new UserRole(id, user, role);
-            user.getUserRoles().add(userRole);
         }
     }
 }

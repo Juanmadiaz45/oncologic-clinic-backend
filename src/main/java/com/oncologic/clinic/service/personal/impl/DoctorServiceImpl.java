@@ -3,7 +3,6 @@ package com.oncologic.clinic.service.personal.impl;
 import com.oncologic.clinic.dto.SpecialityDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
-import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
@@ -32,7 +31,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public Doctor registerDoctor(RegisterDoctorDTO doctorDTO) {
-        User user = userService.registerUser(doctorDTO);
+        User user = userService.createUser(doctorDTO);
 
         Doctor doctor = new Doctor();
         doctor.setUser(user);

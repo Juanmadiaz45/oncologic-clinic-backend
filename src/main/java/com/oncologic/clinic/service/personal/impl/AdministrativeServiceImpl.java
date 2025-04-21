@@ -24,7 +24,7 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     @Override
     @Transactional
     public Administrative registerAdministrative(RegisterAdministrativeDTO administrativeDTO) {
-        User user = userService.registerUser(administrativeDTO);
+        User user = userService.createUser(administrativeDTO);
 
         Administrative administrative = new Administrative();
         administrative.setUser(user);
