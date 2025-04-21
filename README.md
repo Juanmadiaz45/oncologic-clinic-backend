@@ -1,16 +1,19 @@
-# Final Project
+# **OncoLogic Clinic Management System**
 
-## JPA Workshop with Spring Boot
+**OncoLogic** is a web-based platform designed to optimize the administrative and operational management of an oncology
+clinic in Cali. The system centralizes and automates key processes such as:
+
+- 🩺 **Medical and administrative staff management** (registration, specialties, schedules).
+- 📋 **Patient administration** (medical records, treatment monitoring).
+- 🗓️ **Smart appointment scheduling** (consultations, exams, automatic doctor/office assignment).
+- 🔬 **Laboratory integration** (exam and results management).
+- 🔒 **Robust security** (user authentication and role-based access control).
 
 ### Authors
 
 - Santiago Valencia - A00395902
 - Juan Manuel Díaz - A00394477
 - Esteban Gaviria - A00396019
-
-### Description
-
-This project is a backend developed with Spring Boot that allows consuming information from the final project database, Clínica OncoLogic, using Hibernate through Spring Data JPA.
 
 ### Technologies Used
 
@@ -34,15 +37,16 @@ This project is a backend developed with Spring Boot that allows consuming infor
 
 2. **Set up the database with Docker**
 
-    This project uses PostgreSQL as the database. Two environments have been defined in `docker-compose.yml`: one for development (`clinic_dev`) and one for testing (`clinic_test`).
+   This project uses PostgreSQL as the database. Two environments have been defined in `docker-compose.yml`: one for
+   development (`clinic_dev`) and one for testing (`clinic_test`).
 
-    To start the PostgreSQL containers, run:
+   To start the PostgreSQL containers, run:
 
     ```bash
     docker compose up -d
     ```
 
-    This will create two databases:
+   This will create two databases:
 
     - Development: `clinic_dev` (port 5435)
     - Testing: `clinic_test` (port 5436)
@@ -54,17 +58,17 @@ This project is a backend developed with Spring Boot that allows consuming infor
     ./mvnw spring-boot:run
     ```
 
-    The API will be available at: `http://localhost:8081`
+   The API will be available at: [http://localhost:8080/g5/siscom/](http://localhost:8080/g5/siscom/)
 
 4. **Run tests and generate the report**
 
-    Run the unit tests with:
+   Run the unit tests with:
 
     ```bash
     ./mvnw clean test
     ```
 
-    Then, generate the coverage report with:
+   Then, generate the coverage report with:
 
     ```bash
     ./mvnw jacoco:report
@@ -72,84 +76,49 @@ This project is a backend developed with Spring Boot that allows consuming infor
 
 5. **View the results**
 
-    The coverage report will be generated at:
+   The coverage report will be generated at:
 
-    `target/site/jacoco/index.html`
+   `target/site/jacoco/index.html`
 
-    Open this file in a browser to view the code coverage.
+   Open this file in a browser to view the code coverage.
 
-### Deployment
+### **Application Deployment**
 
-The application is deployed on an Apache Tomcat server. You can access it at the following URL:
+The application is hosted on an **Apache Tomcat server** (PC 206M). Use one of the following URLs to access it:
 
-[http://localhost:8081/g5/siscom/](http://localhost:8081/g5/siscom/)
+- **Local network (IASLAB connection):**  
+  [http://192.168.131.21:8080/g5/siscom/](http://192.168.131.21:8080/g5/siscom/)
+- **Remote access (ZeroTier VPN):**  
+  [http://10.147.19.21:8080/g5/siscom/](http://10.147.19.21:8080/g5/siscom/)
 
 ### Default Users and Passwords
 
 You can log into the web application using the following default credentials:
 
-| Username           | Password            | Role / Description        |
-|--------------------|---------------------|----------------------------|
-| **admin**          | `admin`          | Full access (superuser)   |
-| **admin2**         | `admin2`            | Full access (superuser)   |
-| **doctor1**        | `doctor123`         | Medical personnel         |
-| **doctor2**        | `doctor123`         | Medical personnel         |
-| **doctor3**        | `doctor123`         | Medical personnel         |
-| **patient1**       | `patient123`        | Patient                   |
-| **patient2**       | `patient123`        | Patient                   |
-| **labtech1**       | `lab123`            | Laboratory technician     |
-| **administrative1**| `administrative123` | Administrative staff      |
+| Username            | Password            | Role / Description      |
+|---------------------|---------------------|-------------------------|
+| **admin**           | `admin`             | Full access (superuser) |
+| **admin2**          | `admin2`            | Full access (superuser) |
+| **doctor1**         | `doctor123`         | Medical personnel       |
+| **doctor2**         | `doctor123`         | Medical personnel       |
+| **doctor3**         | `doctor123`         | Medical personnel       |
+| **patient1**        | `patient123`        | Patient                 |
+| **patient2**        | `patient123`        | Patient                 |
+| **labtech1**        | `lab123`            | Laboratory technician   |
+| **administrative1** | `administrative123` | Administrative staff    |
 
 > **Note:**  
-> The users **admin** and **admin2** have full access to all core functionalities, including:
+> The users admin and admin2 have full access to all core functionalities from
+> the [MVC Workshop Assignment](https://docs.google.com/document/d/1Py-Sxh_E5yLJ0SNuNIP1N5Qo8y5lQbc0/edit?tab=t.0),
+> including:
+> - Log in
+> - Register new users
+> - List all users
+> - Create roles
+> - Associate permissions to a role
+> - Assign roles to users
+> - Delete roles
+> - Remove roles from users
+    > ![Evidence MVC delivery](ANNEXES/evidence-mvc-delivery.png)
 
-- Log in
-- Register new users
-- List all users
-- Create roles
-- Associate permissions to a role
-- Assign roles to users
-- Delete roles
-- Remove roles from users
 
-### Commit Message Guidelines
-
-We follow the **Conventional Commits** standard for writing commit messages.
-This ensures a clear and consistent history of changes.
-
-#### Commit Structure
-
-```
-type(scope): short description
-
-[optional body]
-
-[optional footer]
-```
-
-#### Types
-
-- `feat`: A new feature.
-- `fix`: A bug fix.
-- `docs`: Documentation changes.
-- `style`: Formatting or linting changes.
-- `refactor`: Code changes that neither fix a bug nor add a feature.
-- `test`: Adding or updating tests.
-- `chore`: Maintenance tasks.
-- `build`: Changes to the build system or dependencies.
-- `ci`: Changes to CI/CD configurations.
-- `perf`: Performance improvements.
-- `revert`: Reverts a previous commit.
-
-#### Examples
-
-- `feat(auth): add user authentication`
-- `fix(api): resolve null pointer exception in user endpoint`
-- `docs: update readme with installation instructions`
-
-#### Best Practices
-
-1. Write commit messages in **lowercase**.
-2. Keep the short description under **50 characters**.
-3. Use the body to explain the **what** and **why** of the change.
-4. Reference issues or tickets in the footer (e.g., `closes #123`).
