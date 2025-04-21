@@ -18,7 +18,7 @@
                     </a>
                 </div>
                 <a class="navbar-brand" th:href="@{/dashboard}">
-                    <img src="/images/oncologic-logo-without-background.png" alt="Clínica OncoLogic" class="logo-navbar">
+                    <img th:src="@{/images/oncologic-logo-without-background.png}" alt="Clínica OncoLogic" class="logo-navbar">
                 </a>
             </div>
         </nav>
@@ -89,10 +89,12 @@
                                         <div class="mb-3">
                                             <label class="form-label">Seleccionar Roles</label>
                                             <div th:each="role : ${roles}" class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                       th:id="'role-' + ${role.id}"
-                                                       th:value="${role.id}"
-                                                       th:field="*{roleIds}">
+                                                <label>
+                                                    <input class="form-check-input" type="checkbox"
+                                                           th:id="'role-' + ${role.id}"
+                                                           th:value="${role.id}"
+                                                           th:field="*{roleIds}">
+                                                </label>
                                                 <label class="form-check-label" th:for="'role-' + ${role.id}" th:text="${role.name}"></label>
                                             </div>
                                             <div th:if="${#fields.hasErrors('roleIds')}" class="text-danger small mt-1" th:errors="*{roleIds}"></div>

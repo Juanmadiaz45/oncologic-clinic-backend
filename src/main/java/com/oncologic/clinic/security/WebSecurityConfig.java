@@ -13,6 +13,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -22,12 +23,15 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/doctor/**").hasRole("DOCTOR")
-                        .requestMatchers("/paciente/**").hasRole("PACIENTE")
-                        .requestMatchers("/", "/login", "/css/**").permitAll()
+                        .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN")
+                        .requestMatchers("/patient/registry", "/patient/create", "/patient/new")
+                        .hasAnyRole("ADMIN", "DOCTOR", "ADMINISTRATIVE")
+                        .requestMatchers("/administrative/**").hasAnyRole("ADMIN", "ADMINISTRATIVE")
+                        .requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR")
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(login -> login
                         .loginPage("/login")
                         .successHandler(successHandler())
@@ -45,14 +49,16 @@ public class WebSecurityConfig {
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
+            String contextPath = request.getContextPath();
+
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
-            if (isAdmin) {
-                response.sendRedirect("/dashboard");
-            } else {
-                response.sendRedirect("/welcome");
-            }
+            if (isAdmin)
+                response.sendRedirect(contextPath + "/dashboard");
+            else
+                response.sendRedirect(contextPath + "/welcome");
+
         };
     }
 }

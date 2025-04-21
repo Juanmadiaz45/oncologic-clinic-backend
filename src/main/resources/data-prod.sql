@@ -1,6 +1,6 @@
 -- Inicialización de USERS
 INSERT INTO USERS (id, username, password)
-VALUES (1, 'admin', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9cS'); -- password: admin123
+VALUES (1, 'admin', '$2a$12$2TY0tg4iQBgTLDv8rhyReOS/lWg9pP8Aig88s0Q3jLaSO4JwUcLNy'); -- password: admin123
 INSERT INTO USERS (id, username, password)
 VALUES (2, 'doctor1', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW'); -- password: doctor123
 INSERT INTO USERS (id, username, password)
@@ -10,10 +10,16 @@ VALUES (4, 'patient1', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfy
 INSERT INTO USERS (id, username, password)
 VALUES (5, 'patient2', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
 INSERT INTO USERS (id, username, password)
-VALUES (6, 'admin2', '$2a$12$qgN6W2UnfeM9q6D2uy06qeMYHModjN3dnKZFJ4kaRosEHOAr0f9cS'); -- password: admin123
+VALUES (6, 'admin2', '$2a$12$YSNziUwWGVXEEpMkDZBC0eNjQBMiqVn/BBAac./Q1AD8..FBuhI1y'); -- password: admin2
 INSERT INTO USERS (id, username, password)
-VALUES (7, 'doctor3', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW');
--- password: doctor123
+VALUES (7, 'doctor3', '$2a$12$pzLfcJuQMsglbeJs1DiZIu0jdBILaQ1paMyAlre8X3j5UEH946jcW'); -- password: doctor123
+INSERT INTO USERS (id, username, password)
+VALUES (8, 'labtech1', '$2a$12$qNFiU2ZY7gPhOjGZNFqgsuMZw/YKIf9BKvKE8RIJiHE.xfV2f7d86'); -- password: lab123
+
+INSERT INTO USERS (id, username, password)
+VALUES (9, 'administrative1', '$2a$12$Ne0e0Y2V7CPWEVOJ6Y3fIOkPsmWj56AQtx/vO1JBcPVCDqQaomwGO');
+-- password: administrative123
+
 
 -- Inicialización de ROLES
 INSERT INTO ROLES (id, name)
@@ -22,6 +28,11 @@ INSERT INTO ROLES (id, name)
 VALUES (2, 'ROLE_DOCTOR');
 INSERT INTO ROLES (id, name)
 VALUES (3, 'ROLE_PATIENT');
+INSERT INTO ROLES (id, name)
+VALUES (4, 'ROLE_ADMINISTRATIVE');
+INSERT INTO ROLES (id, name)
+VALUES (5, 'ROLE_LAB_TECHNICIAN');
+
 
 -- Inicialización de USER_ROLES
 INSERT INTO USER_ROLES (user_id, role_id)
@@ -38,6 +49,12 @@ INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (6, 1);
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (7, 2);
+INSERT INTO USER_ROLES (user_id, role_id)
+VALUES (8, 5); -- labtech1 -> LAB_TECHNICIAN
+INSERT INTO USER_ROLES (user_id, role_id)
+VALUES (9, 4);
+-- administrative1 -> ADMINITRATIVE
+
 
 -- Inicialización de PERMISSIONS
 INSERT INTO PERMISSIONS (id, name)
@@ -106,6 +123,14 @@ VALUES (4, 'ADM002', 'Laura', 'Martínez', 'laura.martinez@hospital.com', '555-4
 INSERT INTO PERSONAL (id, id_number, name, last_name, email, phone_number, date_of_hiring, status, user_id)
 VALUES (5, 'DOC002', 'Pedro', 'Sánchez', 'pedro.sanchez@hospital.com', '555-5678', TIMESTAMP '2022-05-15 00:00:00', 'A',
         7);
+INSERT INTO PERSONAL (id, id_number, name, last_name, email, phone_number, date_of_hiring, status, user_id)
+VALUES (6, 'LAB001', 'Andrés', 'Mejía', 'andres.mejia@hospital.com', '555-8901', TIMESTAMP '2022-06-01 00:00:00', 'A',
+        8);
+
+INSERT INTO PERSONAL (id, id_number, name, last_name, email, phone_number, date_of_hiring, status, user_id)
+VALUES (7, 'ADM002', 'Elena', 'Morales', 'elena.morales@hospital.com', '555-9012', TIMESTAMP '2022-06-15 00:00:00', 'A',
+        9);
+
 
 -- Inicialización de DOCTORS
 INSERT INTO DOCTORS (id, medical_license_number)
