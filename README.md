@@ -90,7 +90,7 @@ You can log into the web application using the following default credentials:
 
 | Username           | Password            | Role / Description        |
 |--------------------|---------------------|----------------------------|
-| **admin**          | `admin123`          | Full access (superuser)   |
+| **admin**          | `admin`          | Full access (superuser)   |
 | **admin2**         | `admin2`            | Full access (superuser)   |
 | **doctor1**        | `doctor123`         | Medical personnel         |
 | **doctor2**        | `doctor123`         | Medical personnel         |
