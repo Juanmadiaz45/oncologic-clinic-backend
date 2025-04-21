@@ -1,36 +1,35 @@
 package com.oncologic.clinic.service.availability.impl;
 
-import com.oncologic.clinic.entity.appointment.MedicalAppointment;
-import com.oncologic.clinic.service.appointment.MedicalAppointmentService;
+import com.oncologic.clinic.entity.availability.Availability;
+import com.oncologic.clinic.service.availability.AvailabilityService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class AvailabilityServiceImpl implements MedicalAppointmentService {
-
+public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
-    public MedicalAppointment getMedicalAppointmentById(Long id) {
+    public Availability getAvailabilityById(Long id) {
         return null;
     }
 
     @Override
-    public List<MedicalAppointment> getAllMedicalAppointments() {
+    public List<Availability> getAllAvailabilities() {
         return List.of();
     }
 
     @Override
-    public MedicalAppointment createMedicalAppointment(MedicalAppointment appointment) {
+    public Availability createAvailability(Availability availability) {
         return null;
     }
 
     @Override
-    public MedicalAppointment updateMedicalAppointment(MedicalAppointment appointment) {
+    public Availability updateAvailability(Availability availability) {
         return null;
     }
 
     @Override
-    public void deleteMedicalAppointment(Long id) {
+    public void deleteAvailability(Long id) {
 
     }
 }

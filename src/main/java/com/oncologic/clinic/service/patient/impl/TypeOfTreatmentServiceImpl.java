@@ -1,35 +1,35 @@
 package com.oncologic.clinic.service.patient.impl;
 
-import com.oncologic.clinic.entity.appointment.MedicalAppointment;
-import com.oncologic.clinic.service.appointment.MedicalAppointmentService;
+import com.oncologic.clinic.entity.patient.TypeOfTreatment;
+import com.oncologic.clinic.service.patient.TypeOfTreatmentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class TypeOfTreatmentServiceImpl implements MedicalAppointmentService {
+public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
     @Override
-    public MedicalAppointment getMedicalAppointmentById(Long id) {
+    public TypeOfTreatment getTypeOfTreatmentById(Long id) {
         return null;
     }
 
     @Override
-    public List<MedicalAppointment> getAllMedicalAppointments() {
+    public List<TypeOfTreatment> getAllTypesOfTreatment() {
         return List.of();
     }
 
     @Override
-    public MedicalAppointment createMedicalAppointment(MedicalAppointment appointment) {
+    public TypeOfTreatment createTypeOfTreatment(TypeOfTreatment type) {
         return null;
     }
 
     @Override
-    public MedicalAppointment updateMedicalAppointment(MedicalAppointment appointment) {
+    public TypeOfTreatment updateTypeOfTreatment(TypeOfTreatment type) {
         return null;
     }
 
     @Override
-    public void deleteMedicalAppointment(Long id) {
+    public void deleteTypeOfTreatment(Long id) {
 
     }
 }
