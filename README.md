@@ -89,6 +89,29 @@ The application is deployed on an Apache Tomcat server. You can access it at the
 We follow the **Conventional Commits** standard for writing commit messages.
 This ensures a clear and consistent history of changes.
 
+## Default Users and Passwords
+
+You can log into the web application using the following default credentials:
+
+| Username | Password  | Role     |
+|----------|-----------|----------|
+| admin    | admin123  | Admin    |
+| admin2   | admin123  | Admin    |
+| user1    | user123   | Standard |
+| user2    | user123   | Standard |
+
+> **Note:**  
+> The users **admin** and **admin2** have full access to all core functionalities, including:
+
+- Log in
+- Register new users
+- List all users
+- Create roles
+- Associate permissions to a role
+- Assign roles to users
+- Delete roles
+- Remove roles from users
+
 #### Commit Structure
 
 ```
