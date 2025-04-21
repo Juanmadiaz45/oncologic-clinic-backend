@@ -1,11 +1,10 @@
 package com.oncologic.clinic.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.service.user.RoleService;
 import com.oncologic.clinic.service.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,82 +25,97 @@ public class UserRoleController {
         this.roleService = roleService;
     }
 
-    @GetMapping("/assign")
-    public String showAssignRoleForm(Model model) throws JsonProcessingException {
+    @GetMapping("/manage")
+    public String showManageRolesForm(Model model) {
         List<User> users = userService.getAllUsers();
-        model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("roles", roleService.getAllRoles());
-        Map<Long, List<Long>> userRolesMap = new HashMap<>();
+        List<Role> roles = roleService.getAllRoles();
 
-        for (User user : users) {
-            List<Long> roleIds = user.getUserRoles().stream()
-                    .map(userRole -> userRole.getRole().getId())
-                    .collect(Collectors.toList());
+        Map<Long, Set<Long>> userRolesMap = users.stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        user -> user.getUserRoles().stream()
+                                .map(ur -> ur.getRole().getId())
+                                .collect(Collectors.toSet())
+                ));
 
-            userRolesMap.put(user.getId(), roleIds);
-        }
+        model.addAttribute("users", users);
+        model.addAttribute("roles", roles);
+        model.addAttribute("userRolesMap", userRolesMap);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String userRolesMapJson = mapper.writeValueAsString(userRolesMap);
-
-        model.addAttribute("userRolesMapJson", userRolesMapJson);
-        return "assign-role";
+        return "manage-roles";
     }
 
-    @PostMapping("/assign")
-    public String assignRoleToUser(
-            @RequestParam Long userId,
-            @RequestParam(value = "roleIds", required = false) Set<Long> roleIds,
+    @PostMapping("/manage")
+    public String manageUserRoles(
+            HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
 
         try {
-            if (roleIds == null) {
-                roleIds = new HashSet<>();
+            Map<String, String[]> parameters = request.getParameterMap();
+
+            Map<Long, Set<Long>> userRoles = new HashMap<>();
+
+            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+                if (entry.getKey().startsWith("userRoles[")) {
+                    String key = entry.getKey();
+                    Long userId = Long.parseLong(
+                            key.substring("userRoles[".length(), key.length() - 1)
+                    );
+
+                    Set<Long> roleIds = new HashSet<>();
+                    String[] values = entry.getValue();
+
+                    if (values != null) {
+                        for (String value : values) {
+                            if (!value.isEmpty()) {
+                                roleIds.add(Long.parseLong(value));
+                            }
+                        }
+                    }
+
+                    userRoles.put(userId, roleIds);
+                }
             }
 
-            userService.addRolesToUser(userId, roleIds);
-            redirectAttributes.addFlashAttribute("successMessage", "Roles asignados correctamente al usuario");
-            return "redirect:/dashboard?roleAssigned";
+            processRoleChanges(userRoles);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Roles actualizados correctamente"
+            );
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/users/roles/assign";
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Error al actualizar roles: " + e.getMessage()
+            );
+            e.printStackTrace();
         }
+
+        return "redirect:/users/roles/manage";
     }
 
-    @GetMapping("/remove")
-    public String showRemoveRoleForm(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
-        return "remove-role";
-    }
+    private void processRoleChanges(Map<Long, Set<Long>> newUserRoles) {
+        for (Map.Entry<Long, Set<Long>> entry : newUserRoles.entrySet()) {
+            Long userId = entry.getKey();
+            Set<Long> newRoleIds = entry.getValue();
 
-    @GetMapping("/user-roles")
-    @ResponseBody
-    public List<Map<String, Object>> getUserRoles(@RequestParam Long userId) {
-        User user = userService.getUserById(userId);
-        return user.getUserRoles().stream()
-                .map(userRole -> {
-                    Role role = userRole.getRole();
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", role.getId());
-                    map.put("name", role.getName());
-                    return map;
-                })
-                .toList();
-    }
+            Set<Long> currentRoleIds = userService.getUserById(userId).getUserRoles().stream()
+                    .map(ur -> ur.getRole().getId())
+                    .collect(Collectors.toSet());
 
-    @PostMapping("/remove")
-    public String removeRoleFromUser(
-            @RequestParam Long userId,
-            @RequestParam Set<Long> roleIds,
-            RedirectAttributes redirectAttributes) {
+            Set<Long> rolesToAdd = new HashSet<>(newRoleIds);
+            rolesToAdd.removeAll(currentRoleIds);
 
-        try {
-            userService.removeRolesFromUser(userId, roleIds);
-            redirectAttributes.addFlashAttribute("successMessage", "Roles eliminados correctamente del usuario");
-            return "redirect:/dashboard?roleRemoved";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/users/roles/remove";
+            Set<Long> rolesToRemove = new HashSet<>(currentRoleIds);
+            rolesToRemove.removeAll(newRoleIds);
+
+            if (!rolesToAdd.isEmpty()) {
+                userService.addRolesToUser(userId, rolesToAdd);
+            }
+            if (!rolesToRemove.isEmpty()) {
+                userService.removeRolesFromUser(userId, rolesToRemove);
+            }
         }
     }
 }

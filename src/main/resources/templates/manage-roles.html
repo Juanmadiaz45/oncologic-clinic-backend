@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eliminar Roles | Clínica OncoLogic</title>
-
+    <title>Gestión de Roles | Clínica OncoLogic</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/common-styles.css}">
 </head>
 <body class="home-body">
-
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
 <div id="sidebarMenu" class="sidebar-menu">
@@ -41,10 +39,10 @@
 
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card remove-role-card shadow-sm">
-                <div class="card-header remove-role-header bg-danger text-white">
-                    <h4 class="mb-0"><i class="bi bi-person-x me-2"></i>Eliminar Roles de Usuario</h4>
+        <div class="col-12">
+            <div class="card roles-card shadow-sm">
+                <div class="card-header roles-header text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-gear me-2"></i>Gestión de Roles de Usuario</h4>
                 </div>
                 <div class="card-body">
                     <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -57,29 +55,44 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                     </div>
 
-                    <form th:action="@{/users/roles/remove}" method="post">
+                    <form id="rolesForm" th:action="@{/users/roles/manage}" method="post">
                         <div class="mb-3">
-                            <label for="user" class="form-label">Seleccionar Usuario</label>
-                            <select class="form-select" id="user" name="userId" required>
-                                <option value="">Seleccione un usuario</option>
-                                <option th:each="user : ${users}"
-                                        th:value="${user.id}"
-                                        th:text="${user.username}"></option>
-                            </select>
+                            <p class="text-muted">
+                                Seleccione o deseleccione los roles para cada usuario y haga clic en "Guardar Cambios" para aplicar las modificaciones.
+                            </p>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Roles Asignados</label>
-                            <div id="userRolesContainer" class="row">
-                                <div class="col-12 text-muted">
-                                    Seleccione un usuario para ver sus roles
-                                </div>
+                        <div class="table-container">
+                            <div class="roles-table-container">
+                                <table class="roles-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th th:each="role : ${roles}" th:text="${role.name}"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="user : ${users}">
+                                        <td th:text="${user.username}"></td>
+                                        <td th:each="role : ${roles}">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input type="checkbox"
+                                                       class="form-check-input role-checkbox"
+                                                       th:id="'role_' + ${user.id} + '_' + ${role.id}"
+                                                       th:name="'userRoles[' + ${user.id} + ']'"
+                                                       th:value="${role.id}"
+                                                       th:checked="${userRolesMap[user.id] != null && userRolesMap[user.id].contains(role.id)}">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-danger" id="submitBtn" disabled>
-                                <i class="bi bi-trash3 me-1"></i> Eliminar Roles Seleccionados
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary-clinic" id="submitBtn">
+                                <i class="bi bi-save me-1"></i> Guardar Cambios
                             </button>
                             <a th:href="@{/dashboard}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-1"></i> Cancelar
@@ -96,9 +109,11 @@
     <p class="text-muted small mb-0">© 2025 Clínica OncoLogic. Todos los derechos reservados.</p>
 </footer>
 
-<!-- Scripts -->
+<script th:inline="javascript">
+    const userRolesMap = /*[[${userRolesMap}]]*/ {};
+</script>
 <script th:src="@{/js/dashboard.js}"></script>
-<script th:src="@{/js/remove-role.js}"></script>
+<script th:src="@{/js/manage-roles.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

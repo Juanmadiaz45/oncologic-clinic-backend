@@ -286,3 +286,87 @@ body {
         padding: 0.35rem 0.6rem;
     }
 }
+
+.roles-table-container {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.roles-table {
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.roles-table th,
+.roles-table td {
+    padding: 12px 15px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.roles-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.roles-table th:first-child,
+.roles-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 5;
+    text-align: left;
+    font-weight: 500;
+    border-right: 1px solid #e9ecef;
+}
+
+.roles-table th:first-child {
+    background-color: #f8f9fa;
+    z-index: 15;
+}
+
+.form-check-input.role-checkbox {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.form-check-input.role-checkbox:checked {
+    background-color: #2e93cd;
+    border-color: #2e93cd;
+}
+
+.roles-header {
+    background-color: #2e93cd !important;
+    color: white;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.2rem;
+}
+
+.roles-card {
+    border-radius: 15px;
+    border: none;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.table-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.roles-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.roles-table tbody tr:hover {
+    background-color: #e9ecef;
+}
