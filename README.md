@@ -84,11 +84,6 @@ The application is deployed on an Apache Tomcat server. You can access it at the
 
 [http://localhost:8081/g5/siscom/](http://localhost:8081/g5/siscom/)
 
-### Commit Message Guidelines
-
-We follow the **Conventional Commits** standard for writing commit messages.
-This ensures a clear and consistent history of changes.
-
 ### Default Users and Passwords
 
 You can log into the web application using the following default credentials:
@@ -111,6 +106,11 @@ You can log into the web application using the following default credentials:
 - Assign roles to users
 - Delete roles
 - Remove roles from users
+
+### Commit Message Guidelines
+
+We follow the **Conventional Commits** standard for writing commit messages.
+This ensures a clear and consistent history of changes.
 
 #### Commit Structure
 
