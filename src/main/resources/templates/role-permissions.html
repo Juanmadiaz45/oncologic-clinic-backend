@@ -100,8 +100,9 @@
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                <a th:href="@{/roles/permissions(roleId=${selectedRole.id})}" class="btn btn-outline-secondary me-md-2">
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Restaurar Permisos
+                                <a th:href="@{/roles/permissions(roleId=${selectedRole.id})}"
+                                   class="btn btn-outline-secondary me-md-2">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Cancelar Cambios no Guardados
                                 </a>
                                 <button type="submit" class="btn btn-primary-clinic">
                                     <i class="bi bi-save me-1"></i> Guardar Permisos
