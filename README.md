@@ -89,7 +89,7 @@ The application is deployed on an Apache Tomcat server. You can access it at the
 We follow the **Conventional Commits** standard for writing commit messages.
 This ensures a clear and consistent history of changes.
 
-## Default Users and Passwords
+### Default Users and Passwords
 
 You can log into the web application using the following default credentials:
 
