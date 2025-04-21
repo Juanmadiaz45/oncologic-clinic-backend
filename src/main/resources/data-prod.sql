@@ -1,6 +1,6 @@
 -- Inicialización de USERS
 INSERT INTO USERS (id, username, password)
-VALUES (1, 'admin', '$2a$12$2TY0tg4iQBgTLDv8rhyReOS/lWg9pP8Aig88s0Q3jLaSO4JwUcLNy'); -- password: admin123
+VALUES (1, 'admin', '$2a$12$2TY0tg4iQBgTLDv8rhyReOS/lWg9pP8Aig88s0Q3jLaSO4JwUcLNy'); -- password: admin
 INSERT INTO USERS (id, username, password)
 VALUES (2, 'doctor1', '$2a$12$msRtpjySy3yDAmYsZ6J7a.Oggs1sxuOjN/UHrHtkTINdK9VcexDaW'); -- password: doctor123
 INSERT INTO USERS (id, username, password)
