@@ -78,6 +78,12 @@ This project is a backend developed with Spring Boot that allows consuming infor
 
     Open this file in a browser to view the code coverage.
 
+### Deployment
+
+The application is deployed on an Apache Tomcat server. You can access it at the following URL:
+
+[http://localhost:8081/g5/siscom/](http://localhost:8081/g5/siscom/)
+
 ### Commit Message Guidelines
 
 We follow the **Conventional Commits** standard for writing commit messages.
