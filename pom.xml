@@ -11,7 +11,7 @@
     <groupId>com.oncologic</groupId>
     <artifactId>clinic</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>clinic</name>
     <description>clinic</description>
     <url/>

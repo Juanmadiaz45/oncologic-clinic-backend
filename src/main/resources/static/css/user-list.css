@@ -1,0 +1,129 @@
+.user-list-body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background-color: #ffffff;
+}
+
+.logo-navbar {
+    height: 40px;
+}
+
+.btn-outline-primary-clinic {
+    color: #3b82f6;
+    border-color: #3b82f6;
+    transition: all 0.3s;
+}
+
+.btn-outline-primary-clinic:hover {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-primary-clinic {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    transition: all 0.3s;
+}
+
+.btn-primary-clinic:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.users-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.users-header {
+    background: linear-gradient(to right, #3b82f6, #2563eb);
+    padding: 15px 20px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin: 0 -1px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.users-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.users-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.user-role {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+.search-container {
+    margin-bottom: 20px;
+}
+
+.footer {
+    margin-top: auto;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pagination {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.pagination .page-link {
+    color: #3b82f6;
+}
+
+.pagination .page-link:hover {
+    color: #2563eb;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}
+
+.search-results-info {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 15px;
+}

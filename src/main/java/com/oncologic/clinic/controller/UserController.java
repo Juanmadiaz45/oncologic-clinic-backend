@@ -1,23 +1,28 @@
 package com.oncologic.clinic.controller;
 
-import com.oncologic.clinic.dto.info.UserListGroupedDTO;
 import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
+import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.service.patient.PatientService;
 import com.oncologic.clinic.service.personal.SpecialityService;
 import com.oncologic.clinic.service.personal.AdministrativeService;
 import com.oncologic.clinic.service.personal.DoctorService;
 import com.oncologic.clinic.service.user.RoleService;
 import com.oncologic.clinic.service.user.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 @RequestMapping("/users")
@@ -28,6 +33,9 @@ public class UserController {
     private final PatientService patientService;
     private final RoleService roleService;
     private final SpecialityService specialityService;
+
+    // Configuración del tamaño de página para la paginación
+    private static final int PAGE_SIZE = 20;
 
     public UserController(UserService userService,
                           DoctorService doctorService,
@@ -44,13 +52,44 @@ public class UserController {
     }
 
     @GetMapping
-    public String getGroupedUsers(Model model) {
-        UserListGroupedDTO groupedUsers = userService.listUsersGroupedByType();
-        model.addAttribute("doctors", groupedUsers.getDoctors());
-        model.addAttribute("administratives", groupedUsers.getAdministratives());
-        model.addAttribute("patients", groupedUsers.getPatients());
+    public String listUsers(
+            @RequestParam("page") Optional<Integer> page,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("search") Optional<String> search,
+            Model model) {
+
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(PAGE_SIZE);
+        String searchTerm = search.orElse("");
+
+        // Crear objeto Pageable para la paginación (páginas empiezan en 0)
+        Pageable pageable = PageRequest.of(currentPage - 1, pageSize);
+
+        // Obtener página de usuarios, con o sin término de búsqueda
+        Page<User> userPage;
+        if (searchTerm.isEmpty()) {
+            userPage = userService.getAllUsersPaginated(pageable);
+        } else {
+            userPage = userService.searchUsers(searchTerm, pageable);
+        }
+
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("searchTerm", searchTerm);
+
+        // Calcular las páginas a mostrar en la paginación
+        int totalPages = userPage.getTotalPages();
+        if (totalPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+
         return "user-list";
     }
+
+    // Mantener los demás métodos existentes sin cambios
 
     @GetMapping("/register/patient")
     public String formPatient(Model model) {
@@ -82,9 +121,9 @@ public class UserController {
 
     @PostMapping("/register/patient")
     public String registerPatient(@ModelAttribute("patient") RegisterPatientDTO patientDTO,
-                                    BindingResult bindingResult,
-                                    Model model,
-                                    RedirectAttributes redirectAttributes) {
+                                  BindingResult bindingResult,
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
         try {
             patientService.registerPatient(patientDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Paciente registrado exitosamente");
@@ -104,9 +143,9 @@ public class UserController {
 
     @PostMapping("/register/doctor")
     public String registerDoctor(@ModelAttribute("doctor") RegisterDoctorDTO doctorDTO,
-                                  BindingResult bindingResult,
-                                  Model model,
-                                  RedirectAttributes redirectAttributes) {
+                                 BindingResult bindingResult,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
         try {
             doctorService.registerDoctor(doctorDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Doctor registrado exitosamente");
@@ -127,9 +166,9 @@ public class UserController {
 
     @PostMapping("/register/administrative")
     public String registerAdministrative(@ModelAttribute("administrative") RegisterAdministrativeDTO administrativeDTO,
-                                          BindingResult bindingResult,
-                                          Model model,
-                                          RedirectAttributes redirectAttributes) {
+                                         BindingResult bindingResult,
+                                         Model model,
+                                         RedirectAttributes redirectAttributes) {
         try {
             administrativeService.registerAdministrative(administrativeDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Administrativo registrado exitosamente");

@@ -1,123 +1,159 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Usuarios | Clínica OncoLogic</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" th:href="@{/css/common-styles.css}">
+    <meta charset="UTF-8">
+    <title>Usuarios | Clínica OncoLogic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/user-list.css}">
 </head>
-    <body class="user-list-body">
+<body class="user-list-body">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
-      <div class="container">
-        <div class="d-flex align-items-center">
-          <a th:href="@{/dashboard}" class="btn btn-outline-primary-clinic me-2">
-            <i class="bi bi-arrow-left"></i> Volver
-          </a>
-        </div>
-        <a class="navbar-brand" th:href="@{/dashboard}">
-          <img th:src="@{/images/oncologic-logo-without-background.png}" alt="Clínica OncoLogic" class="logo-navbar">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a th:href="@{/dashboard}" class="btn btn-outline-primary-clinic">
+            <i class="bi bi-arrow-left me-1"></i> Volver
         </a>
-      </div>
-    </nav>
+        <img th:src="@{/images/oncologic-logo-without-background.png}" alt="Clínica OncoLogic" class="logo-navbar">
+    </div>
+</nav>
 
-    <div class="container mt-5 mb-5">
-      <h2 class="title mb-4">Listado de Usuarios</h2>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card users-card shadow-sm">
+                <div class="card-header users-header text-white">
+                    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Listado de Todos los Usuarios</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Formulario de búsqueda -->
+                    <div class="search-container">
+                        <form th:action="@{/users}" method="get" class="d-flex">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <label for="search"></label><input type="text" class="form-control" id="search"
+                                                                   name="search"
+                                                                   th:value="${searchTerm}"
+                                                                   placeholder="Buscar usuario por nombre o username...">
+                                <button type="submit" class="btn btn-primary-clinic">Buscar</button>
+                                <a th:if="${searchTerm != ''}" th:href="@{/users}"
+                                   class="btn btn-outline-secondary">Limpiar</a>
+                            </div>
+                        </form>
+                    </div>
 
-      <div class="row">
-            <!-- Administrativos -->
-            <div class="col-12 mb-4">
-              <h4 class="section-title"><i class="bi bi-person-vcard text-primary-clinic me-2"></i>Administrativos</h4>
-              <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle">
-                  <thead class="table-light">
-                  <tr>
-                    <th>Nombre completo</th>
-                    <th>Nombre de usuario</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Roles</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr th:each="admin : ${administratives}">
-                    <td th:text="${admin.fullName}"></td>
-                    <td th:text="${admin.username}"></td>
-                    <td th:text="${admin.phoneNumber}"></td>
-                    <td th:text="${admin.email}"></td>
-                    <td>
-                      <span th:each="role : ${admin.roles}" class="badge bg-primary-clinic me-1" th:text="${role}"></span>
-                    </td>
-                  </tr>
-                  </tbody>
-                </table>
-              </div>
+                    <!-- Información de resultados -->
+                    <div class="search-results-info" th:if="${userPage != null}">
+                        Mostrando <span th:text="${userPage.numberOfElements}"></span> de
+                        <span th:text="${userPage.totalElements}"></span> usuarios encontrados
+                        <span th:if="${searchTerm != ''}" th:text="'para la búsqueda: ' + ${searchTerm}"></span>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="users-table" id="usersTable">
+                            <thead>
+                            <tr>
+                                <th><i class="bi bi-person me-1"></i>Username</th>
+                                <th><i class="bi bi-card-text me-1"></i>Nombre Completo</th>
+                                <th><i class="bi bi-telephone me-1"></i>Teléfono</th>
+                                <th><i class="bi bi-envelope me-1"></i>Email</th>
+                                <th><i class="bi bi-person-gear me-1"></i>Roles</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${userPage.content}">
+                                <!-- Username -->
+                                <td th:text="${user.username}">username</td>
+
+                                <!-- Full Name (puede ser paciente o personal) -->
+                                <td th:text="${user.patient != null ? user.patient.name : user.personal.name + ' ' + user.personal.lastName}">
+                                    Nombre completo
+                                </td>
+
+                                <!-- Phone Number -->
+                                <td>
+                                    <i class="bi bi-telephone-fill me-1 text-secondary"></i>
+                                    <span th:text="${user.patient != null ? user.patient.phoneNumber : user.personal.phoneNumber}">
+                                            Teléfono
+                                        </span>
+                                </td>
+
+                                <!-- Email -->
+                                <td>
+                                    <i class="bi bi-envelope-fill me-1 text-secondary"></i>
+                                    <span th:text="${user.patient != null ? user.patient.email : user.personal.email}">
+                                            Email
+                                        </span>
+                                </td>
+
+                                <td>
+                                        <span th:each="role, iterStat : ${user.userRoles}" class="user-role">
+                                            <span th:text="${role.role.name}"></span>
+                                        </span>
+                                </td>
+                            </tr>
+                            <!-- Mensaje si no hay resultados -->
+                            <tr th:if="${userPage.totalElements == 0}">
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bi bi-search text-muted mb-2" style="font-size: 2rem;"></i>
+                                        <p class="mb-0">No se encontraron usuarios</p>
+                                        <p class="text-muted small"
+                                           th:if="${searchTerm != ''}">
+                                            Intenta con otros términos de búsqueda
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div th:if="${userPage.totalPages > 1}" class="mt-4">
+                        <nav aria-label="Paginación de usuarios">
+                            <ul class="pagination">
+                                <!-- Botón anterior -->
+                                <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/users(page=${currentPage - 1}, search=${searchTerm})}"
+                                       aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+
+                                <!-- Números de página -->
+                                <li class="page-item" th:each="pageNumber : ${pageNumbers}"
+                                    th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                                    <a class="page-link" th:href="@{/users(page=${pageNumber}, search=${searchTerm})}"
+                                       th:text="${pageNumber}"></a>
+                                </li>
+
+                                <!-- Botón siguiente -->
+                                <li class="page-item"
+                                    th:classappend="${currentPage == userPage.totalPages ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/users(page=${currentPage + 1}, search=${searchTerm})}"
+                                       aria-label="Siguiente">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
             </div>
-
-            <!-- Doctores -->
-            <div class="col-12 mb-4">
-              <h4 class="section-title"><i class="bi bi-heart-pulse text-primary-clinic me-2"></i>Doctores</h4>
-              <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle">
-                  <thead class="table-light">
-                  <tr>
-                    <th>Nombre completo</th>
-                    <th>Nombre de usuario</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Roles</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr th:each="doctor : ${doctors}">
-                    <td th:text="${doctor.fullName}"></td>
-                    <td th:text="${doctor.username}"></td>
-                    <td th:text="${doctor.phoneNumber}"></td>
-                    <td th:text="${doctor.email}"></td>
-                    <td>
-                      <span th:each="role : ${doctor.roles}" class="badge bg-primary-clinic me-1" th:text="${role}"></span>
-                    </td>
-                  </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Pacientes -->
-            <div class="col-12 mb-4">
-              <h4 class="section-title"><i class="bi bi-person-heart text-primary-clinic me-2"></i>Pacientes</h4>
-              <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle">
-                  <thead class="table-light">
-                  <tr>
-                    <th>Nombre completo</th>
-                    <th>Nombre de usuario</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Roles</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr th:each="patient : ${patients}">
-                    <td th:text="${patient.fullName}"></td>
-                    <td th:text="${patient.username}"></td>
-                    <td th:text="${patient.phoneNumber}"></td>
-                    <td th:text="${patient.email}"></td>
-                    <td>
-                      <span th:each="role : ${patient.roles}" class="badge bg-primary-clinic me-1" th:text="${role}"></span>
-                    </td>
-                  </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
+    </div>
+</div>
 
-        <!-- Optional JS if needed -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+<footer class="footer mt-auto text-center py-3">
+    <p class="text-muted small mb-0">© 2025 Clínica OncoLogic. Todos los derechos reservados.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
