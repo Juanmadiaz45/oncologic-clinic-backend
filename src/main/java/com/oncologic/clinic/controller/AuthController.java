@@ -14,4 +14,9 @@ public class AuthController {
     public String dashboard() {
         return "dashboard";
     }
+
+    @GetMapping("/welcome")
+    public String bienvenido() {
+        return "welcome";
+    }
 }
