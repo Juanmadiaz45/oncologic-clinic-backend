@@ -5,7 +5,6 @@ import com.oncologic.clinic.entity.patient.Patient;
 import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.service.patient.MedicalHistoryService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
