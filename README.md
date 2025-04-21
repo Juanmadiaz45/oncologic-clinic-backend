@@ -88,12 +88,17 @@ The application is deployed on an Apache Tomcat server. You can access it at the
 
 You can log into the web application using the following default credentials:
 
-| Username | Password  | Role     |
-|----------|-----------|----------|
-| admin    | admin123  | Admin    |
-| admin2   | admin123  | Admin    |
-| user1    | user123   | Standard |
-| user2    | user123   | Standard |
+| Username           | Password            | Role / Description        |
+|--------------------|---------------------|----------------------------|
+| **admin**          | `admin123`          | Full access (superuser)   |
+| **admin2**         | `admin2`            | Full access (superuser)   |
+| **doctor1**        | `doctor123`         | Medical personnel         |
+| **doctor2**        | `doctor123`         | Medical personnel         |
+| **doctor3**        | `doctor123`         | Medical personnel         |
+| **patient1**       | `patient123`        | Patient                   |
+| **patient2**       | `patient123`        | Patient                   |
+| **labtech1**       | `lab123`            | Laboratory technician     |
+| **administrative1**| `administrative123` | Administrative staff      |
 
 > **Note:**  
 > The users **admin** and **admin2** have full access to all core functionalities, including:
