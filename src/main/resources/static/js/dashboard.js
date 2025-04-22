@@ -12,4 +12,14 @@ document.addEventListener("DOMContentLoaded", function () {
         sidebarMenu.classList.remove("active");
         sidebarOverlay.classList.remove("active");
     });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('successMessage')) {
+        const toastBody = document.querySelector('.toast-body');
+        if (toastBody) {
+            toastBody.textContent = urlParams.get('successMessage');
+            const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+            successToast.show();
+        }
+    }
 });

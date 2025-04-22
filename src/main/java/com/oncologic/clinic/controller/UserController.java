@@ -126,15 +126,16 @@ public class UserController {
                                   RedirectAttributes redirectAttributes) {
         try {
             patientService.registerPatient(patientDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "Paciente registrado exitosamente");
-            return "redirect:/dashboard";
+            redirectAttributes.addAttribute("successMessage", "Paciente registrado exitosamente");
+            return "redirect:/users/register/patient";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("rol")) {
                 bindingResult.rejectValue("roleIds", "roleIds.empty", e.getMessage());
             } else if (e.getMessage().contains("nombre de usuario")) {
                 bindingResult.rejectValue("username", "username.duplicate", e.getMessage());
             } else {
-                model.addAttribute("errorMessage", e.getMessage());
+                redirectAttributes.addAttribute("error", e.getMessage());
+                return "redirect:/users/register/patient";
             }
             model.addAttribute("roles", roleService.getAllRoles());
             return "register-patient";
@@ -148,15 +149,16 @@ public class UserController {
                                  RedirectAttributes redirectAttributes) {
         try {
             doctorService.registerDoctor(doctorDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "Doctor registrado exitosamente");
-            return "redirect:/dashboard";
+            redirectAttributes.addAttribute("successMessage", "Doctor registrado exitosamente");
+            return "redirect:/users/register/doctor";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("rol")) {
                 bindingResult.rejectValue("roleIds", "roleIds.empty", e.getMessage());
             } else if (e.getMessage().contains("nombre de usuario")) {
                 bindingResult.rejectValue("username", "username.duplicate", e.getMessage());
             } else {
-                model.addAttribute("errorMessage", e.getMessage());
+                redirectAttributes.addAttribute("error", e.getMessage());
+                return "redirect:/users/register/doctor";
             }
             model.addAttribute("roles", roleService.getAllRoles());
             model.addAttribute("specialities", specialityService.getAllSpecialities());
@@ -171,15 +173,16 @@ public class UserController {
                                          RedirectAttributes redirectAttributes) {
         try {
             administrativeService.registerAdministrative(administrativeDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "Administrativo registrado exitosamente");
-            return "redirect:/dashboard";
+            redirectAttributes.addAttribute("successMessage", "Administrativo registrado exitosamente");
+            return "redirect:/users/register/administrative";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("rol")) {
                 bindingResult.rejectValue("roleIds", "roleIds.empty", e.getMessage());
             } else if (e.getMessage().contains("nombre de usuario")) {
                 bindingResult.rejectValue("username", "username.duplicate", e.getMessage());
             } else {
-                model.addAttribute("errorMessage", e.getMessage());
+                redirectAttributes.addAttribute("error", e.getMessage());
+                return "redirect:/users/register/administrative";
             }
             model.addAttribute("roles", roleService.getAllRoles());
             return "register-administrative";

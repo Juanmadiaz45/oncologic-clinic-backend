@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!strengthIndicator) return;
 
-            // Simple strength check (you can enhance this)
+            // Simple strength check
             if (password.length === 0) {
                 strengthIndicator.textContent = '';
             } else if (password.length < 6) {
@@ -49,4 +49,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('successMessage') || urlParams.has('error') || document.getElementById('errorMessage')?.textContent) {
+        if (typeof bootstrap !== 'undefined') {
+            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+            resultModal.show();
+        }
+    }
 });
+
+function redirectToDashboard() {
+    window.location.href = '/g5/siscom/dashboard';
+}

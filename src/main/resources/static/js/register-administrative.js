@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
         form.classList.add('was-validated');
     }, false);
 
-    // Validación en tiempo real
     const fields = form.querySelectorAll('input, select');
     fields.forEach(field => {
         field.addEventListener('input', function() {
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Validación especial para número de identificación (ejemplo)
     const idNumberInput = document.getElementById('idNumber');
     if (idNumberInput) {
         idNumberInput.addEventListener('input', function() {
@@ -37,4 +35,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('successMessage') || urlParams.has('error') || document.getElementById('errorMessage')?.textContent) {
+        if (typeof bootstrap !== 'undefined') {
+            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+            resultModal.show();
+        }
+    }
 });
+
+function redirectToDashboard() {
+    window.location.href = '/g5/siscom/dashboard';
+}
