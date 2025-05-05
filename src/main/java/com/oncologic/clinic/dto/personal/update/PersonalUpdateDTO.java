@@ -1,0 +1,13 @@
+package com.oncologic.clinic.dto.personal.update;
+
+import lombok.Data;
+
+@Data
+public class PersonalUpdateDTO {
+    private String idNumber;
+    private String name;
+    private String lastName;
+    private String email;
+    private String phoneNumber;
+    private Character status;
+}
