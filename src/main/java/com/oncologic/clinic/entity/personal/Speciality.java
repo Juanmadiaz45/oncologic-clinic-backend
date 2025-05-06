@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "SPECIALITIES")
 @Data
@@ -22,8 +25,7 @@ public class Speciality {
     @Column(name = "description", length = 250)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "doctor_id", nullable = false)
-    private Doctor doctor;
+    @ManyToMany(mappedBy = "specialities")
+    private Set<Doctor> doctors = new HashSet<>();
 }
 

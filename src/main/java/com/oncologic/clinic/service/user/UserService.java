@@ -1,6 +1,6 @@
 package com.oncologic.clinic.service.user;
 
-import com.oncologic.clinic.dto.registration.RegisterUserDTO;
+import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
 import com.oncologic.clinic.entity.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-    User createUser(RegisterUserDTO userDTO);
+    User createUser(AdministrativeRequestDTO userDTO);
 
     User updateUser(User user, Set<Long> roleIds);
 

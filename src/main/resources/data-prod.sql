@@ -245,10 +245,10 @@ VALUES ('EX0002', TIMESTAMP '2023-03-04 14:30:00', 2, 2, 2);
 
 -- Inicialización de EXAMINATION_RESULTS
 -- Nota: El campo BLOB se inserta como una cadena vacía, ajustar según sea necesario
-INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
-VALUES (1, TIMESTAMP '2023-03-03 15:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-1.jpg'), 1);
-INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
-VALUES (2, TIMESTAMP '2023-03-04 17:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-2.png'), 2);
+-- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
+-- VALUES (1, TIMESTAMP '2023-03-03 15:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-1.jpg'), 1);
+-- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
+-- VALUES (2, TIMESTAMP '2023-03-04 17:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-2.png'), 2);
 
 -- Inicialización de PRESCRIBED_MEDICINES
 INSERT INTO PRESCRIBED_MEDICINES (id, medicine, prescription_date, instructions, dose, duration,

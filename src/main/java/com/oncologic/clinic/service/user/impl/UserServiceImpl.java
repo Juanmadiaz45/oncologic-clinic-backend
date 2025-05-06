@@ -1,6 +1,6 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.registration.RegisterUserDTO;
+import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
 import com.oncologic.clinic.entity.user.*;
 import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
 import com.oncologic.clinic.repository.user.*;
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(RegisterUserDTO userDTO) {
+    public User createUser(AdministrativeRequestDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }

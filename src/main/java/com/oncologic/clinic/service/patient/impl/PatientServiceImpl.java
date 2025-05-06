@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -24,6 +25,14 @@ public class PatientServiceImpl implements PatientService {
         this.patientRepository = patientRepository;
         this.userService = userService;
         this.medicalHistoryService = medicalHistoryService;
+    }
+
+    public Patient getPatientById(Long id) {
+        return patientRepository.findById(id).orElse(null);
+    }
+
+    public List<Patient> getAllPatients() {
+        return patientRepository.findAll();
     }
 
     @Override
@@ -49,5 +58,13 @@ public class PatientServiceImpl implements PatientService {
         savedPatient.setMedicalHistory(medicalHistory);
 
         return patientRepository.save(savedPatient);
+    }
+
+    public Patient updatePatient(Long id, Patient patient){
+        return patientRepository.findById(id).orElse(null);
+    }
+
+    public void deletePatient(Long id){
+        patientRepository.deleteById(id);
     }
 }

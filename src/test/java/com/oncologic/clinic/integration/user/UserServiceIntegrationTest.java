@@ -1,6 +1,6 @@
 package com.oncologic.clinic.integration.user;
 
-import com.oncologic.clinic.dto.registration.RegisterUserDTO;
+import com.oncologic.clinic.dto.UserRequestDTO;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ public class UserServiceIntegrationTest {
     @Test
     void createUser_WithValidDataAndRole_ShouldCreateUser() {
         // Arrange
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("testuser");
         userDTO.setPassword("password123");
         Set<Long> roleIds = new HashSet<>();
@@ -55,7 +55,7 @@ public class UserServiceIntegrationTest {
     @Test
     void getUserById_WhenUserExists_ShouldReturnUser() {
         // Arrange
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("testuser");
         userDTO.setPassword("password123");
         Set<Long> roleIds = new HashSet<>();
@@ -77,7 +77,7 @@ public class UserServiceIntegrationTest {
     void updateUser_WithValidData_ShouldUpdateUser() {
         // Arrange
         // Primero creamos el usuario
-        RegisterUserDTO createDTO = new RegisterUserDTO();
+        UserRequestDTO createDTO = new UserRequestDTO();
         createDTO.setUsername("originaluser");
         createDTO.setPassword("originalpass");
         Set<Long> roleIds = new HashSet<>();
@@ -105,7 +105,7 @@ public class UserServiceIntegrationTest {
     @Test
     void deleteUser_WhenUserExists_ShouldRemoveUser() {
         // Arrange
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("todelete");
         userDTO.setPassword("password");
         Set<Long> roleIds = new HashSet<>();
@@ -123,7 +123,7 @@ public class UserServiceIntegrationTest {
     @Test
     void getAllUsers_WhenUsersExist_ShouldReturnUserList() {
         // Arrange
-        RegisterUserDTO userDTO1 = new RegisterUserDTO();
+        UserRequestDTO userDTO1 = new UserRequestDTO();
         userDTO1.setUsername("user1");
         userDTO1.setPassword("pass1");
         Set<Long> roleIds1 = new HashSet<>();
@@ -131,7 +131,7 @@ public class UserServiceIntegrationTest {
         userDTO1.setRoleIds(roleIds1);
         userService.createUser(userDTO1);
 
-        RegisterUserDTO userDTO2 = new RegisterUserDTO();
+        UserRequestDTO userDTO2 = new UserRequestDTO();
         userDTO2.setUsername("user2");
         userDTO2.setPassword("pass2");
         Set<Long> roleIds2 = new HashSet<>();
@@ -152,7 +152,7 @@ public class UserServiceIntegrationTest {
         // Asumimos que existe otro rol con ID 2 en la BD
         Long additionalRoleId = 2L;
 
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("roleuser");
         userDTO.setPassword("password");
         Set<Long> initialRoleIds = new HashSet<>();
@@ -180,7 +180,7 @@ public class UserServiceIntegrationTest {
         initialRoleIds.add(defaultRoleId);
         initialRoleIds.add(secondRoleId);
 
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("removeroles");
         userDTO.setPassword("password");
         userDTO.setRoleIds(initialRoleIds);
@@ -201,7 +201,7 @@ public class UserServiceIntegrationTest {
     @Test
     void createUser_WithoutRoles_ShouldThrowException() {
         // Arrange
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("invaliduser");
         userDTO.setPassword("password");
         userDTO.setRoleIds(new HashSet<>());
@@ -213,7 +213,7 @@ public class UserServiceIntegrationTest {
     @Test
     void createUser_WithExistingUsername_ShouldThrowException() {
         // Arrange
-        RegisterUserDTO userDTO = new RegisterUserDTO();
+        UserRequestDTO userDTO = new UserRequestDTO();
         userDTO.setUsername("existinguser");
         userDTO.setPassword("password");
         Set<Long> roleIds = new HashSet<>();

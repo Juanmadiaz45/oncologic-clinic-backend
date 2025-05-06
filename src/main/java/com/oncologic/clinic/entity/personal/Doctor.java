@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 @Entity
@@ -24,8 +26,13 @@ public class Doctor extends Personal {
     @OneToMany(mappedBy = "doctor")
     private List<MedicalAppointment> medicalAppointments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "doctor")
-    private List<Speciality> specialities = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "DOCTOR_SPECIALITY",
+            joinColumns = @JoinColumn(name = "doctor_id"),
+            inverseJoinColumns = @JoinColumn(name = "speciality_id")
+    )
+    private Set<Speciality> specialities = new HashSet<>();
 }
 
 
