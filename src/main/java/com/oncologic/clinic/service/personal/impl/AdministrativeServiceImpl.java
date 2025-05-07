@@ -5,7 +5,7 @@ import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
 import com.oncologic.clinic.dto.personal.update.AdministrativeUpdateDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
-import com.oncologic.clinic.mapper.PersonalMapper;
+import com.oncologic.clinic.mapper.personal.AdministrativeMapper;
 import com.oncologic.clinic.repository.personal.AdministrativeRepository;
 import com.oncologic.clinic.service.personal.AdministrativeService;
 import com.oncologic.clinic.service.user.UserService;
@@ -19,13 +19,13 @@ import java.util.List;
 public class AdministrativeServiceImpl implements AdministrativeService {
     private final AdministrativeRepository administrativeRepository;
     private final UserService userService;
-    private final PersonalMapper personalMapper;
+    private final AdministrativeMapper administrativeMapper;
 
 
-    AdministrativeServiceImpl(AdministrativeRepository administrativeRepository, UserService userService, PersonalMapper personalMapper) {
+    AdministrativeServiceImpl(AdministrativeRepository administrativeRepository, UserService userService, AdministrativeMapper administrativeMapper) {
         this.administrativeRepository = administrativeRepository;
         this.userService = userService;
-        this.personalMapper = personalMapper;
+        this.administrativeMapper = administrativeMapper;
     }
 
     @Override
@@ -33,13 +33,13 @@ public class AdministrativeServiceImpl implements AdministrativeService {
         Administrative administrative = administrativeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Administrativo con ID " + id + " no encontrado"));
 
-        return personalMapper.toDto(administrative);
+        return administrativeMapper.toDto(administrative);
     }
 
 
     @Override
     public List<AdministrativeResponseDTO> getAllAdministratives() {
-        return administrativeRepository.findAll().stream().map(personalMapper::toDto).toList();
+        return administrativeRepository.findAll().stream().map(administrativeMapper::toDto).toList();
     }
 
     @Override
@@ -47,14 +47,14 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     public AdministrativeResponseDTO createAdministrative(AdministrativeRequestDTO administrativeDTO) {
         User user = userService.createUser(administrativeDTO);
 
-        Administrative administrative = personalMapper.toEntity(administrativeDTO);
+        Administrative administrative = administrativeMapper.toEntity(administrativeDTO);
         administrative.setUser(user);
         administrative.setDateOfHiring(LocalDateTime.now());
         administrative.setStatus('A');
 
         Administrative savedAdministrative = administrativeRepository.save(administrative);
 
-        return personalMapper.toDto(savedAdministrative);
+        return administrativeMapper.toDto(savedAdministrative);
     }
 
 
@@ -65,11 +65,11 @@ public class AdministrativeServiceImpl implements AdministrativeService {
         Administrative existingAdministrative = administrativeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Administrativo con ID " + id + " no encontrado"));
 
-        personalMapper.updateEntityFromDto(updateDTO, existingAdministrative);
+        administrativeMapper.updateEntityFromDto(updateDTO, existingAdministrative);
 
         Administrative updatedAdministrative = administrativeRepository.save(existingAdministrative);
 
-        return personalMapper.toDto(updatedAdministrative);
+        return administrativeMapper.toDto(updatedAdministrative);
     }
 
 

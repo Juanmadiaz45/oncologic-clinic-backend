@@ -6,7 +6,7 @@ import com.oncologic.clinic.dto.personal.update.DoctorUpdateDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
-import com.oncologic.clinic.mapper.PersonalMapper;
+import com.oncologic.clinic.mapper.personal.DoctorMapper;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
 import com.oncologic.clinic.service.personal.DoctorService;
@@ -25,13 +25,13 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorRepository doctorRepository;
     private final UserService userService;
     private final SpecialityRepository specialityRepository;
-    private final PersonalMapper personalMapper;
+    private final DoctorMapper doctorMapper;
 
-    DoctorServiceImpl(DoctorRepository doctorRepository, UserService userService, SpecialityRepository specialityRepository, PersonalMapper personalMapper) {
+    DoctorServiceImpl(DoctorRepository doctorRepository, UserService userService, SpecialityRepository specialityRepository, DoctorMapper doctorMapper) {
         this.doctorRepository = doctorRepository;
         this.userService = userService;
         this.specialityRepository = specialityRepository;
-        this.personalMapper = personalMapper;
+        this.doctorMapper = doctorMapper;
     }
 
     @Override
@@ -39,19 +39,19 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor con ID " + id + " no encontrado"));
 
-        return personalMapper.toDto(doctor);
+        return doctorMapper.toDto(doctor);
     }
 
     @Override
     public List<DoctorResponseDTO> getAllDoctors() {
-        return doctorRepository.findAll().stream().map(personalMapper::toDto).toList();
+        return doctorRepository.findAll().stream().map(doctorMapper::toDto).toList();
     }
 
     @Override
     @Transactional
     public DoctorResponseDTO createDoctor(DoctorRequestDTO doctorDTO) {
         User user = userService.createUser(doctorDTO);
-        Doctor doctor = personalMapper.toEntity(doctorDTO);
+        Doctor doctor = doctorMapper.toEntity(doctorDTO);
         doctor.setUser(user);
         doctor.setDateOfHiring(LocalDateTime.now());
         doctor.setStatus('A');
@@ -72,7 +72,7 @@ public class DoctorServiceImpl implements DoctorService {
             savedDoctor.setSpecialities(specialities);
         }
 
-        return personalMapper.toDto(doctorRepository.save(savedDoctor));
+        return doctorMapper.toDto(doctorRepository.save(savedDoctor));
     }
 
 
@@ -82,7 +82,7 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor con el ID " + id + " no encontrado"));
 
-        personalMapper.updateEntityFromDto(doctorUpdateDTO, doctor);
+        doctorMapper.updateEntityFromDto(doctorUpdateDTO, doctor);
 
         // Si vienen especialidades nuevas
         if (doctorUpdateDTO.getSpecialityIds() != null) {
@@ -110,7 +110,7 @@ public class DoctorServiceImpl implements DoctorService {
             doctor.setSpecialities(updatedSpecialities);
         }
 
-        return personalMapper.toDto(doctorRepository.save(doctor));
+        return doctorMapper.toDto(doctorRepository.save(doctor));
     }
 
 

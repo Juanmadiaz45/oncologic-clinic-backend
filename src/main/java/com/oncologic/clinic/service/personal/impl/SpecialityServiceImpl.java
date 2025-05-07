@@ -4,7 +4,7 @@ import com.oncologic.clinic.dto.personal.request.SpecialityRequestDTO;
 import com.oncologic.clinic.dto.personal.response.SpecialityResponseDTO;
 import com.oncologic.clinic.dto.personal.update.SpecialityUpdateDTO;
 import com.oncologic.clinic.entity.personal.Speciality;
-import com.oncologic.clinic.mapper.PersonalMapper;
+import com.oncologic.clinic.mapper.personal.SpecialityMapper;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
 import com.oncologic.clinic.service.personal.SpecialityService;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,31 +16,31 @@ import java.util.List;
 @Service
 public class SpecialityServiceImpl implements SpecialityService {
     private final SpecialityRepository specialityRepository;
-    private final PersonalMapper personalMapper;
+    private final SpecialityMapper specialityMapper;
 
-    public SpecialityServiceImpl(SpecialityRepository specialityRepository, PersonalMapper personalMapper) {
+    public SpecialityServiceImpl(SpecialityRepository specialityRepository, SpecialityMapper specialityMapper) {
         this.specialityRepository = specialityRepository;
-        this.personalMapper = personalMapper;
+        this.specialityMapper = specialityMapper;
     }
 
     @Override
     public SpecialityResponseDTO getSpecialityById(Long id) {
         Speciality speciality = specialityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Especialidad con el ID " + id + " no encontrada"));
-        return personalMapper.toDto(speciality);
+        return specialityMapper.toDto(speciality);
     }
 
     @Override
     public List<SpecialityResponseDTO> getAllSpecialities() {
-        return specialityRepository.findAll().stream().map(personalMapper::toDto).toList();
+        return specialityRepository.findAll().stream().map(specialityMapper::toDto).toList();
     }
 
     @Override
     @Transactional
     public SpecialityResponseDTO createSpeciality(SpecialityRequestDTO specialityDTO) {
-        Speciality speciality = personalMapper.toEntity(specialityDTO);
+        Speciality speciality = specialityMapper.toEntity(specialityDTO);
 
         Speciality savedSpeciality = specialityRepository.save(speciality);
-        return personalMapper.toDto(savedSpeciality);
+        return specialityMapper.toDto(savedSpeciality);
     }
 
 
@@ -49,11 +49,11 @@ public class SpecialityServiceImpl implements SpecialityService {
         Speciality existingSpeciality = specialityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Especialidad con el ID " + id + " no encontrada"));
 
-        personalMapper.updateEntityFromDto(specialityDTO, existingSpeciality);
+        specialityMapper.updateEntityFromDto(specialityDTO, existingSpeciality);
 
         Speciality updatedSpeciality = specialityRepository.save(existingSpeciality);
 
-        return personalMapper.toDto(updatedSpeciality);
+        return specialityMapper.toDto(updatedSpeciality);
     }
 
     @Override
