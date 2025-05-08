@@ -27,8 +27,8 @@ public class UserRoleController {
 
     @GetMapping("/manage")
     public String showManageRolesForm(Model model) {
-        List<User> users = userService.getAllUsers();
-        List<Role> roles = roleService.getAllRoles();
+        List<User> users = userService.getAllUserEntities();
+        List<Role> roles = roleService.getAllRoleEntities();
 
         Map<Long, Set<Long>> userRolesMap = users.stream()
                 .collect(Collectors.toMap(
@@ -100,8 +100,10 @@ public class UserRoleController {
             Long userId = entry.getKey();
             Set<Long> newRoleIds = entry.getValue();
 
-            Set<Long> currentRoleIds = userService.getUserById(userId).getUserRoles().stream()
-                    .map(ur -> ur.getRole().getId())
+            User user = userService.getUserEntityById(userId);
+
+            Set<Long> currentRoleIds = user.getUserRoles().stream()
+                    .map(userRole -> userRole.getRole().getId())
                     .collect(Collectors.toSet());
 
             Set<Long> rolesToAdd = new HashSet<>(newRoleIds);

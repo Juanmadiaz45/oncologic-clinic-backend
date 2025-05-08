@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/rest/users")
+@RequestMapping("/api/users")
 public class UserRestController {
 
     private final UserService userService;

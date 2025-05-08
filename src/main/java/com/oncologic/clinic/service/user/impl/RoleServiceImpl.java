@@ -1,8 +1,14 @@
 package com.oncologic.clinic.service.user.impl;
 
+import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
+import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
+import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.RolePermission;
+import com.oncologic.clinic.mapper.user.PermissionMapper;
+import com.oncologic.clinic.mapper.user.RoleMapper;
 import com.oncologic.clinic.repository.user.PermissionRepository;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.repository.user.RoleRepository;
@@ -26,99 +32,129 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RoleMapper roleMapper;
+    private final PermissionMapper permissionMapper;
 
-    public RoleServiceImpl(RoleRepository roleRepository, PermissionRepository permissionRepository, RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository) {
+    public RoleServiceImpl(
+            RoleRepository roleRepository,
+            PermissionRepository permissionRepository,
+            RolePermissionRepository rolePermissionRepository,
+            UserRoleRepository userRoleRepository,
+            RoleMapper roleMapper,
+            PermissionMapper permissionMapper) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.userRoleRepository = userRoleRepository;
+        this.roleMapper = roleMapper;
+        this.permissionMapper = permissionMapper;
     }
 
     @Override
-    public Role createRole(Role role, Set<Long> permissionIds) {
-        if (permissionIds == null || permissionIds.isEmpty()) {
+    public RoleResponseDTO createRole(RoleRequestDTO roleDTO) {
+        if (roleDTO.getPermissionIds() == null || roleDTO.getPermissionIds().isEmpty()) {
             throw new IllegalArgumentException("Un rol debe tener al menos un permiso");
         }
 
-        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(permissionIds));
-        if (permissions.isEmpty()) {
-            throw new IllegalArgumentException("Los permisos proporcionados no existen");
+        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleDTO.getPermissionIds()));
+        if (permissions.isEmpty() || permissions.size() != roleDTO.getPermissionIds().size()) {
+            throw new IllegalArgumentException("Uno o más permisos proporcionados no existen");
         }
 
+        Role role = roleMapper.roleRequestDtoToRole(roleDTO);
         Role savedRole = roleRepository.save(role);
 
         addPermissionsToRole(savedRole, permissions);
+        savedRole = roleRepository.save(savedRole);
 
-        return savedRole;
+        return roleMapper.roleToRoleResponseDto(savedRole);
     }
 
     @Override
-    public Role updateRole(Role role, Set<Long> permissionIds) {
-        if (permissionIds == null || permissionIds.isEmpty()) {
+    public RoleResponseDTO updateRole(Long id, RoleUpdateDTO roleDTO) {
+        if (roleDTO.getPermissionIds() == null || roleDTO.getPermissionIds().isEmpty()) {
             throw new IllegalArgumentException("Un rol debe tener al menos un permiso");
         }
 
-        Role existingRole = roleRepository.findById(role.getId()).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Role existingRole = roleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + id));
 
-        existingRole.setName(role.getName());
+        roleMapper.updateRoleFromDto(roleDTO, existingRole);
 
-        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(permissionIds));
-        if (permissions.isEmpty()) {
-            throw new IllegalArgumentException("Los permisos proporcionados no existen");
+        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleDTO.getPermissionIds()));
+        if (permissions.isEmpty() || permissions.size() != roleDTO.getPermissionIds().size()) {
+            throw new IllegalArgumentException("Uno o más permisos proporcionados no existen");
         }
 
         rolePermissionRepository.deleteByRole(existingRole);
+        existingRole.getRolePermissions().clear();
 
         addPermissionsToRole(existingRole, permissions);
+        existingRole = roleRepository.save(existingRole);
 
-        return roleRepository.save(existingRole);
+        return roleMapper.roleToRoleResponseDto(existingRole);
     }
 
     @Override
     public void deleteRole(Long id) {
-        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + id));
 
-        // Verifica si hay usuarios asignados a través de UserRole
+        // Verifica si hay usuarios asignados
         boolean hasUsers = userRoleRepository.existsByRoleId(id);
 
         if (hasUsers) {
-            throw new RuntimeException("No se puede eliminar el rol porque tiene usuarios asignados");
+            throw new IllegalStateException("No se puede eliminar el rol porque tiene usuarios asignados");
         }
 
-        // Elimina primero las relaciones con permisos
+        // Elimina las relaciones con permisos
         rolePermissionRepository.deleteByRole(role);
 
-        // Finalmente elimina el rol
+        // Elimina el rol
         roleRepository.delete(role);
     }
 
     @Override
-    public Role getRoleById(Long id) {
-        return roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+    public RoleResponseDTO getRoleById(Long id) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + id));
+
+        return roleMapper.roleToRoleResponseDto(role);
     }
 
     @Override
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public List<RoleResponseDTO> getAllRoles() {
+        return roleRepository.findAll().stream()
+                .map(roleMapper::roleToRoleResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Role addPermissionsToRole(Long roleId, Set<Long> permissionIds) {
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+    public RoleResponseDTO addPermissionsToRole(Long roleId, Set<Long> permissionIds) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + roleId));
+
+        if (permissionIds == null || permissionIds.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos un permiso");
+        }
 
         Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(permissionIds));
 
-        addPermissionsToRole(role, permissions);
+        if (permissions.size() != permissionIds.size()) {
+            throw new EntityNotFoundException("Uno o más permisos no existen");
+        }
 
-        return roleRepository.save(role);
+        addPermissionsToRole(role, permissions);
+        role = roleRepository.save(role);
+
+        return roleMapper.roleToRoleResponseDto(role);
     }
 
     @Override
     @Transactional
-    public Role removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
-        // Cargar el rol con sus permisos (usando fetch join para evitar N+1)
+    public RoleResponseDTO removePermissionsFromRole(Long roleId, Set<Long> permissionIds) {
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + roleId));
 
         // Validar que no se eliminen todos los permisos
         long currentPermissionCount = role.getRolePermissions().size();
@@ -141,20 +177,30 @@ public class RoleServiceImpl implements RoleService {
             throw new EntityNotFoundException("Uno o más permisos no están asociados al rol");
         }
 
-        // Eliminar los permisos de la colección (orphanRemoval se encargará de la eliminación física)
+        // Eliminar los permisos de la colección
         permissionsToRemove.forEach(rolePermission -> {
             role.getRolePermissions().remove(rolePermission);
             rolePermission.setRole(null); // Romper relación bidireccional
         });
 
-        return roleRepository.save(role);
+        rolePermissionRepository.deleteAll(permissionsToRemove);
+        Role updatedRole = roleRepository.save(role);
+
+        return roleMapper.roleToRoleResponseDto(updatedRole);
     }
 
     @Override
-    public List<Permission> getPermissionsByRoleId(Long roleId) {
+    public List<PermissionResponseDTO> getPermissionsByRoleId(Long roleId) {
         return rolePermissionRepository.findPermissionsByRoleId(roleId).stream()
                 .map(RolePermission::getPermission)
+                .map(permissionMapper::permissionToPermissionResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Role getRoleEntityById(Long id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + id));
     }
 
     private void addPermissionsToRole(Role savedRole, Set<Permission> permissions) {
@@ -167,4 +213,8 @@ public class RoleServiceImpl implements RoleService {
         }
     }
 
+    @Override
+    public List<Role> getAllRoleEntities() {
+        return roleRepository.findAll();
+    }
 }

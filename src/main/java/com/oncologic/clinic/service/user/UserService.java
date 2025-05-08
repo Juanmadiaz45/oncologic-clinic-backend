@@ -16,7 +16,7 @@ public interface UserService {
     UserResponseDTO updateUser(Long id, UserUpdateDTO userDTO);
     void deleteUser(Long id);
     UserResponseDTO getUserById(Long id);
-    UserResponseDTO getUserByUsername(String username);
+    User getUserByUsername(String username);
     List<UserResponseDTO> getAllUsers();
     Page<UserResponseDTO> getAllUsersPaginated(Pageable pageable);
     Page<UserResponseDTO> searchUsers(String searchTerm, Pageable pageable);
@@ -26,4 +26,7 @@ public interface UserService {
 
     User getUserEntityById(Long id);
     User getUserEntityByUsername(String username);
+    List<User> getAllUserEntities();
+    Page<User> getAllUserEntitiesPaginated(Pageable pageable);
+    Page<User> searchUserEntities(String searchTerm, Pageable pageable);
 }

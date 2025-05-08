@@ -1,5 +1,7 @@
 package com.oncologic.clinic.controller;
 
+import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
+import com.oncologic.clinic.dto.personal.request.DoctorRequestDTO;
 import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
@@ -68,9 +70,9 @@ public class UserController {
         // Obtener página de usuarios, con o sin término de búsqueda
         Page<User> userPage;
         if (searchTerm.isEmpty()) {
-            userPage = userService.getAllUsersPaginated(pageable);
+            userPage = userService.getAllUserEntitiesPaginated(pageable);
         } else {
-            userPage = userService.searchUsers(searchTerm, pageable);
+            userPage = userService.searchUserEntities(searchTerm, pageable);
         }
 
         model.addAttribute("userPage", userPage);
@@ -143,12 +145,12 @@ public class UserController {
     }
 
     @PostMapping("/register/doctor")
-    public String registerDoctor(@ModelAttribute("doctor") RegisterDoctorDTO doctorDTO,
+    public String registerDoctor(@ModelAttribute("doctor") DoctorRequestDTO doctorDTO,
                                  BindingResult bindingResult,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         try {
-            doctorService.registerDoctor(doctorDTO);
+            doctorService.createDoctor(doctorDTO);
             redirectAttributes.addAttribute("successMessage", "Doctor registrado exitosamente");
             return "redirect:/users/register/doctor";
         } catch (IllegalArgumentException e) {
@@ -167,12 +169,12 @@ public class UserController {
     }
 
     @PostMapping("/register/administrative")
-    public String registerAdministrative(@ModelAttribute("administrative") RegisterAdministrativeDTO administrativeDTO,
+    public String registerAdministrative(@ModelAttribute("administrative") AdministrativeRequestDTO administrativeDTO,
                                          BindingResult bindingResult,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {
         try {
-            administrativeService.registerAdministrative(administrativeDTO);
+            administrativeService.createAdministrative(administrativeDTO);
             redirectAttributes.addAttribute("successMessage", "Administrativo registrado exitosamente");
             return "redirect:/users/register/administrative";
         } catch (IllegalArgumentException e) {

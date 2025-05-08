@@ -1,5 +1,8 @@
 package com.oncologic.clinic.controller;
 
+import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
+import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.service.user.PermissionService;
@@ -35,16 +38,16 @@ public class RoleController {
     }
 
     @PostMapping("/create")
-    public String createRole(@ModelAttribute("role") Role role,
+    public String createRole(@ModelAttribute("role") RoleRequestDTO roleDTO,
                              @RequestParam(required = false) Set<Long> permissionIds,
                              RedirectAttributes redirectAttributes) {
         try {
-            roleService.createRole(role, permissionIds);
+            roleService.createRole(roleDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Rol creado exitosamente");
             return "redirect:/dashboard";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("role", role);
+            redirectAttributes.addFlashAttribute("role", roleDTO);
             return "redirect:/roles/create";
         }
     }
@@ -57,10 +60,10 @@ public class RoleController {
         model.addAttribute("allRoles", roleService.getAllRoles());
 
         if (roleId != null) {
-            Role role = roleService.getRoleById(roleId);
+            Role role = roleService.getRoleEntityById(roleId);
             model.addAttribute("selectedRole", role);
 
-            List<Permission> permissions = roleService.getPermissionsByRoleId(roleId);
+            List<PermissionResponseDTO> permissions = roleService.getPermissionsByRoleId(roleId);
             model.addAttribute("selectedPermissions", permissions);
         }
 
@@ -76,8 +79,8 @@ public class RoleController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            Role role = roleService.getRoleById(roleId);
-            roleService.updateRole(role, permissionIds != null ? permissionIds : new HashSet<>());
+            RoleUpdateDTO roleUpdateDTO = new RoleUpdateDTO();
+            roleUpdateDTO.setPermissionIds(permissionIds != null ? permissionIds : new HashSet<>());
             redirectAttributes.addFlashAttribute("successMessage", "Permisos actualizados correctamente");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar permisos: " + e.getMessage());

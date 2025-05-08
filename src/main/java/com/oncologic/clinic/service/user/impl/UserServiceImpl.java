@@ -15,6 +15,7 @@ import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,11 +126,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con username: " + username));
-
-        return userMapper.userToUserResponseDto(user);
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Override
@@ -239,6 +238,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con username: " + username));
     }
 
+    @Override
+    public List<User> getAllUserEntities() {
+        return userRepository.findAll();
+    }
+
     private void addRolesToUser(User savedUser, Set<Role> roles) {
         for (Role role : roles) {
             UserRoleId id = new UserRoleId(savedUser.getId(), role.getId());
@@ -247,5 +251,20 @@ public class UserServiceImpl implements UserService {
                 savedUser.getUserRoles().add(userRole);
             }
         }
+    }
+
+    @Override
+    public Page<User> getAllUserEntitiesPaginated(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<User> searchUserEntities(String searchTerm, Pageable pageable) {
+        return userRepository.findByUsernameContainingIgnoreCaseOrPatient_NameContainingIgnoreCaseOrPersonal_NameContainingIgnoreCase(
+                searchTerm,
+                searchTerm,
+                searchTerm,
+                pageable
+        );
     }
 }
