@@ -1,9 +1,16 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.UserRequestDTO;
-import com.oncologic.clinic.entity.user.*;
+import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.response.UserResponseDTO;
+import com.oncologic.clinic.dto.user.update.UserUpdateDTO;
+import com.oncologic.clinic.entity.user.Role;
+import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.entity.user.UserRole;
 import com.oncologic.clinic.entity.user.UserRole.UserRoleId;
-import com.oncologic.clinic.repository.user.*;
+import com.oncologic.clinic.mapper.user.UserMapper;
+import com.oncologic.clinic.repository.user.RoleRepository;
+import com.oncologic.clinic.repository.user.UserRepository;
+import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
@@ -25,16 +32,23 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            UserRoleRepository userRoleRepository,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     @Override
-    public User createUser(UserRequestDTO userDTO) {
+    public UserResponseDTO createUser(UserRequestDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
@@ -44,82 +58,103 @@ public class UserServiceImpl implements UserService {
         }
 
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
-        if (roles.isEmpty()) {
-            throw new IllegalArgumentException("Los roles proporcionados no existen");
+        if (roles.isEmpty() || roles.size() != userDTO.getRoleIds().size()) {
+            throw new IllegalArgumentException("Uno o más roles proporcionados no existen");
         }
 
-        User user = new User();
-        user.setUsername(userDTO.getUsername());
+        User user = userMapper.userRequestDtoToUser(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
 
         addRolesToUser(savedUser, roles);
+        savedUser = userRepository.save(savedUser);
 
-        return savedUser;
+        return userMapper.userToUserResponseDto(savedUser);
     }
 
-
     @Override
-    public User updateUser(User user, Set<Long> roleIds) {
-        if (roleIds == null || roleIds.isEmpty()) {
+    public UserResponseDTO updateUser(Long id, UserUpdateDTO userDTO) {
+        if (userDTO.getRoleIds() == null || userDTO.getRoleIds().isEmpty()) {
             throw new IllegalArgumentException("Un usuario debe tener al menos un rol");
         }
 
-        User existingUser = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
 
-        existingUser.setUsername(user.getUsername());
-        existingUser.setPassword(user.getPassword());
+        if (!existingUser.getUsername().equals(userDTO.getUsername()) &&
+                userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+        }
 
-        Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
-        if (roles.isEmpty()) {
-            throw new IllegalArgumentException("Los roles proporcionados no existen");
+        userMapper.updateUserFromDto(userDTO, existingUser);
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
+
+        Set<Role> roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
+        if (roles.isEmpty() || roles.size() != userDTO.getRoleIds().size()) {
+            throw new IllegalArgumentException("Uno o más roles proporcionados no existen");
         }
 
         userRoleRepository.deleteByUser(existingUser);
+        existingUser.getUserRoles().clear();
 
         addRolesToUser(existingUser, roles);
+        existingUser = userRepository.save(existingUser);
 
-        return userRepository.save(existingUser);
+        return userMapper.userToUserResponseDto(existingUser);
     }
 
     @Override
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
 
         userRoleRepository.deleteByUser(user);
         userRepository.delete(user);
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public UserResponseDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
+
+        return userMapper.userToUserResponseDto(user);
     }
 
     @Override
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public UserResponseDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con username: " + username));
+
+        return userMapper.userToUserResponseDto(user);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::userToUserResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Page<User> getAllUsersPaginated(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<UserResponseDTO> getAllUsersPaginated(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::userToUserResponseDto);
     }
 
     @Override
-    public Page<User> searchUsers(String searchTerm, Pageable pageable) {
+    public Page<UserResponseDTO> searchUsers(String searchTerm, Pageable pageable) {
         return userRepository.findByUsernameContainingIgnoreCaseOrPatient_NameContainingIgnoreCaseOrPersonal_NameContainingIgnoreCase(
-                searchTerm, searchTerm, searchTerm, pageable);
+                        searchTerm, searchTerm, searchTerm, pageable)
+                .map(userMapper::userToUserResponseDto);
     }
 
     @Override
     @Transactional
-    public User addRolesToUser(Long userId, Set<Long> roleIds) {
+    public UserResponseDTO addRolesToUser(Long userId, Set<Long> roleIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userId));
 
@@ -138,13 +173,14 @@ public class UserServiceImpl implements UserService {
         }
 
         addRolesToUser(user, roles);
+        user = userRepository.save(user);
 
-        return userRepository.save(user);
+        return userMapper.userToUserResponseDto(user);
     }
 
     @Override
     @Transactional
-    public User removeRolesFromUser(Long userId, Set<Long> roleIds) {
+    public UserResponseDTO removeRolesFromUser(Long userId, Set<Long> roleIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userId));
 
@@ -179,13 +215,28 @@ public class UserServiceImpl implements UserService {
             throw new EntityNotFoundException("El usuario no tiene los siguientes roles: " + missingRoleIds);
         }
 
-        // Eliminar los roles de la colección (orphanRemoval se encargará de la eliminación física)
+        // Eliminar los roles de la colección
         rolesToRemove.forEach(userRole -> {
             user.getUserRoles().remove(userRole);
             userRole.setUser(null); // Romper relación bidireccional
         });
 
-        return userRepository.save(user);
+        userRoleRepository.deleteAll(rolesToRemove);
+        User updatedUser = userRepository.save(user);
+
+        return userMapper.userToUserResponseDto(updatedUser);
+    }
+
+    @Override
+    public User getUserEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + id));
+    }
+
+    @Override
+    public User getUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con username: " + username));
     }
 
     private void addRolesToUser(User savedUser, Set<Role> roles) {

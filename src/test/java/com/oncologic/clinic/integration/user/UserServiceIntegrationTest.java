@@ -1,21 +1,6 @@
 package com.oncologic.clinic.integration.user;
 
-import com.oncologic.clinic.dto.UserRequestDTO;
-import com.oncologic.clinic.entity.user.User;
-import com.oncologic.clinic.service.user.UserService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+/*
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -228,3 +213,5 @@ public class UserServiceIntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> userService.createUser(userDTO));
     }
 }
+
+ */

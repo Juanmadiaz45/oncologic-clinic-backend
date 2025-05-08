@@ -3,6 +3,8 @@ package com.oncologic.clinic.service.personal.impl;
 import com.oncologic.clinic.dto.personal.request.DoctorRequestDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
 import com.oncologic.clinic.dto.personal.update.DoctorUpdateDTO;
+import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
@@ -50,7 +52,12 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public DoctorResponseDTO createDoctor(DoctorRequestDTO doctorDTO) {
-        User user = userService.createUser(doctorDTO);
+        UserRequestDTO userRequestDTO = doctorDTO.getPersonalData().getUserData();
+
+        UserResponseDTO userResponse = userService.createUser(userRequestDTO);
+
+        User user = userService.getUserEntityById(userResponse.getId());
+
         Doctor doctor = doctorMapper.toEntity(doctorDTO);
         doctor.setUser(user);
         doctor.setDateOfHiring(LocalDateTime.now());
@@ -58,13 +65,11 @@ public class DoctorServiceImpl implements DoctorService {
 
         Doctor savedDoctor = doctorRepository.save(doctor);
 
-        // Asociar especialidades existentes si hay IDs
         if (doctorDTO.getSpecialityIds() != null && !doctorDTO.getSpecialityIds().isEmpty()) {
             Set<Speciality> specialities = new HashSet<>();
             for (Long specialityId : doctorDTO.getSpecialityIds()) {
                 Speciality speciality = specialityRepository.findById(specialityId)
-                        .orElseThrow(() -> new EntityNotFoundException("Especialidad con el ID " + specialityId + " no encontrada"));
-
+                        .orElseThrow(() -> new EntityNotFoundException("Especialidad no encontrada: " + specialityId));
                 speciality.getDoctors().add(savedDoctor);
                 specialities.add(speciality);
             }

@@ -3,6 +3,8 @@ package com.oncologic.clinic.service.personal.impl;
 import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
 import com.oncologic.clinic.dto.personal.update.AdministrativeUpdateDTO;
+import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.mapper.personal.AdministrativeMapper;
@@ -45,7 +47,14 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     @Override
     @Transactional
     public AdministrativeResponseDTO createAdministrative(AdministrativeRequestDTO administrativeDTO) {
-        User user = userService.createUser(administrativeDTO);
+        if (administrativeDTO.getPosition() == null || administrativeDTO.getPosition().isEmpty()) {
+            throw new IllegalArgumentException("El puesto administrativo no puede estar vacío");
+        }
+
+        UserRequestDTO userRequestDTO = administrativeDTO.getPersonalData().getUserData();
+        UserResponseDTO userResponse = userService.createUser(userRequestDTO);
+
+        User user = userService.getUserEntityById(userResponse.getId());
 
         Administrative administrative = administrativeMapper.toEntity(administrativeDTO);
         administrative.setUser(user);

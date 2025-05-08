@@ -1,11 +1,13 @@
 package com.oncologic.clinic.dto.personal.response;
 
+import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
 public class PersonalResponseDTO {
+    private UserResponseDTO userData;
     private Long id;
     private String idNumber;
     private String name;

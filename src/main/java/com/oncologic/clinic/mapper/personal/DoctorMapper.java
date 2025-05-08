@@ -10,9 +10,14 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface DoctorMapper {
+    @Mapping(target = "idNumber", source = "dto.personalData.idNumber")
+    @Mapping(target = "name", source = "dto.personalData.name")
     @Mapping(target = "specialities", ignore = true)
     Doctor toEntity(DoctorRequestDTO dto);
 
+    @Mapping(target = "personalData.userData.id", source = "entity.user.id")
+    @Mapping(target = "personalData.idNumber", source = "entity.idNumber")
+    @Mapping(target = "specialities", source = "entity.specialities")
     DoctorResponseDTO toDto(Doctor entity);
 
     void updateEntityFromDto(DoctorUpdateDTO dto, @MappingTarget Doctor entity);

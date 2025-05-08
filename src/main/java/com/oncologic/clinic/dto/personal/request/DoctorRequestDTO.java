@@ -4,7 +4,8 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class DoctorRequestDTO extends PersonalRequestDTO {
+public class DoctorRequestDTO {
+    private PersonalRequestDTO personalData;
     private String medicalLicenseNumber;
     private Set<Long> specialityIds;
 }

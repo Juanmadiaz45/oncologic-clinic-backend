@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class DoctorResponseDTO extends PersonalResponseDTO {
+public class DoctorResponseDTO {
+    private PersonalResponseDTO personalData;
     private String medicalLicenseNumber;
     private Set<SpecialityDTO> specialities;
 }
