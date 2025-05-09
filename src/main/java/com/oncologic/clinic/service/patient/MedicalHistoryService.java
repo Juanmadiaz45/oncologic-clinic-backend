@@ -1,8 +1,15 @@
 package com.oncologic.clinic.service.patient;
 
-import com.oncologic.clinic.entity.patient.MedicalHistory;
-import com.oncologic.clinic.entity.patient.Patient;
+import com.oncologic.clinic.dto.patient.request.MedicalHistoryRequestDTO;
+import com.oncologic.clinic.dto.patient.response.MedicalHistoryResponseDTO;
+import com.oncologic.clinic.dto.patient.update.MedicalHistoryUpdateDTO;
+
+import java.util.List;
 
 public interface MedicalHistoryService {
-    MedicalHistory registerMedicalHistory(Patient patient, String currentHealthStatus);
+    MedicalHistoryResponseDTO getMedicalHistoryById(Long id);
+    List<MedicalHistoryResponseDTO> getAllMedicalHistories();
+    MedicalHistoryResponseDTO createMedicalHistory(MedicalHistoryRequestDTO medicalHistoryDTO);
+    MedicalHistoryResponseDTO updateMedicalHistory(Long id, MedicalHistoryUpdateDTO medicalHistoryDTO);
+    void deleteMedicalHistory(Long id);
 }

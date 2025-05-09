@@ -1,0 +1,17 @@
+package com.oncologic.clinic.dto.patient.update;
+
+import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import lombok.Data;
+
+@Data
+public class PatientUpdateDTO {
+    private UserRequestDTO userData;
+    private Long medicalHistoryId;
+    private String name;
+    private String birthDate;
+    private Character gender;
+    private String address;
+    private String phoneNumber;
+    private String email;
+    private String currentHealthStatus;
+}

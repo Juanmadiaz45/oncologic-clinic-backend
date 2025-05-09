@@ -1,13 +1,16 @@
 package com.oncologic.clinic.service.patient;
 
+import com.oncologic.clinic.dto.patient.request.PrescribedMedicineRequestDTO;
+import com.oncologic.clinic.dto.patient.response.PrescribedMedicineResponseDTO;
+import com.oncologic.clinic.dto.patient.update.PrescribedMedicineUpdateDTO;
 import com.oncologic.clinic.entity.patient.PrescribedMedicine;
 
 import java.util.List;
 
 public interface PrescribedMedicineService {
-    PrescribedMedicine getPrescribedMedicineById(Long id);
-    List<PrescribedMedicine> getAllPrescribedMedicines();
-    PrescribedMedicine prescribeMedicine(PrescribedMedicine medicine);
-    PrescribedMedicine updatePrescribedMedicine(PrescribedMedicine medicine);
+    PrescribedMedicineResponseDTO getPrescribedMedicineById(Long id);
+    List<PrescribedMedicineResponseDTO> getAllPrescribedMedicines();
+    PrescribedMedicineResponseDTO createPrescribedMedicine(PrescribedMedicineRequestDTO prescribedMedicineDTO);
+    PrescribedMedicineResponseDTO updatePrescribedMedicine(Long id, PrescribedMedicineUpdateDTO prescribedMedicineDTO);
     void deletePrescribedMedicine(Long id);
 }

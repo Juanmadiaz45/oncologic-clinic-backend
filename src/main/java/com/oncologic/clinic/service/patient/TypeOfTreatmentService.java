@@ -1,13 +1,15 @@
 package com.oncologic.clinic.service.patient;
 
-import com.oncologic.clinic.entity.patient.TypeOfTreatment;
+import com.oncologic.clinic.dto.patient.request.TypeOfTreatmentRequestDTO;
+import com.oncologic.clinic.dto.patient.response.TypeOfTreatmentResponseDTO;
+import com.oncologic.clinic.dto.patient.update.TypeOfTreatmentUpdateDTO;
 
 import java.util.List;
 
 public interface TypeOfTreatmentService {
-    TypeOfTreatment getTypeOfTreatmentById(Long id);
-    List<TypeOfTreatment> getAllTypesOfTreatment();
-    TypeOfTreatment createTypeOfTreatment(TypeOfTreatment type);
-    TypeOfTreatment updateTypeOfTreatment(TypeOfTreatment type);
+    TypeOfTreatmentResponseDTO getTypeOfTreatmentById(Long id);
+    List<TypeOfTreatmentResponseDTO> getAllTypesOfTreatment();
+    TypeOfTreatmentResponseDTO createTypeOfTreatment(TypeOfTreatmentRequestDTO typeOfTreatmentDTO);
+    TypeOfTreatmentResponseDTO updateTypeOfTreatment(Long id, TypeOfTreatmentUpdateDTO typeOfTreatmentDTO);
     void deleteTypeOfTreatment(Long id);
 }
