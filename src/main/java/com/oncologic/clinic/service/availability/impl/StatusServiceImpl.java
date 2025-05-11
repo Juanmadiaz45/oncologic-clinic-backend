@@ -4,6 +4,8 @@ import com.oncologic.clinic.dto.availability.StatusDTO;
 import com.oncologic.clinic.dto.availability.response.StatusResponseDTO;
 import com.oncologic.clinic.entity.availability.Availability;
 import com.oncologic.clinic.entity.availability.Status;
+import com.oncologic.clinic.exception.runtime.AvailabilityNotFoundException;
+import com.oncologic.clinic.exception.runtime.StatusNotFoundException;
 import com.oncologic.clinic.mapper.availability.StatusMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.availability.StatusRepository;
@@ -28,7 +30,7 @@ public class StatusServiceImpl implements StatusService {
     @Transactional(readOnly = true)
     public StatusResponseDTO getStatusById(Long id) {
         Status status = statusRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Status not found"));
+                .orElseThrow(() -> new StatusNotFoundException("Status not found with ID " + id));
         return mapper.toDto(status);
     }
 
@@ -47,7 +49,7 @@ public class StatusServiceImpl implements StatusService {
 
         if (requestDTO.getAvailabilityId() != null) {
             Availability availability = availabilityRepository.findById(requestDTO.getAvailabilityId())
-                    .orElseThrow(() -> new EntityNotFoundException("Availability not found"));
+                    .orElseThrow(() -> new AvailabilityNotFoundException("Availability not found"));
             status.setAvailability(availability);
         }
 
@@ -65,7 +67,7 @@ public class StatusServiceImpl implements StatusService {
 
         if (updateDTO.getAvailabilityId() != null) {
             Availability availability = availabilityRepository.findById(updateDTO.getAvailabilityId())
-                    .orElseThrow(() -> new EntityNotFoundException("Availability not found"));
+                    .orElseThrow(() -> new AvailabilityNotFoundException("Availability not found"));
             status.setAvailability(availability);
         }
 
@@ -77,7 +79,7 @@ public class StatusServiceImpl implements StatusService {
     @Transactional
     public void deleteStatus(Long id) {
         if (!statusRepository.existsById(id)) {
-            throw new EntityNotFoundException("Status not found");
+            throw new StatusNotFoundException("Status not found with ID " + id);
         }
         statusRepository.deleteById(id);
     }

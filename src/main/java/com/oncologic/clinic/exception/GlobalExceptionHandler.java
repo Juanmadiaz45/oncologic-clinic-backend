@@ -59,4 +59,15 @@ public class GlobalExceptionHandler {
                 .body("Error: " + ex.getMessage());
     }
 
+    @ExceptionHandler(AvailabilityNotFoundException.class)
+    public ProblemDetail handleAvailabilityNotFoundException(AvailabilityNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(StatusNotFoundException.class)
+    public ProblemDetail handleStatusNotFoundException(StatusNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+
 }
