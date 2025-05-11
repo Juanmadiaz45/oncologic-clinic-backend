@@ -6,6 +6,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,11 +31,14 @@ public class RestSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
-     * Defines the security filter chain that will be applied to all HTTP requests.
+     * Defines the security filter chain that will be applied to all REST requests.
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // Apply all security rules to all requests (except for static resources)
+                .securityMatcher("/api/**")
                 // Disable CSRF protection as it will be handled via JWT tokens
                 .csrf(AbstractHttpConfigurer::disable)
                 // Disable CORS as it will be manually configured with a separate filter
@@ -54,6 +58,19 @@ public class RestSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Configure the authentication provider that validates credentials
                 .authenticationProvider(authenticationProvider)
+                // Configure exception handling to return JSON error responses when authentication fails or access is denied
+                .exceptionHandling(eh -> eh
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"Authentication is required to access this resource\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"You don't have permission to access this resource\"}");
+                        })
+                )
                 // Add a JWT authentication filter before the username/password authentication filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -80,8 +97,8 @@ public class RestSecurityConfig {
         // Allow all headers
         config.setAllowedHeaders(Collections.singletonList("*"));
 
-        // Register configuration for all routes (/**)
-        source.registerCorsConfiguration("/**", config);
+        // Register configuration for all routes in api (/api/**)
+        source.registerCorsConfiguration("/api/**", config);
 
         // Register filter with defined configuration and set the highest priority
         FilterRegistrationBean<?> bean = new FilterRegistrationBean<>(new CorsFilter(source));

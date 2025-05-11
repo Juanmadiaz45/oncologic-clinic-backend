@@ -2,6 +2,7 @@ package com.oncologic.clinic.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -13,8 +14,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class WebSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(2)
+    public SecurityFilterChain mvcSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Apply all security rules to all requests (except for static resources)
+                .securityMatcher("/**")
+                // Configuration of HTTP request authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN")
@@ -24,16 +29,28 @@ public class WebSecurityConfig {
                         .requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR")
                         .anyRequest().authenticated()
                 )
-
+                // Configure the login form
                 .formLogin(login -> login
                         .loginPage("/login")
                         .successHandler(successHandler())
                         .permitAll()
                 )
+                // Configure logout
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
+                )
+                // Configure exception handling
+                .exceptionHandling(eh -> eh
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Redirects to log in if not authenticated
+                            response.sendRedirect("/login");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirects to an access-denied page
+                            response.sendRedirect("/denied");
+                        })
                 );
 
         return http.build();
