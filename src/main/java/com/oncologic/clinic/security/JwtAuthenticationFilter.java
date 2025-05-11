@@ -65,6 +65,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // Place the authentication token in Spring's security context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    SecurityContextHolder.clearContext();  // ← Clears the context if the token is invalid
                 }
             }
 

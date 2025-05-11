@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface AdministrativeService {
     AdministrativeResponseDTO getAdministrativeById(Long id);
-    List<AdministrativeResponseDTO> getAllAdministratives();
+    List<AdministrativeResponseDTO> getAllAdministrative();
     AdministrativeResponseDTO createAdministrative(AdministrativeDTO AdministrativeDTO);
-    public AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeDTO updateDTO);
+    AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeDTO updateDTO);
     void deleteAdministrative(Long id);
 }

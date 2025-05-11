@@ -39,7 +39,7 @@ public class AdministrativeServiceImpl implements AdministrativeService {
 
 
     @Override
-    public List<AdministrativeResponseDTO> getAllAdministratives() {
+    public List<AdministrativeResponseDTO> getAllAdministrative() {
         return administrativeRepository.findAll().stream().map(administrativeMapper::toDto).toList();
     }
 

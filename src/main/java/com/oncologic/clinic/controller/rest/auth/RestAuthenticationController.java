@@ -1,7 +1,6 @@
 package com.oncologic.clinic.controller.rest.auth;
 
 
-import com.oncologic.clinic.controller.rest.BaseApiController;
 import com.oncologic.clinic.dto.auth.AuthRequestDTO;
 import com.oncologic.clinic.dto.auth.AuthResponseDTO;
 import com.oncologic.clinic.service.auth.interfaces.AuthenticationService;
@@ -15,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class RestAuthenticationController extends BaseApiController {
+public class RestAuthenticationController {
 
     private final AuthenticationService authenticationService;
 

@@ -32,7 +32,7 @@ public class AdministrativeRestController {
 
     @GetMapping
     public ResponseEntity<List<AdministrativeResponseDTO>> getAllAdministratives() {
-        return ResponseEntity.ok(administrativeService.getAllAdministratives());
+        return ResponseEntity.ok(administrativeService.getAllAdministrative());
     }
 
     @PutMapping("/{id}")
