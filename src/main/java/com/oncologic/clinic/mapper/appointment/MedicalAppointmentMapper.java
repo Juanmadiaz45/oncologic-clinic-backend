@@ -1,6 +1,6 @@
 package com.oncologic.clinic.mapper.appointment;
 
-import com.oncologic.clinic.dto.appointment.request.MedicalAppointmentRequestDTO;
+import com.oncologic.clinic.dto.appointment.MedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalAppointment;
 import com.oncologic.clinic.entity.appointment.MedicalOffice;
@@ -20,7 +20,7 @@ public interface MedicalAppointmentMapper {
     @Mapping(target = "medicalHistory.id", source = "medicalHistoryId")
     @Mapping(target = "medicalOffices", ignore = true)
     @Mapping(target = "medicalTasks", ignore = true)
-    MedicalAppointment toEntity(MedicalAppointmentRequestDTO dto);
+    MedicalAppointment toEntity(MedicalAppointmentDTO dto);
 
     @Mapping(target = "doctorId", source = "doctor.id")
     @Mapping(target = "typeOfMedicalAppointmentId", source = "typeOfMedicalAppointment.id")
@@ -44,5 +44,5 @@ public interface MedicalAppointmentMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "medicalOffices", ignore = true)
     @Mapping(target = "medicalTasks", ignore = true)
-    void updateFromDto(MedicalAppointmentRequestDTO dto, @MappingTarget MedicalAppointment entity);
+    void updateFromDto(MedicalAppointmentDTO dto, @MappingTarget MedicalAppointment entity);
 }

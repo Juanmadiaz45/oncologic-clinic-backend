@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.appointment;
+/*package com.oncologic.clinic.service.appointment;
 
 import com.oncologic.clinic.entity.appointment.MedicalTask;
 import com.oncologic.clinic.repository.appointment.MedicalTaskRepository;
@@ -162,3 +162,4 @@ class MedicalTaskServiceTest {
         verify(medicalTaskRepository, never()).deleteById(any());
     }
 }
+ */

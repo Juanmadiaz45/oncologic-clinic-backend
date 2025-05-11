@@ -1,14 +1,15 @@
 package com.oncologic.clinic.service.appointment;
 
 
-import com.oncologic.clinic.entity.appointment.MedicalOffice;
+import com.oncologic.clinic.dto.appointment.MedicalOfficeDTO;
+import com.oncologic.clinic.dto.appointment.response.MedicalOfficeResponseDTO;
 
 import java.util.List;
 
 public interface MedicalOfficeService {
-    MedicalOffice getMedicalOfficeById(Long id);
-    List<MedicalOffice> getAllMedicalOffices();
-    MedicalOffice createMedicalOffice(MedicalOffice office);
-    MedicalOffice updateMedicalOffice(MedicalOffice office);
+    MedicalOfficeResponseDTO getMedicalOfficeById(Long id);
+    List<MedicalOfficeResponseDTO> getAllMedicalOffices();
+    MedicalOfficeResponseDTO createMedicalOffice(MedicalOfficeDTO dto);
+    MedicalOfficeResponseDTO updateMedicalOffice(Long id, MedicalOfficeDTO dto);
     void deleteMedicalOffice(Long id);
 }

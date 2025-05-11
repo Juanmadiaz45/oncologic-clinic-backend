@@ -1,13 +1,15 @@
 package com.oncologic.clinic.service.appointment;
 
+import com.oncologic.clinic.dto.appointment.MedicalTaskDTO;
+import com.oncologic.clinic.dto.appointment.response.MedicalTaskResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalTask;
 
 import java.util.List;
 
 public interface MedicalTaskService {
-    MedicalTask getMedicalTaskById(Long id);
-    List<MedicalTask> getAllMedicalTasks();
-    MedicalTask createMedicalTask(MedicalTask task);
-    MedicalTask updateMedicalTask(MedicalTask task);
+    MedicalTaskResponseDTO getMedicalTaskById(Long id);
+    List<MedicalTaskResponseDTO> getAllMedicalTasks();
+    MedicalTaskResponseDTO createMedicalTask(MedicalTaskDTO dto);
+    MedicalTaskResponseDTO updateMedicalTask(Long id, MedicalTaskDTO dto);
     void deleteMedicalTask(Long id);
 }
