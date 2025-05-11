@@ -45,7 +45,8 @@ public class JwtService {
      * Generates a JWT token for the provided user with extra claims
      */
     public String generateToken(UserDetails userDetails) {
-        return buildToken(createClaims(userDetails), userDetails, jwtExpiration);
+        long expiration = jwtExpiration * 60 * 1000;
+        return buildToken(createClaims(userDetails), userDetails, expiration);
     }
 
     /**
