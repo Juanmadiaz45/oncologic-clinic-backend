@@ -3,10 +3,8 @@ services:
   db_development:
     image: postgres:latest
     container_name: clinic-postgres-dev
-    platform: linux/arm64/v8
-    command: [ "--max_connections=1000" ]
+    command: [ "postgres", "-c", "max_connections=1000" ]
     restart: always
-    shm_size: 128mb
     environment:
       POSTGRES_DB: clinic_dev
       POSTGRES_USER: dev_user
@@ -22,10 +20,8 @@ services:
   db_testing:
     image: postgres:latest
     container_name: clinic-postgres-test
-    platform: linux/arm64/v8
-    command: [ "--max_connections=1000" ]
+    command: [ "postgres", "-c", "max_connections=1000" ]
     restart: always
-    shm_size: 128mb
     environment:
       POSTGRES_DB: clinic_test
       POSTGRES_USER: test_user
@@ -34,7 +30,7 @@ services:
       - "5436:5432"  # Port 5436 on the host for testing
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
-      - ./src/main/resources/static:/docker-entrypoint-init-db.d/files  # Mapea la carpeta static
+      - ./src/main/resources/static:/docker-entrypoint-init-db.d/files  # Map the static folder
 
 
 # Volumes for data persistence
