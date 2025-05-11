@@ -25,8 +25,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponseDTO login(AuthRequestDTO request) {
         try {
             // Authenticate user
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Invalid username or password");
         }
@@ -38,8 +37,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Generate JWT token
         String jwtToken = jwtService.generateToken(userDetails);
 
-        return AuthResponseDTO.builder()
-                .accessToken(jwtToken)
-                .build();
+        return AuthResponseDTO.builder().accessToken(jwtToken).build();
     }
 }
