@@ -1,10 +1,10 @@
-package com.oncologic.clinic.dto.personal.update;
+package com.oncologic.clinic.dto.personal;
 
 import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
 import lombok.Data;
 
 @Data
-public class AdministrativeUpdateDTO {
+public class AdministrativeDTO {
     private PersonalRequestDTO personalData;
     private String position;
     private String department;

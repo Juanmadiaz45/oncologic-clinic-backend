@@ -1,16 +1,15 @@
-package com.oncologic.clinic.dto.personal.request;
+package com.oncologic.clinic.dto.availability;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SpecialityRequestDTO {
+public class StatusDTO {
     private String name;
-    private String description;
-    private Long doctorId;
+    private Long availabilityId;
 }

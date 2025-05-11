@@ -1,15 +1,14 @@
 package com.oncologic.clinic.service.personal;
 
-import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
+import com.oncologic.clinic.dto.personal.AdministrativeDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
-import com.oncologic.clinic.dto.personal.update.AdministrativeUpdateDTO;
 
 import java.util.List;
 
 public interface AdministrativeService {
     AdministrativeResponseDTO getAdministrativeById(Long id);
     List<AdministrativeResponseDTO> getAllAdministratives();
-    AdministrativeResponseDTO createAdministrative(AdministrativeRequestDTO AdministrativeDTO);
-    AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeUpdateDTO administrativeDTO);
+    AdministrativeResponseDTO createAdministrative(AdministrativeDTO AdministrativeDTO);
+    public AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeDTO updateDTO);
     void deleteAdministrative(Long id);
 }

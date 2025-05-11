@@ -1,4 +1,4 @@
-package com.oncologic.clinic.dto.user.response;
+package com.oncologic.clinic.dto.user;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -11,8 +11,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponseDTO {
-    private Long id;
-    private String username;
-    private Set<RoleResponseDTO> roles;
+public class RoleDTO {
+    private String name;
+    private Set<Long> permissionIds;
 }

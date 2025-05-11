@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.examination;
 
-import com.oncologic.clinic.dto.examination.request.LaboratoryRequestDTO;
+import com.oncologic.clinic.dto.examination.LaboratoryDTO;
 import com.oncologic.clinic.dto.examination.response.LaboratoryResponseDTO;
-import com.oncologic.clinic.dto.examination.update.LaboratoryUpdateDTO;
 import com.oncologic.clinic.service.examination.LaboratoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,7 @@ public class LaboratoryRestController {
 
     @PostMapping
     public ResponseEntity<LaboratoryResponseDTO> create(
-            @Valid @RequestBody LaboratoryRequestDTO requestDTO) {
+            @Valid @RequestBody LaboratoryDTO requestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(laboratoryService.createLaboratory(requestDTO));
     }
@@ -39,7 +38,7 @@ public class LaboratoryRestController {
     @PutMapping("/{id}")
     public ResponseEntity<LaboratoryResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody LaboratoryUpdateDTO updateDTO) {
+            @Valid @RequestBody LaboratoryDTO updateDTO) {
         return ResponseEntity.ok(laboratoryService.updateLaboratory(id, updateDTO));
     }
 

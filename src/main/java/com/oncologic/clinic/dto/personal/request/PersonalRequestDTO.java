@@ -1,14 +1,20 @@
 package com.oncologic.clinic.dto.personal.request;
 
-
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PersonalRequestDTO {
-    private UserRequestDTO userData;
+    private UserDTO userData;
     private String idNumber;
     private String name;
     private String lastName;

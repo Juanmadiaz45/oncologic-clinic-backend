@@ -1,9 +1,8 @@
 package com.oncologic.clinic.mapper.user;
 
-import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.RoleDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
-import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.RolePermission;
 import org.mapstruct.Mapper;
@@ -20,7 +19,7 @@ public interface RoleMapper {
 
     @Mapping(target = "rolePermissions", ignore = true)
     @Mapping(target = "userRoles", ignore = true)
-    Role roleRequestDtoToRole(RoleRequestDTO roleRequestDTO);
+    Role roleDtoToRole(RoleDTO roleDTO);
 
     @Mapping(target = "permissions", source = "rolePermissions", qualifiedByName = "mapRolePermissionsToPermissionDTOs")
     RoleResponseDTO roleToRoleResponseDto(Role role);
@@ -35,5 +34,5 @@ public interface RoleMapper {
 
     @Mapping(target = "rolePermissions", ignore = true)
     @Mapping(target = "userRoles", ignore = true)
-    void updateRoleFromDto(RoleUpdateDTO roleUpdateDTO, @org.mapstruct.MappingTarget Role role);
+    void updateRoleFromDto(RoleDTO roleDTO, @org.mapstruct.MappingTarget Role role);
 }

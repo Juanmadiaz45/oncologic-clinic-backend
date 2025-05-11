@@ -1,7 +1,7 @@
 package com.oncologic.clinic.controller;
 
-import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
-import com.oncologic.clinic.dto.personal.request.DoctorRequestDTO;
+import com.oncologic.clinic.dto.personal.AdministrativeDTO;
+import com.oncologic.clinic.dto.personal.DoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
@@ -145,7 +145,7 @@ public class UserController {
     }
 
     @PostMapping("/register/doctor")
-    public String registerDoctor(@ModelAttribute("doctor") DoctorRequestDTO doctorDTO,
+    public String registerDoctor(@ModelAttribute("doctor") DoctorDTO doctorDTO,
                                  BindingResult bindingResult,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
@@ -169,7 +169,7 @@ public class UserController {
     }
 
     @PostMapping("/register/administrative")
-    public String registerAdministrative(@ModelAttribute("administrative") AdministrativeRequestDTO administrativeDTO,
+    public String registerAdministrative(@ModelAttribute("administrative") AdministrativeDTO administrativeDTO,
                                          BindingResult bindingResult,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {

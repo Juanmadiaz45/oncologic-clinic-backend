@@ -1,9 +1,8 @@
 package com.oncologic.clinic.service.personal.impl;
 
-import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
+import com.oncologic.clinic.dto.personal.AdministrativeDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
-import com.oncologic.clinic.dto.personal.update.AdministrativeUpdateDTO;
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
@@ -46,12 +45,12 @@ public class AdministrativeServiceImpl implements AdministrativeService {
 
     @Override
     @Transactional
-    public AdministrativeResponseDTO createAdministrative(AdministrativeRequestDTO administrativeDTO) {
+    public AdministrativeResponseDTO createAdministrative(AdministrativeDTO administrativeDTO) {
         if (administrativeDTO.getPosition() == null || administrativeDTO.getPosition().isEmpty()) {
             throw new IllegalArgumentException("El puesto administrativo no puede estar vacío");
         }
 
-        UserRequestDTO userRequestDTO = administrativeDTO.getPersonalData().getUserData();
+        UserDTO userRequestDTO = administrativeDTO.getPersonalData().getUserData();
         UserResponseDTO userResponse = userService.createUser(userRequestDTO);
 
         User user = userService.getUserEntityById(userResponse.getId());
@@ -70,7 +69,7 @@ public class AdministrativeServiceImpl implements AdministrativeService {
 
     @Override
     @Transactional
-    public AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeUpdateDTO updateDTO) {
+    public AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeDTO updateDTO) {
         Administrative existingAdministrative = administrativeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Administrativo con ID " + id + " no encontrado"));
 

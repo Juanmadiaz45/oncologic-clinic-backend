@@ -12,11 +12,4 @@ public interface PersonalMapper {
     Personal toEntity(PersonalRequestDTO dto);
     PersonalResponseDTO toDto(Personal entity);
     void updateEntityFromDto(PersonalUpdateDTO dto, @MappingTarget Personal entity);
-
-    default Personal mapPersonalId(Long id) {
-        if (id == null) return null;
-        Personal personal = new Personal();
-        personal.setId(id);
-        return personal;
-    }
 }

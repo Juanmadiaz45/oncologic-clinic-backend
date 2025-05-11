@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.personal;
 
-import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
+import com.oncologic.clinic.dto.personal.AdministrativeDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
-import com.oncologic.clinic.dto.personal.update.AdministrativeUpdateDTO;
 import com.oncologic.clinic.service.personal.AdministrativeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class AdministrativeRestController {
 
     @PostMapping
     public ResponseEntity<AdministrativeResponseDTO> createAdministrative(
-            @Valid @RequestBody AdministrativeRequestDTO administrativeDTO) {
+            @Valid @RequestBody AdministrativeDTO administrativeDTO) {
         AdministrativeResponseDTO createdAdministrative = administrativeService.createAdministrative(administrativeDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAdministrative);
     }
@@ -39,7 +38,7 @@ public class AdministrativeRestController {
     @PutMapping("/{id}")
     public ResponseEntity<AdministrativeResponseDTO> updateAdministrative(
             @PathVariable Long id,
-            @Valid @RequestBody AdministrativeUpdateDTO administrativeDTO) {
+            @Valid @RequestBody AdministrativeDTO administrativeDTO) {
         return ResponseEntity.ok(administrativeService.updateAdministrative(id, administrativeDTO));
     }
 

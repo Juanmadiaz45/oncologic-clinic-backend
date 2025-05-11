@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.personal;
 
-import com.oncologic.clinic.dto.personal.request.DoctorRequestDTO;
+import com.oncologic.clinic.dto.personal.DoctorDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
-import com.oncologic.clinic.dto.personal.update.DoctorUpdateDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.service.personal.DoctorService;
 import jakarta.validation.Valid;
@@ -22,7 +21,7 @@ public class DoctorRestController {
 
     @PostMapping
     public ResponseEntity<DoctorResponseDTO> createDoctor(
-            @Valid @RequestBody DoctorRequestDTO doctorDTO) {
+            @Valid @RequestBody DoctorDTO doctorDTO) {
         DoctorResponseDTO createdDoctor = doctorService.createDoctor(doctorDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDoctor);
     }
@@ -47,7 +46,7 @@ public class DoctorRestController {
     @PutMapping("/{id}")
     public ResponseEntity<DoctorResponseDTO> updateDoctor(
             @PathVariable Long id,
-            @Valid @RequestBody DoctorUpdateDTO doctorDTO) {
+            @Valid @RequestBody DoctorDTO doctorDTO) {
         return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
     }
 
@@ -57,9 +56,9 @@ public class DoctorRestController {
         return ResponseEntity.noContent().build();
     }
 
-    private DoctorRequestDTO mapRegisterToDoctorDTO(RegisterDoctorDTO registerDTO) {
+    private DoctorDTO mapRegisterToDoctorDTO(RegisterDoctorDTO registerDTO) {
         // Implementación del mapeo según la estructura de tus DTOs
-        DoctorRequestDTO doctorDTO = new DoctorRequestDTO();
+        DoctorDTO doctorDTO = new DoctorDTO();
         // Mapear campos necesarios
         return doctorDTO;
     }

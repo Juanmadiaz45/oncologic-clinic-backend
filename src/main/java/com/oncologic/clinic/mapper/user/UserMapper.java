@@ -1,9 +1,8 @@
 package com.oncologic.clinic.mapper.user;
 
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
-import com.oncologic.clinic.dto.user.update.UserUpdateDTO;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.entity.user.UserRole;
 import org.mapstruct.Mapper;
@@ -21,7 +20,7 @@ public interface UserMapper {
     @Mapping(target = "userRoles", ignore = true)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "personal", ignore = true)
-    User userRequestDtoToUser(UserRequestDTO userRequestDTO);
+    User userDtoToUser(UserDTO userDTO);
 
     @Mapping(target = "roles", source = "userRoles", qualifiedByName = "mapUserRolesToRoleDTOs")
     UserResponseDTO userToUserResponseDto(User user);
@@ -37,5 +36,5 @@ public interface UserMapper {
     @Mapping(target = "userRoles", ignore = true)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "personal", ignore = true)
-    void updateUserFromDto(UserUpdateDTO userUpdateDTO, @org.mapstruct.MappingTarget User user);
+    void updateUserFromDto(UserDTO userDTO, @org.mapstruct.MappingTarget User user);
 }

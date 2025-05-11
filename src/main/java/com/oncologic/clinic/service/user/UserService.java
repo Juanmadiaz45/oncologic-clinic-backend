@@ -1,8 +1,7 @@
 package com.oncologic.clinic.service.user;
 
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
-import com.oncologic.clinic.dto.user.update.UserUpdateDTO;
 import com.oncologic.clinic.entity.user.User;
 
 import org.springframework.data.domain.Page;
@@ -12,8 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-    UserResponseDTO createUser(UserRequestDTO userDTO);
-    UserResponseDTO updateUser(Long id, UserUpdateDTO userDTO);
+    UserResponseDTO createUser(UserDTO userDTO);
+    UserResponseDTO updateUser(Long id, UserDTO userDTO);
     void deleteUser(Long id);
     UserResponseDTO getUserById(Long id);
     User getUserByUsername(String username);

@@ -1,9 +1,9 @@
-package com.oncologic.clinic.dto.examination.update;
+package com.oncologic.clinic.dto.examination;
 
 import lombok.Data;
 
 @Data
-public class LaboratoryUpdateDTO {
+public class LaboratoryDTO {
     private String name;
     private String location;
     private String telephone;

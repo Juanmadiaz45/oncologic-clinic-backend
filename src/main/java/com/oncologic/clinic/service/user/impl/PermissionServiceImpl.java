@@ -1,8 +1,7 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.user.request.PermissionRequestDTO;
+import com.oncologic.clinic.dto.user.PermissionDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
-import com.oncologic.clinic.dto.user.update.PermissionUpdateDTO;
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.mapper.user.PermissionMapper;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
@@ -33,7 +32,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public PermissionResponseDTO createPermission(PermissionRequestDTO permissionDTO) {
+    public PermissionResponseDTO createPermission(PermissionDTO permissionDTO) {
         if (permissionDTO == null) {
             throw new IllegalArgumentException("El permiso no puede ser nulo");
         }
@@ -46,13 +45,13 @@ public class PermissionServiceImpl implements PermissionService {
             throw new IllegalArgumentException("El permiso ya existe");
         }
 
-        Permission permission = permissionMapper.permissionRequestDtoToPermission(permissionDTO);
+        Permission permission = permissionMapper.permissionDtoToPermission(permissionDTO);
         Permission savedPermission = permissionRepository.save(permission);
         return permissionMapper.permissionToPermissionResponseDto(savedPermission);
     }
 
     @Override
-    public PermissionResponseDTO updatePermission(Long id, PermissionUpdateDTO permissionDTO) {
+    public PermissionResponseDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         Permission existingPermission = permissionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Permiso no encontrado con ID: " + id));
 

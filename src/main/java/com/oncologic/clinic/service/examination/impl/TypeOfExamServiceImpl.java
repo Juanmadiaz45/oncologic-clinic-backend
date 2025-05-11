@@ -1,8 +1,7 @@
 package com.oncologic.clinic.service.examination.impl;
 
-import com.oncologic.clinic.dto.examination.request.TypeOfExamRequestDTO;
+import com.oncologic.clinic.dto.examination.TypeOfExamDTO;
 import com.oncologic.clinic.dto.examination.response.TypeOfExamResponseDTO;
-import com.oncologic.clinic.dto.examination.update.TypeOfExamUpdateDTO;
 import com.oncologic.clinic.entity.examination.TypeOfExam;
 import com.oncologic.clinic.mapper.examination.TypeOfExamMapper;
 import com.oncologic.clinic.repository.examination.TypeOfExamRepository;
@@ -40,7 +39,7 @@ public class TypeOfExamServiceImpl implements TypeOfExamService {
 
     @Override
     @Transactional
-    public TypeOfExamResponseDTO createTypeOfExam(TypeOfExamRequestDTO requestDTO) {
+    public TypeOfExamResponseDTO createTypeOfExam(TypeOfExamDTO requestDTO) {
         TypeOfExam type = mapper.toEntity(requestDTO);
         TypeOfExam savedType = typeOfExamRepository.save(type);
         return mapper.toDto(savedType);
@@ -48,7 +47,7 @@ public class TypeOfExamServiceImpl implements TypeOfExamService {
 
     @Override
     @Transactional
-    public TypeOfExamResponseDTO updateTypeOfExam(Long id, TypeOfExamUpdateDTO updateDTO) {
+    public TypeOfExamResponseDTO updateTypeOfExam(Long id, TypeOfExamDTO updateDTO) {
         TypeOfExam type = typeOfExamRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Type of exam not found"));
 

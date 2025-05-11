@@ -1,9 +1,8 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.RoleDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
-import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.RolePermission;
@@ -51,7 +50,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponseDTO createRole(RoleRequestDTO roleDTO) {
+    public RoleResponseDTO createRole(RoleDTO roleDTO) {
         if (roleDTO.getPermissionIds() == null || roleDTO.getPermissionIds().isEmpty()) {
             throw new IllegalArgumentException("Un rol debe tener al menos un permiso");
         }
@@ -61,7 +60,7 @@ public class RoleServiceImpl implements RoleService {
             throw new IllegalArgumentException("Uno o más permisos proporcionados no existen");
         }
 
-        Role role = roleMapper.roleRequestDtoToRole(roleDTO);
+        Role role = roleMapper.roleDtoToRole(roleDTO);
         Role savedRole = roleRepository.save(role);
 
         addPermissionsToRole(savedRole, permissions);
@@ -71,7 +70,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponseDTO updateRole(Long id, RoleUpdateDTO roleDTO) {
+    public RoleResponseDTO updateRole(Long id, RoleDTO roleDTO) {
         if (roleDTO.getPermissionIds() == null || roleDTO.getPermissionIds().isEmpty()) {
             throw new IllegalArgumentException("Un rol debe tener al menos un permiso");
         }

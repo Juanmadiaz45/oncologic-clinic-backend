@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.examination;
 
-import com.oncologic.clinic.dto.examination.request.TypeOfExamRequestDTO;
+import com.oncologic.clinic.dto.examination.TypeOfExamDTO;
 import com.oncologic.clinic.dto.examination.response.TypeOfExamResponseDTO;
-import com.oncologic.clinic.dto.examination.update.TypeOfExamUpdateDTO;
 import com.oncologic.clinic.service.examination.TypeOfExamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,7 @@ public class TypeOfExamRestController {
 
     @PostMapping
     public ResponseEntity<TypeOfExamResponseDTO> create(
-            @Valid @RequestBody TypeOfExamRequestDTO requestDTO) {
+            @Valid @RequestBody TypeOfExamDTO requestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(typeOfExamService.createTypeOfExam(requestDTO));
     }
@@ -39,7 +38,7 @@ public class TypeOfExamRestController {
     @PutMapping("/{id}")
     public ResponseEntity<TypeOfExamResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody TypeOfExamUpdateDTO updateDTO) {
+            @Valid @RequestBody TypeOfExamDTO updateDTO) {
         return ResponseEntity.ok(typeOfExamService.updateTypeOfExam(id, updateDTO));
     }
 

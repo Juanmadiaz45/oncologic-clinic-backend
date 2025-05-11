@@ -1,6 +1,6 @@
 package com.oncologic.clinic.service.personal;
 
-import com.oncologic.clinic.dto.personal.request.AdministrativeRequestDTO;
+import com.oncologic.clinic.dto.personal.AdministrativeDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
@@ -37,7 +37,7 @@ public class AdministrativeServiceTest {
     @Test
     public void createAdministrative_WhenValidData_ShouldCreateAdministrativeAndUser() {
         // Arrange
-        AdministrativeRequestDTO dto = new AdministrativeRequestDTO();
+        AdministrativeDTO dto = new AdministrativeDTO();
         dto.setUsername("adminUser");
         dto.setPassword("password123");
         dto.setIdNumber("ID12345");
@@ -105,7 +105,7 @@ public class AdministrativeServiceTest {
     @Test
     void createAdministrative_WhenUserServiceThrowsException_ShouldPropagateException() {
         // Arrange
-        AdministrativeRequestDTO dto = new AdministrativeRequestDTO();
+        AdministrativeDTO dto = new AdministrativeDTO();
         dto.setUsername("failUser");
 
         when(userService.createUser(dto)).thenThrow(new RuntimeException("User creation failed"));
@@ -123,7 +123,7 @@ public class AdministrativeServiceTest {
     @Test
     void createAdministrative_WhenRepositoryReturnsNull_ShouldReturnNull() {
         // Arrange
-        AdministrativeRequestDTO dto = new AdministrativeRequestDTO();
+        AdministrativeDTO dto = new AdministrativeDTO();
         dto.setUsername("admin123");
         dto.setPassword("123");
         dto.setIdNumber("123");

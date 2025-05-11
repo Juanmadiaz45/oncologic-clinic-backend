@@ -1,9 +1,8 @@
 package com.oncologic.clinic.controller.rest.user;
 
-import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.RoleDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
-import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
 import com.oncologic.clinic.service.user.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class RoleRestController {
     private final RoleService roleService;
 
     @PostMapping
-    public ResponseEntity<RoleResponseDTO> createRole(@Valid @RequestBody RoleRequestDTO roleDTO) {
+    public ResponseEntity<RoleResponseDTO> createRole(@Valid @RequestBody RoleDTO roleDTO) {
         RoleResponseDTO createdRole = roleService.createRole(roleDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
     }
@@ -40,7 +39,7 @@ public class RoleRestController {
     @PutMapping("/{id}")
     public ResponseEntity<RoleResponseDTO> updateRole(
             @PathVariable Long id,
-            @Valid @RequestBody RoleUpdateDTO roleDTO) {
+            @Valid @RequestBody RoleDTO roleDTO) {
         return ResponseEntity.ok(roleService.updateRole(id, roleDTO));
     }
 

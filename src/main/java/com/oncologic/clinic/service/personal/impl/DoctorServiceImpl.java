@@ -1,9 +1,8 @@
 package com.oncologic.clinic.service.personal.impl;
 
-import com.oncologic.clinic.dto.personal.request.DoctorRequestDTO;
+import com.oncologic.clinic.dto.personal.DoctorDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
-import com.oncologic.clinic.dto.personal.update.DoctorUpdateDTO;
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
@@ -51,8 +50,8 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    public DoctorResponseDTO createDoctor(DoctorRequestDTO doctorDTO) {
-        UserRequestDTO userRequestDTO = doctorDTO.getPersonalData().getUserData();
+    public DoctorResponseDTO createDoctor(DoctorDTO doctorDTO) {
+        UserDTO userRequestDTO = doctorDTO.getPersonalData().getUserData();
 
         UserResponseDTO userResponse = userService.createUser(userRequestDTO);
 
@@ -83,21 +82,21 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    public DoctorResponseDTO updateDoctor(Long id, DoctorUpdateDTO doctorUpdateDTO) {
+    public DoctorResponseDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor con el ID " + id + " no encontrado"));
 
-        doctorMapper.updateEntityFromDto(doctorUpdateDTO, doctor);
+        doctorMapper.updateEntityFromDto(doctorDTO, doctor);
 
         // Si vienen especialidades nuevas
-        if (doctorUpdateDTO.getSpecialityIds() != null) {
+        if (doctorDTO.getSpecialityIds() != null) {
             // 1. Quitar doctor de especialidades antiguas que ya no están
             Set<Speciality> currentSpecialities = doctor.getSpecialities() != null
                     ? new HashSet<>(doctor.getSpecialities())
                     : new HashSet<>();
 
             for (Speciality oldSpeciality : currentSpecialities) {
-                if (!doctorUpdateDTO.getSpecialityIds().contains(oldSpeciality.getId())) {
+                if (!doctorDTO.getSpecialityIds().contains(oldSpeciality.getId())) {
                     oldSpeciality.getDoctors().remove(doctor);
                     specialityRepository.save(oldSpeciality);
                 }
@@ -105,7 +104,7 @@ public class DoctorServiceImpl implements DoctorService {
 
             // 2. Agregar doctor a nuevas especialidades
             Set<Speciality> updatedSpecialities = new HashSet<>();
-            for (Long specialityId : doctorUpdateDTO.getSpecialityIds()) {
+            for (Long specialityId : doctorDTO.getSpecialityIds()) {
                 Speciality speciality = specialityRepository.findById(specialityId)
                         .orElseThrow(() -> new EntityNotFoundException("Especialidad con el ID " + specialityId + " no encontrada"));
                 speciality.getDoctors().add(doctor);
