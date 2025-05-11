@@ -5,6 +5,18 @@ import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseD
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.oncologic.clinic.dto.examination.response.ExaminationResultResponseDTO;
+import com.oncologic.clinic.dto.examination.response.MedicalExaminationResponseDTO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+
 public class MedicalHistoryResponseDTO {
     private Long id;
     private Long patientId;

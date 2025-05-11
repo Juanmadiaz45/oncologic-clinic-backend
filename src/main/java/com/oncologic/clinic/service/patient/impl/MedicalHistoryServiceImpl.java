@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +40,15 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
         return medicalHistoryRepository.findAll().stream()
                 .map(medicalHistoryMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public MedicalHistory registerMedicalHistory(Patient patient, String currentHealthStatus) {
+        MedicalHistory medicalHistory = new MedicalHistory();
+        medicalHistory.setPatient(patient);
+        medicalHistory.setCreationDate(LocalDateTime.now());
+        medicalHistory.setCurrentHealthStatus(currentHealthStatus != null ? currentHealthStatus : "Sin información");
+        return medicalHistoryRepository.save(medicalHistory);
     }
 
     @Override

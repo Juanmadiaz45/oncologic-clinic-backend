@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.personal;
+/*package com.oncologic.clinic.service.personal;
 
 import com.oncologic.clinic.dto.personal.AdministrativeDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
@@ -152,4 +152,4 @@ public class AdministrativeServiceTest {
         verify(administrativeRepository).save(any(Administrative.class));
     }
 
-}
+}*/

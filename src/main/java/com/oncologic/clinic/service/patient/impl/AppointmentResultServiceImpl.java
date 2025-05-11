@@ -2,7 +2,6 @@ package com.oncologic.clinic.service.patient.impl;
 
 import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
 import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
-import com.oncologic.clinic.dto.patient.update.AppointmentResultUpdateDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.mapper.patient.AppointmentResultMapper;
@@ -58,11 +57,18 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
 
     @Override
     @Transactional
-    public AppointmentResultResponseDTO updateAppointmentResult(Long id, AppointmentResultUpdateDTO dto) {
+    public AppointmentResultResponseDTO updateAppointmentResult(Long id, AppointmentResultRequestDTO dto) {
         AppointmentResult existing = appointmentResultRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Resultado de cita no encontrado con el ID: " + id));
 
         appointmentResultMapper.updateEntityFromDto(dto, existing);
+
+        if (dto.getMedicalHistoryId() != null) {
+            MedicalHistory medicalHistory = medicalHistoryRepository.findById(dto.getMedicalHistoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Historia médica no encontrada con el ID: " + dto.getMedicalHistoryId()));
+            existing.setMedicalHistory(medicalHistory);
+        }
+
         AppointmentResult updated = appointmentResultRepository.save(existing);
         return appointmentResultMapper.toDto(updated);
     }

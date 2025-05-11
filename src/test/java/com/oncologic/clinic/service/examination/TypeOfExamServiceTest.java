@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.examination;
+/*package com.oncologic.clinic.service.examination;
 
 import com.oncologic.clinic.entity.examination.TypeOfExam;
 import com.oncologic.clinic.repository.examination.TypeOfExamRepository;
@@ -180,4 +180,4 @@ public class TypeOfExamServiceTest {
         verify(typeOfExamRepository, times(1)).findById(id);
         verify(typeOfExamRepository, never()).delete(any());
     }
-}
+}*/

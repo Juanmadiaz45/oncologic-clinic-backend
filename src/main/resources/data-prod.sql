@@ -265,10 +265,20 @@ INSERT INTO TYPE_OF_TREATMENTS (id, name, description, treatment_id)
 VALUES (2, 'Control y seguimiento', 'Monitoreo periódico de signos vitales', 2);
 
 -- Inicialización de SPECIALITIES
-INSERT INTO SPECIALITIES (id, name, description, doctor_id)
-VALUES (1, 'Medicina General', 'Atención médica primaria', 2);
-INSERT INTO SPECIALITIES (id, name, description, doctor_id)
-VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular', 5);
+-- INSERT INTO SPECIALITIES (id, name, description, doctor_id)
+-- VALUES (1, 'Medicina General', 'Atención médica primaria', 2);
+-- INSERT INTO SPECIALITIES (id, name, description, doctor_id)
+-- VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular', 5);
+
+INSERT INTO SPECIALITIES (id, name, description)
+VALUES (1, 'Medicina General', 'Atención médica primaria');
+INSERT INTO SPECIALITIES (id, name, description)
+VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular');
+
+INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
+VALUES (2, 1);
+INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
+VALUES (5, 2);
 
 -- Inicialización de MEDICAL_TASKS
 INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible)

@@ -9,12 +9,14 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface ObservationMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "appointmentResult.id", source = "appointmentResultId")
+    @Mapping(target = "appointmentResult.id", source = "dto.appointmentResultId")
     Observation toEntity(ObservationRequestDTO dto);
 
-    @Mapping(target = "appointmentResultId", source = "appointmentResult.id")
+    @Mapping(target = "appointmentResultId", source = "entity.appointmentResult.id")
     ObservationResponseDTO toDto(Observation entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "appointmentResult", ignore = true)
     void updateEntityFromDto(ObservationUpdateDTO dto, @MappingTarget Observation entity);
 }

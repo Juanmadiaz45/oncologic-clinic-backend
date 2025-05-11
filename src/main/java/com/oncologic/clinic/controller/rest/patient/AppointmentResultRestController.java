@@ -2,7 +2,6 @@ package com.oncologic.clinic.controller.rest.patient;
 
 import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
 import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
-import com.oncologic.clinic.dto.patient.update.AppointmentResultUpdateDTO;
 import com.oncologic.clinic.service.patient.AppointmentResultService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class AppointmentResultRestController {
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResultResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody AppointmentResultUpdateDTO dto) {
+            @Valid @RequestBody AppointmentResultRequestDTO dto) {
         AppointmentResultResponseDTO updated = appointmentResultService.updateAppointmentResult(id, dto);
         return ResponseEntity.ok(updated); // 200 OK
     }

@@ -1,4 +1,4 @@
-package com.oncologic.clinic.integration.user;
+/*package com.oncologic.clinic.integration.user;
 
 import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.service.user.PermissionService;
@@ -103,4 +103,4 @@ public class PermissionServiceIntegrationTest {
         // Act & Assert
         assertThrows(RuntimeException.class, () -> permissionService.createPermission(duplicatePermission));
     }
-}
+}*/

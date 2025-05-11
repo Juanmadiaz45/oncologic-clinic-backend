@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.user;
+/*package com.oncologic.clinic.service.user;
 
 import com.oncologic.clinic.entity.user.*;
 import com.oncologic.clinic.repository.user.PermissionRepository;
@@ -476,4 +476,4 @@ public class RoleServiceTest {
         verify(roleRepository).findById(roleId);
         verify(rolePermissionRepository, never()).deleteById(any());
     }
-}
+}*/

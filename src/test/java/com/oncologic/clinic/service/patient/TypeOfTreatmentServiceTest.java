@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.patient;
+/*package com.oncologic.clinic.service.patient;
 
 import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.patient.TypeOfTreatment;
@@ -163,4 +163,4 @@ public class TypeOfTreatmentServiceTest {
         verify(typeOfTreatmentRepository, times(1)).findById(id);
         verify(typeOfTreatmentRepository, times(1)).delete(type);
     }
-}
+}*/

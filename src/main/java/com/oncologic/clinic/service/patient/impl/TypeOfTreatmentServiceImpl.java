@@ -2,7 +2,6 @@ package com.oncologic.clinic.service.patient.impl;
 
 import com.oncologic.clinic.dto.patient.request.TypeOfTreatmentRequestDTO;
 import com.oncologic.clinic.dto.patient.response.TypeOfTreatmentResponseDTO;
-import com.oncologic.clinic.dto.patient.update.TypeOfTreatmentUpdateDTO;
 import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.patient.TypeOfTreatment;
 import com.oncologic.clinic.mapper.patient.TypeOfTreatmentMapper;
@@ -57,7 +56,7 @@ public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
 
     @Override
     @Transactional
-    public TypeOfTreatmentResponseDTO updateTypeOfTreatment(Long id, TypeOfTreatmentUpdateDTO dto) {
+    public TypeOfTreatmentResponseDTO updateTypeOfTreatment(Long id, TypeOfTreatmentRequestDTO dto) {
         TypeOfTreatment type = typeOfTreatmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tipo de tratamiento no encontrado con el ID: " + id));
 
