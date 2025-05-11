@@ -1,8 +1,7 @@
 package com.oncologic.clinic.service.examination.impl;
 
-import com.oncologic.clinic.dto.examination.request.LaboratoryRequestDTO;
+import com.oncologic.clinic.dto.examination.LaboratoryDTO;
 import com.oncologic.clinic.dto.examination.response.LaboratoryResponseDTO;
-import com.oncologic.clinic.dto.examination.update.LaboratoryUpdateDTO;
 import com.oncologic.clinic.entity.examination.Laboratory;
 import com.oncologic.clinic.mapper.examination.LaboratoryMapper;
 import com.oncologic.clinic.repository.examination.LaboratoryRepository;
@@ -40,7 +39,7 @@ public class LaboratoryServiceImpl implements LaboratoryService {
 
     @Override
     @Transactional
-    public LaboratoryResponseDTO createLaboratory(LaboratoryRequestDTO requestDTO) {
+    public LaboratoryResponseDTO createLaboratory(LaboratoryDTO requestDTO) {
         Laboratory lab = mapper.toEntity(requestDTO);
         Laboratory savedLab = laboratoryRepository.save(lab);
         return mapper.toDto(savedLab);
@@ -48,7 +47,7 @@ public class LaboratoryServiceImpl implements LaboratoryService {
 
     @Override
     @Transactional
-    public LaboratoryResponseDTO updateLaboratory(Long id, LaboratoryUpdateDTO updateDTO) {
+    public LaboratoryResponseDTO updateLaboratory(Long id, LaboratoryDTO updateDTO) {
         Laboratory lab = laboratoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Laboratory not found"));
 

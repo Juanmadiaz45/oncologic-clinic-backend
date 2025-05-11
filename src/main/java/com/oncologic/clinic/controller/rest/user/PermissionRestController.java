@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.user;
 
-import com.oncologic.clinic.dto.user.request.PermissionRequestDTO;
+import com.oncologic.clinic.dto.user.PermissionDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
-import com.oncologic.clinic.dto.user.update.PermissionUpdateDTO;
 import com.oncologic.clinic.service.user.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class PermissionRestController {
 
     @PostMapping
     public ResponseEntity<PermissionResponseDTO> createPermission(
-            @Valid @RequestBody PermissionRequestDTO permissionDTO) {
+            @Valid @RequestBody PermissionDTO permissionDTO) {
         PermissionResponseDTO createdPermission = permissionService.createPermission(permissionDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPermission);
     }
@@ -39,7 +38,7 @@ public class PermissionRestController {
     @PutMapping("/{id}")
     public ResponseEntity<PermissionResponseDTO> updatePermission(
             @PathVariable Long id,
-            @Valid @RequestBody PermissionUpdateDTO permissionDTO) {
+            @Valid @RequestBody PermissionDTO permissionDTO) {
         return ResponseEntity.ok(permissionService.updatePermission(id, permissionDTO));
     }
 

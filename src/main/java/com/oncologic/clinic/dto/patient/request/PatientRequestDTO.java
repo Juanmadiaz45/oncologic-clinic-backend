@@ -1,11 +1,11 @@
 package com.oncologic.clinic.dto.patient.request;
 
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import lombok.Data;
 
 @Data
 public class PatientRequestDTO {
-    private UserRequestDTO userData;
+    private UserDTO userData;
     private Long medicalHistoryId;
     private String name;
     private String birthDate;

@@ -1,16 +1,15 @@
 package com.oncologic.clinic.service.user;
 
-import com.oncologic.clinic.dto.user.request.PermissionRequestDTO;
+import com.oncologic.clinic.dto.user.PermissionDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
-import com.oncologic.clinic.dto.user.update.PermissionUpdateDTO;
 import com.oncologic.clinic.entity.user.Permission;
 
 import java.util.List;
 
 public interface PermissionService {
-    PermissionResponseDTO createPermission(PermissionRequestDTO permissionDTO);
+    PermissionResponseDTO createPermission(PermissionDTO permissionDTO);
 
-    PermissionResponseDTO updatePermission(Long id, PermissionUpdateDTO permissionDTO);
+    PermissionResponseDTO updatePermission(Long id, PermissionDTO permissionDTO);
 
     void deletePermission(Long id);
 

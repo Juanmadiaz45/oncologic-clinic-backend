@@ -1,4 +1,4 @@
-package com.oncologic.clinic.dto.personal.request;
+package com.oncologic.clinic.dto.user;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SpecialityRequestDTO {
+public class PermissionDTO {
     private String name;
-    private String description;
-    private Long doctorId;
 }

@@ -1,8 +1,7 @@
 package com.oncologic.clinic.service.user.impl;
 
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
-import com.oncologic.clinic.dto.user.update.UserUpdateDTO;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.entity.user.UserRole;
@@ -49,7 +48,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO createUser(UserRequestDTO userDTO) {
+    public UserResponseDTO createUser(UserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
@@ -63,7 +62,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Uno o más roles proporcionados no existen");
         }
 
-        User user = userMapper.userRequestDtoToUser(userDTO);
+        User user = userMapper.userDtoToUser(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
@@ -75,7 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserUpdateDTO userDTO) {
+    public UserResponseDTO updateUser(Long id, UserDTO userDTO) {
         if (userDTO.getRoleIds() == null || userDTO.getRoleIds().isEmpty()) {
             throw new IllegalArgumentException("Un usuario debe tener al menos un rol");
         }

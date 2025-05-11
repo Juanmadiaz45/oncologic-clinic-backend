@@ -1,13 +1,14 @@
 package com.oncologic.clinic.service.availability;
 
-import com.oncologic.clinic.entity.availability.Status;
+import com.oncologic.clinic.dto.availability.StatusDTO;
+import com.oncologic.clinic.dto.availability.response.StatusResponseDTO;
 
 import java.util.List;
 
 public interface StatusService {
-    Status getStatusById(Long id);
-    List<Status> getAllStatuses();
-    Status createStatus(Status status);
-    Status updateStatus(Status status);
+    StatusResponseDTO getStatusById(Long id);
+    List<StatusResponseDTO> getAllStatuses();
+    StatusResponseDTO createStatus(StatusDTO requestDTO);
+    StatusResponseDTO updateStatus(Long id, StatusDTO updateDTO) ;
     void deleteStatus(Long id);
 }

@@ -4,7 +4,7 @@ import com.oncologic.clinic.dto.patient.request.MedicalHistoryRequestDTO;
 import com.oncologic.clinic.dto.patient.request.PatientRequestDTO;
 import com.oncologic.clinic.dto.patient.response.PatientResponseDTO;
 import com.oncologic.clinic.dto.patient.update.PatientUpdateDTO;
-import com.oncologic.clinic.dto.user.request.UserRequestDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Patient;
@@ -55,7 +55,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public PatientResponseDTO createPatient(PatientRequestDTO patientDTO){
-        UserRequestDTO userRequestDTO = patientDTO.getUserData();
+        UserDTO userRequestDTO = patientDTO.getUserData();
         UserResponseDTO userResponse = userService.createUser(userRequestDTO);
         User user = userService.getUserEntityById(userResponse.getId());
 

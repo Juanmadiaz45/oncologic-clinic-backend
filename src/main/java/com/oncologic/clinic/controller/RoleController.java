@@ -1,9 +1,7 @@
 package com.oncologic.clinic.controller;
 
-import com.oncologic.clinic.dto.user.request.RoleRequestDTO;
+import com.oncologic.clinic.dto.user.RoleDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
-import com.oncologic.clinic.dto.user.update.RoleUpdateDTO;
-import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.service.user.PermissionService;
 import com.oncologic.clinic.service.user.RoleService;
@@ -38,7 +36,7 @@ public class RoleController {
     }
 
     @PostMapping("/create")
-    public String createRole(@ModelAttribute("role") RoleRequestDTO roleDTO,
+    public String createRole(@ModelAttribute("role") RoleDTO roleDTO,
                              @RequestParam(required = false) Set<Long> permissionIds,
                              RedirectAttributes redirectAttributes) {
         try {
@@ -79,7 +77,7 @@ public class RoleController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            RoleUpdateDTO roleUpdateDTO = new RoleUpdateDTO();
+            RoleDTO roleUpdateDTO = new RoleDTO();
             roleUpdateDTO.setPermissionIds(permissionIds != null ? permissionIds : new HashSet<>());
             redirectAttributes.addFlashAttribute("successMessage", "Permisos actualizados correctamente");
         } catch (Exception e) {
