@@ -1,4 +1,4 @@
-package com.oncologic.clinic.dto.appointment.response;
+package com.oncologic.clinic.dto.appointment.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,8 +13,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MedicalAppointmentResponseDTO {
-    private Long id;
+public class MedicalAppointmentRequestDTO {
     private Long doctorId;
     private Long typeOfMedicalAppointmentId;
     private LocalDateTime appointmentDate;

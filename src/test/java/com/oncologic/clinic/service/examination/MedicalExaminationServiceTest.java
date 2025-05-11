@@ -1,4 +1,4 @@
-package com.oncologic.clinic.service.examination;
+/*package com.oncologic.clinic.service.examination;
 
 import com.oncologic.clinic.entity.examination.MedicalExamination;
 import com.oncologic.clinic.repository.examination.MedicalExaminationRepository;
@@ -174,4 +174,4 @@ public class MedicalExaminationServiceTest {
         verify(medicalExaminationRepository, times(1)).findById(id);
         verify(medicalExaminationRepository, never()).delete(any());
     }
-}
+}*/

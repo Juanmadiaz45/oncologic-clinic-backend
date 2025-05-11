@@ -2,7 +2,6 @@ package com.oncologic.clinic.controller.rest.patient;
 
 import com.oncologic.clinic.dto.patient.request.TypeOfTreatmentRequestDTO;
 import com.oncologic.clinic.dto.patient.response.TypeOfTreatmentResponseDTO;
-import com.oncologic.clinic.dto.patient.update.TypeOfTreatmentUpdateDTO;
 import com.oncologic.clinic.service.patient.TypeOfTreatmentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class TypeOfTreatmentRestController {
     @PutMapping("/{id}")
     public ResponseEntity<TypeOfTreatmentResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody TypeOfTreatmentUpdateDTO dto) {
+            @Valid @RequestBody TypeOfTreatmentRequestDTO dto) {
         TypeOfTreatmentResponseDTO updated = typeOfTreatmentService.updateTypeOfTreatment(id, dto);
         return ResponseEntity.ok(updated); // 200 OK
     }

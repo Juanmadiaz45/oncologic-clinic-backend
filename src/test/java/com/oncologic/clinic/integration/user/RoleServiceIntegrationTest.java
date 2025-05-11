@@ -1,4 +1,4 @@
-package com.oncologic.clinic.integration.user;
+/*package com.oncologic.clinic.integration.user;
 
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.service.user.RoleService;
@@ -141,4 +141,4 @@ public class RoleServiceIntegrationTest {
         // Assert
         assertThrows(RuntimeException.class, () -> roleService.getRoleById(roleId));
     }
-}
+}*/

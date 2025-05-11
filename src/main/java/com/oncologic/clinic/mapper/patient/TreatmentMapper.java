@@ -6,7 +6,9 @@ import com.oncologic.clinic.dto.patient.update.TreatmentUpdateDTO;
 import com.oncologic.clinic.entity.patient.Treatment;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+import java.util.stream.Collectors;
+
+@Mapper(componentModel = "spring", imports = Collectors.class)
 public interface TreatmentMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appointmentResult.id", source = "appointmentResultId")
@@ -22,5 +24,10 @@ public interface TreatmentMapper {
     TreatmentResponseDTO toDto(Treatment entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "appointmentResult", ignore = true)
+    @Mapping(target = "typeOfTreatments", ignore = true)
+    @Mapping(target = "prescribedMedicines", ignore = true)
+    @Mapping(target = "medicalAppointments", ignore = true)
     void updateEntityFromDto(TreatmentUpdateDTO dto, @MappingTarget Treatment entity);
 }

@@ -5,6 +5,7 @@ import com.oncologic.clinic.dto.patient.response.MedicalHistoryResponseDTO;
 import com.oncologic.clinic.dto.patient.update.MedicalHistoryUpdateDTO;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import org.mapstruct.*;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface MedicalHistoryMapper {
@@ -20,6 +21,7 @@ public interface MedicalHistoryMapper {
     MedicalHistoryResponseDTO toDto(MedicalHistory entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "currentHealthStatus", source = "dto.currentHealthStatus")
     void updateEntityFromDto(MedicalHistoryUpdateDTO dto, @MappingTarget MedicalHistory entity);
 }

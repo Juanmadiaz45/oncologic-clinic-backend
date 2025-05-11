@@ -4,6 +4,7 @@ import com.oncologic.clinic.dto.patient.request.MedicalHistoryRequestDTO;
 import com.oncologic.clinic.dto.patient.request.PatientRequestDTO;
 import com.oncologic.clinic.dto.patient.response.PatientResponseDTO;
 import com.oncologic.clinic.dto.patient.update.PatientUpdateDTO;
+import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
@@ -12,6 +13,7 @@ import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.mapper.patient.MedicalHistoryMapper;
 import com.oncologic.clinic.mapper.patient.PatientMapper;
 import com.oncologic.clinic.repository.patient.PatientRepository;
+import com.oncologic.clinic.repository.user.UserRepository;
 import com.oncologic.clinic.service.patient.MedicalHistoryService;
 import com.oncologic.clinic.service.patient.PatientService;
 import com.oncologic.clinic.service.user.UserService;
@@ -30,13 +32,15 @@ public class PatientServiceImpl implements PatientService {
     private final MedicalHistoryService medicalHistoryService;
     private final PatientMapper patientMapper;
     private final MedicalHistoryMapper medicalHistoryMapper;
+    private final UserRepository userRepository;
 
-    PatientServiceImpl(PatientRepository patientRepository, UserService userService, MedicalHistoryService medicalHistoryService, PatientMapper patientMapper, MedicalHistoryMapper medicalHistoryMapper) {
+    PatientServiceImpl(PatientRepository patientRepository, UserService userService, MedicalHistoryService medicalHistoryService, PatientMapper patientMapper, MedicalHistoryMapper medicalHistoryMapper, UserRepository userRepository) {
         this.patientRepository = patientRepository;
         this.userService = userService;
         this.medicalHistoryService = medicalHistoryService;
         this.patientMapper = patientMapper;
         this.medicalHistoryMapper = medicalHistoryMapper;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -50,6 +54,34 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public List<PatientResponseDTO> getAllPatients() {
         return patientRepository.findAll().stream().map(patientMapper::toDto).toList();
+    }
+
+    @Override
+    @Transactional
+    public Patient registerPatient(RegisterPatientDTO patientDTO){
+        UserResponseDTO userResponseDTO = userService.createUser(patientDTO.getUserData());
+        User user = userRepository.findById(userResponseDTO.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userResponseDTO.getId()));
+
+
+        Patient patient = new Patient();
+        patient.setUser(user);
+        patient.setName(patientDTO.getName());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date = LocalDate.parse(patientDTO.getBirthDate(), formatter);
+        patient.setBirthdate(date.atStartOfDay());
+        patient.setGender(patientDTO.getGender());
+        patient.setAddress(patientDTO.getAddress());
+        patient.setPhoneNumber(String.valueOf(patientDTO.getPhoneNumber()));
+        patient.setEmail(patientDTO.getEmail());
+
+        Patient savedPatient = patientRepository.save(patient);
+
+        MedicalHistory medicalHistory = medicalHistoryService.registerMedicalHistory(savedPatient, patientDTO.getCurrentHealthStatus());
+
+        savedPatient.setMedicalHistory(medicalHistory);
+
+        return patientRepository.save(savedPatient);
     }
 
     @Override
