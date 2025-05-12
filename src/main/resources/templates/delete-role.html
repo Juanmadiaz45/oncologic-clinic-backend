@@ -69,35 +69,36 @@
 
                                 <dt class="col-sm-3">Permisos Asociados:</dt>
                                 <dd class="col-sm-9">
-                                    <span th:if="${selectedRole.rolePermissions.isEmpty()}">Ninguno</span>
-                                    <ul th:unless="${selectedRole.rolePermissions.isEmpty()}">
-                                        <li th:each="rp : ${selectedRole.rolePermissions}"
-                                            th:text="${rp.permission.name}"></li>
+                                    <span th:if="${selectedRole.rolePermissions == null || selectedRole.rolePermissions.isEmpty()}">Ninguno</span>
+                                    <ul th:unless="${selectedRole.rolePermissions == null || selectedRole.rolePermissions.isEmpty()}">
+                                        <li th:each="rolePermission : ${selectedRole.rolePermissions}"
+                                            th:text="${rolePermission.permission.name}"></li>
                                     </ul>
                                 </dd>
 
+                                <!-- Asumiendo que tienes una propiedad userRoles en tu DTO -->
                                 <dt class="col-sm-3">Usuarios Asociados:</dt>
                                 <dd class="col-sm-9">
-                                    <div th:if="${selectedRole.userRoles.isEmpty()}" class="text-success">
+                                    <div th:if="${selectedRole.userRoles == null || selectedRole.userRoles.isEmpty()}" class="text-success">
                                         <i class="bi bi-check-circle-fill"></i> Ningún usuario tiene este rol asignado
                                     </div>
-                                    <div th:unless="${selectedRole.userRoles.isEmpty()}" class="user-list">
+                                    <div th:unless="${selectedRole.userRoles == null || selectedRole.userRoles.isEmpty()}" class="user-list">
                                         <div class="alert dependency-alert mb-3">
                                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                             Este rol está asignado a <span
                                                 th:text="${selectedRole.userRoles.size()}"></span> usuario(s)
                                         </div>
                                         <div class="list-group">
-                                            <label class="list-group-item d-flex justify-content-between align-items-center"
-                                                   th:each="userRole : ${selectedRole.userRoles}">
+                                            <div class="list-group-item d-flex justify-content-between align-items-center"
+                                                 th:each="userRole : ${selectedRole.userRoles}">
                                                 <div>
-                                                    <span th:text="${userRole.user.getUsername()}"></span>
+                                                    <span th:text="${userRole.user.username}"></span>
                                                 </div>
                                                 <span class="badge"
-                                                      th:classappend="${userRole.user.getUserRoles().size() == 1} ? 'bg-danger' : 'bg-warning'"
-                                                      th:text="${userRole.user.getUserRoles().size() == 1} ? 'Único rol' : 'Multiples roles'">
-                                                    </span>
-                                            </label>
+                                                      th:classappend="${userRole.user.userRoles.size() == 1} ? 'bg-danger' : 'bg-warning'"
+                                                      th:text="${userRole.user.userRoles.size() == 1} ? 'Único rol' : 'Multiples roles'">
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </dd>
@@ -106,7 +107,7 @@
 
                         <!-- Zona de peligro modificada -->
                         <div class="danger-zone">
-                            <div th:if="${selectedRole.userRoles.isEmpty()}">
+                            <div th:if="${selectedRole.userRoles == null || selectedRole.userRoles.isEmpty()}">
                                 <h5 class="text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmación
                                     de Eliminación</h5>
                                 <p class="text-danger">Esta acción eliminará permanentemente el rol del sistema.</p>
@@ -129,7 +130,7 @@
                                 </form>
                             </div>
 
-                            <div th:unless="${selectedRole.userRoles.isEmpty()}" class="solution-box p-3">
+                            <div th:unless="${selectedRole.userRoles == null || selectedRole.userRoles.isEmpty()}" class="solution-box p-3">
                                 <h5><i class="bi bi-shield-exclamation me-2"></i>Acciones Requeridas</h5>
                                 <p>No es posible eliminar este rol mientras existan usuarios asignados al mismo.
                                     <b>Por favor, asegúrese de reasignar a todos los usuarios afectados antes de

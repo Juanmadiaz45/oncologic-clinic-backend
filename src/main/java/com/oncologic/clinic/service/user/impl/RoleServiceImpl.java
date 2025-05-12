@@ -129,6 +129,11 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public List<Role> getRoles() {
+        return roleRepository.findAll();
+    }
+
+    @Override
     public RoleResponseDTO addPermissionsToRole(Long roleId, Set<Long> permissionIds) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con ID: " + roleId));

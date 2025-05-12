@@ -1,7 +1,9 @@
 package com.oncologic.clinic.service.personal.impl;
 
 import com.oncologic.clinic.dto.personal.DoctorDTO;
+import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
+import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class DoctorServiceImpl implements DoctorService {
@@ -50,33 +53,88 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    public DoctorResponseDTO createDoctor(DoctorDTO doctorDTO) {
-        UserDTO userRequestDTO = doctorDTO.getPersonalData().getUserData();
+    public Doctor registerDoctor(RegisterDoctorDTO doctorDTO) {
+        User user = userService.createUser(doctorDTO);
 
-        UserResponseDTO userResponse = userService.createUser(userRequestDTO);
-
-        User user = userService.getUserEntityById(userResponse.getId());
-
-        Doctor doctor = doctorMapper.toEntity(doctorDTO);
+        Doctor doctor = new Doctor();
         doctor.setUser(user);
+        doctor.setIdNumber(doctorDTO.getIdNumber());
+        doctor.setName(doctorDTO.getName());
+        doctor.setLastName(doctorDTO.getLastname());
+        doctor.setEmail(doctorDTO.getEmail());
+        doctor.setPhoneNumber(doctorDTO.getPhoneNumber());
+        doctor.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
         doctor.setDateOfHiring(LocalDateTime.now());
         doctor.setStatus('A');
 
         Doctor savedDoctor = doctorRepository.save(doctor);
 
         if (doctorDTO.getSpecialityIds() != null && !doctorDTO.getSpecialityIds().isEmpty()) {
-            Set<Speciality> specialities = new HashSet<>();
-            for (Long specialityId : doctorDTO.getSpecialityIds()) {
-                Speciality speciality = specialityRepository.findById(specialityId)
-                        .orElseThrow(() -> new EntityNotFoundException("Especialidad no encontrada: " + specialityId));
-                speciality.getDoctors().add(savedDoctor);
-                specialities.add(speciality);
-            }
-            specialityRepository.saveAll(specialities);
-            savedDoctor.setSpecialities(specialities);
+            assignSpecialitiesToDoctor(savedDoctor, doctorDTO.getSpecialityIds());
         }
 
-        return doctorMapper.toDto(doctorRepository.save(savedDoctor));
+        return savedDoctor;
+    }
+
+    private void assignSpecialitiesToDoctor(Doctor doctor, Set<Long> specialityIds) {
+        Set<Speciality> newSpecialities = specialityRepository.findAllById(specialityIds)
+                .stream()
+                .collect(Collectors.toSet());
+
+        Set<Speciality> currentSpecialities = new HashSet<>(doctor.getSpecialities());
+
+        Set<Speciality> toRemove = currentSpecialities.stream()
+                .filter(spec -> !newSpecialities.contains(spec))
+                .collect(Collectors.toSet());
+
+        toRemove.forEach(spec -> {
+            spec.getDoctors().remove(doctor);
+            doctor.getSpecialities().remove(spec);
+        });
+
+        newSpecialities.forEach(spec -> {
+            if (!currentSpecialities.contains(spec)) {
+                if (spec.getDoctors() == null) {
+                    spec.setDoctors(new HashSet<>());
+                }
+                spec.getDoctors().add(doctor);
+                doctor.getSpecialities().add(spec);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public DoctorResponseDTO createDoctor(DoctorDTO doctorDTO) {
+        if (doctorDTO.getMedicalLicenseNumber() == null || doctorDTO.getMedicalLicenseNumber().isEmpty()) {
+            throw new IllegalArgumentException("El número de licencia médica no puede estar vacío");
+        }
+
+        RegisterDoctorDTO registerDto = new RegisterDoctorDTO();
+
+        if (doctorDTO.getPersonalData() != null) {
+            PersonalRequestDTO personalData = doctorDTO.getPersonalData();
+            registerDto.setIdNumber(personalData.getIdNumber());
+            registerDto.setName(personalData.getName());
+            registerDto.setLastname(personalData.getLastName());
+            registerDto.setEmail(personalData.getEmail());
+            registerDto.setPhoneNumber(personalData.getPhoneNumber());
+
+            if (personalData.getUserData() != null) {
+                UserDTO userData = personalData.getUserData();
+                registerDto.setUsername(userData.getUsername());
+                registerDto.setPassword(userData.getPassword());
+                registerDto.setRoleIds(userData.getRoleIds());
+            }
+        }
+
+        registerDto.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
+        registerDto.setSpecialityIds(doctorDTO.getSpecialityIds());
+
+
+        Doctor doctor = registerDoctor(registerDto);
+
+        return doctorMapper.toDto(doctor);
     }
 
 

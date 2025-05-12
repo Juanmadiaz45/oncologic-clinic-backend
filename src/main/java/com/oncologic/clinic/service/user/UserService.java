@@ -1,5 +1,6 @@
 package com.oncologic.clinic.service.user;
 
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.user.User;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 public interface UserService {
     UserResponseDTO createUser(UserDTO userDTO);
+    User createUser(RegisterUserDTO userDTO);
     UserResponseDTO updateUser(Long id, UserDTO userDTO);
     void deleteUser(Long id);
     UserResponseDTO getUserById(Long id);

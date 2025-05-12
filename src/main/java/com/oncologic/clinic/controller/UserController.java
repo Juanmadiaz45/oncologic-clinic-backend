@@ -12,6 +12,8 @@ import com.oncologic.clinic.service.personal.AdministrativeService;
 import com.oncologic.clinic.service.personal.DoctorService;
 import com.oncologic.clinic.service.user.RoleService;
 import com.oncologic.clinic.service.user.UserService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -91,14 +93,13 @@ public class UserController {
         return "user-list";
     }
 
-    // Mantener los demás métodos existentes sin cambios
 
     @GetMapping("/register/patient")
     public String formPatient(Model model) {
         if (!model.containsAttribute("patient")) {
             model.addAttribute("patient", new RegisterPatientDTO());
         }
-        model.addAttribute("roles", roleService.getAllRoles());
+        model.addAttribute("roles", roleService.getRoles());
         return "register-patient";
     }
 
@@ -107,7 +108,7 @@ public class UserController {
         if (!model.containsAttribute("doctor")) {
             model.addAttribute("doctor", new RegisterDoctorDTO());
         }
-        model.addAttribute("roles", roleService.getAllRoles());
+        model.addAttribute("roles", roleService.getRoles());
         model.addAttribute("specialities", specialityService.getAllSpecialities());
         return "register-doctor";
     }
@@ -117,7 +118,7 @@ public class UserController {
         if (!model.containsAttribute("administrative")) {
             model.addAttribute("administrative", new RegisterAdministrativeDTO());
         }
-        model.addAttribute("roles", roleService.getAllRoles());
+        model.addAttribute("roles", roleService.getRoles());
         return "register-administrative";
     }
 
@@ -145,13 +146,20 @@ public class UserController {
     }
 
     @PostMapping("/register/doctor")
-    public String registerDoctor(@ModelAttribute("doctor") DoctorDTO doctorDTO,
+    public String registerDoctor(@ModelAttribute("doctor") @Valid RegisterDoctorDTO doctorDTO,
                                  BindingResult bindingResult,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("roles", roleService.getRoles());
+            model.addAttribute("specialities", specialityService.getAllSpecialities());
+            return "register-doctor";
+        }
+
         try {
-            doctorService.createDoctor(doctorDTO);
-            redirectAttributes.addAttribute("successMessage", "Doctor registrado exitosamente");
+            doctorService.registerDoctor(doctorDTO);
+            redirectAttributes.addFlashAttribute("successMessage", "Doctor registrado exitosamente");
             return "redirect:/users/register/doctor";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("rol")) {
@@ -159,22 +167,23 @@ public class UserController {
             } else if (e.getMessage().contains("nombre de usuario")) {
                 bindingResult.rejectValue("username", "username.duplicate", e.getMessage());
             } else {
-                redirectAttributes.addAttribute("error", e.getMessage());
+                redirectAttributes.addFlashAttribute("error", e.getMessage());
                 return "redirect:/users/register/doctor";
             }
-            model.addAttribute("roles", roleService.getAllRoles());
+
+            model.addAttribute("roles", roleService.getRoles());
             model.addAttribute("specialities", specialityService.getAllSpecialities());
             return "register-doctor";
         }
     }
 
     @PostMapping("/register/administrative")
-    public String registerAdministrative(@ModelAttribute("administrative") AdministrativeDTO administrativeDTO,
+    public String registerAdministrative(@ModelAttribute("administrative") RegisterAdministrativeDTO administrativeDTO,
                                          BindingResult bindingResult,
                                          Model model,
                                          RedirectAttributes redirectAttributes) {
         try {
-            administrativeService.createAdministrative(administrativeDTO);
+            administrativeService.registerAdministrative(administrativeDTO);
             redirectAttributes.addAttribute("successMessage", "Administrativo registrado exitosamente");
             return "redirect:/users/register/administrative";
         } catch (IllegalArgumentException e) {
@@ -186,7 +195,7 @@ public class UserController {
                 redirectAttributes.addAttribute("error", e.getMessage());
                 return "redirect:/users/register/administrative";
             }
-            model.addAttribute("roles", roleService.getAllRoles());
+            model.addAttribute("roles", roleService.getRoles());
             return "register-administrative";
         }
     }

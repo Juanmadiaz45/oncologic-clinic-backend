@@ -10,9 +10,10 @@ import java.util.Set;
 
 public interface RoleService {
     RoleResponseDTO createRole(RoleDTO roleDTO);
-    public RoleResponseDTO updateRole(Long id, RoleDTO roleDTO);
+    RoleResponseDTO updateRole(Long id, RoleDTO roleDTO);
     void deleteRole(Long id);
     RoleResponseDTO getRoleById(Long id);
+    List<Role> getRoles();
     List<RoleResponseDTO> getAllRoles();
 
     RoleResponseDTO addPermissionsToRole(Long roleId, Set<Long> permissionIds);
