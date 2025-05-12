@@ -3,10 +3,10 @@ package com.oncologic.clinic.service.examination.impl;
 import com.oncologic.clinic.dto.examination.LaboratoryDTO;
 import com.oncologic.clinic.dto.examination.response.LaboratoryResponseDTO;
 import com.oncologic.clinic.entity.examination.Laboratory;
+import com.oncologic.clinic.exception.runtime.examination.LaboratoryNotFoundException;
 import com.oncologic.clinic.mapper.examination.LaboratoryMapper;
 import com.oncologic.clinic.repository.examination.LaboratoryRepository;
 import com.oncologic.clinic.service.examination.LaboratoryService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ public class LaboratoryServiceImpl implements LaboratoryService {
     @Transactional(readOnly = true)
     public LaboratoryResponseDTO getLaboratoryById(Long id) {
         Laboratory lab = laboratoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Laboratory not found"));
+                .orElseThrow(() -> new LaboratoryNotFoundException(id));
         return mapper.toDto(lab);
     }
 
@@ -49,7 +49,7 @@ public class LaboratoryServiceImpl implements LaboratoryService {
     @Transactional
     public LaboratoryResponseDTO updateLaboratory(Long id, LaboratoryDTO updateDTO) {
         Laboratory lab = laboratoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Laboratory not found"));
+                .orElseThrow(() -> new LaboratoryNotFoundException(id));
 
         mapper.updateEntityFromDto(updateDTO, lab);
         Laboratory updatedLab = laboratoryRepository.save(lab);
@@ -60,7 +60,7 @@ public class LaboratoryServiceImpl implements LaboratoryService {
     @Transactional
     public void deleteLaboratory(Long id) {
         if (!laboratoryRepository.existsById(id)) {
-            throw new EntityNotFoundException("Laboratory not found");
+            throw new LaboratoryNotFoundException(id);
         }
         laboratoryRepository.deleteById(id);
     }

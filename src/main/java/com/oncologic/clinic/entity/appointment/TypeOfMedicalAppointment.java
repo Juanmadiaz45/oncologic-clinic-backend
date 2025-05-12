@@ -22,7 +22,7 @@ public class TypeOfMedicalAppointment {
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
-    @OneToMany(mappedBy = "typeOfMedicalAppointment")
+    @OneToMany(mappedBy = "typeOfMedicalAppointment", cascade = CascadeType.ALL)
     private List<MedicalAppointment> medicalAppointments = new ArrayList<>();
 }
 

@@ -15,8 +15,12 @@ public interface MedicalExaminationMapper {
     @Mapping(target = "medicalHistory", ignore = true)
     MedicalExamination toEntity(MedicalExaminationRequestDTO dto);
 
+    @Mapping(source = "laboratory.id", target = "laboratoryId")
+    @Mapping(source = "typeOfExam.id", target = "typeOfExamId")
+    @Mapping(source = "medicalHistory.id", target = "medicalHistoryId")
     MedicalExaminationResponseDTO toDto(MedicalExamination entity);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "laboratory", ignore = true)
     @Mapping(target = "typeOfExam", ignore = true)
     @Mapping(target = "medicalHistory", ignore = true)

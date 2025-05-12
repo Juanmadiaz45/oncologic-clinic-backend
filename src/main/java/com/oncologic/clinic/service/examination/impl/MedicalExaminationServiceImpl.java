@@ -7,13 +7,16 @@ import com.oncologic.clinic.entity.examination.Laboratory;
 import com.oncologic.clinic.entity.examination.MedicalExamination;
 import com.oncologic.clinic.entity.examination.TypeOfExam;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
+import com.oncologic.clinic.exception.runtime.examination.LaboratoryNotFoundException;
+import com.oncologic.clinic.exception.runtime.examination.MedicalExaminationNotFoundException;
+import com.oncologic.clinic.exception.runtime.examination.TypeOfExamNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.mapper.examination.MedicalExaminationMapper;
 import com.oncologic.clinic.repository.examination.LaboratoryRepository;
 import com.oncologic.clinic.repository.examination.MedicalExaminationRepository;
 import com.oncologic.clinic.repository.examination.TypeOfExamRepository;
 import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.service.examination.MedicalExaminationService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +38,7 @@ public class MedicalExaminationServiceImpl implements MedicalExaminationService 
     @Transactional(readOnly = true)
     public MedicalExaminationResponseDTO getMedicalExaminationById(String id) {
         MedicalExamination exam = medicalExaminationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical examination not found"));
+                .orElseThrow(() -> new MedicalExaminationNotFoundException(id));
         return mapper.toDto(exam);
     }
 
@@ -51,13 +54,13 @@ public class MedicalExaminationServiceImpl implements MedicalExaminationService 
     @Transactional
     public MedicalExaminationResponseDTO createMedicalExamination(MedicalExaminationRequestDTO requestDTO) {
         Laboratory lab = laboratoryRepository.findById(requestDTO.getLaboratoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Laboratory not found"));
+                .orElseThrow(() -> new LaboratoryNotFoundException(requestDTO.getLaboratoryId()));
 
         TypeOfExam type = typeOfExamRepository.findById(requestDTO.getTypeOfExamId())
-                .orElseThrow(() -> new EntityNotFoundException("Type of exam not found"));
+                .orElseThrow(() -> new TypeOfExamNotFoundException(requestDTO.getTypeOfExamId()));
 
         MedicalHistory history = medicalHistoryRepository.findById(requestDTO.getMedicalHistoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Medical history not found"));
+                .orElseThrow(() -> new MedicalHistoryNotFoundException(requestDTO.getMedicalHistoryId()));
 
         MedicalExamination exam = mapper.toEntity(requestDTO);
         exam.setLaboratory(lab);
@@ -72,13 +75,13 @@ public class MedicalExaminationServiceImpl implements MedicalExaminationService 
     @Transactional
     public MedicalExaminationResponseDTO updateMedicalExamination(String id, MedicalExaminationUpdateDTO updateDTO) {
         MedicalExamination exam = medicalExaminationRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical examination not found"));
+                .orElseThrow(() -> new MedicalExaminationNotFoundException(id));
 
         Laboratory lab = laboratoryRepository.findById(updateDTO.getLaboratoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Laboratory not found"));
+                .orElseThrow(() -> new LaboratoryNotFoundException(updateDTO.getLaboratoryId()));
 
         TypeOfExam type = typeOfExamRepository.findById(updateDTO.getTypeOfExamId())
-                .orElseThrow(() -> new EntityNotFoundException("Type of exam not found"));
+                .orElseThrow(() -> new TypeOfExamNotFoundException(updateDTO.getTypeOfExamId()));
 
         mapper.updateEntityFromDto(updateDTO, exam);
         exam.setLaboratory(lab);
@@ -92,7 +95,7 @@ public class MedicalExaminationServiceImpl implements MedicalExaminationService 
     @Transactional
     public void deleteMedicalExamination(String id) {
         if (!medicalExaminationRepository.existsById(id)) {
-            throw new EntityNotFoundException("Medical examination not found");
+            throw new MedicalExaminationNotFoundException(id);
         }
         medicalExaminationRepository.deleteById(id);
     }

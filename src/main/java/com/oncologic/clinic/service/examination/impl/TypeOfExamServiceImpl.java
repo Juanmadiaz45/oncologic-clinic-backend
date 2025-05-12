@@ -3,10 +3,10 @@ package com.oncologic.clinic.service.examination.impl;
 import com.oncologic.clinic.dto.examination.TypeOfExamDTO;
 import com.oncologic.clinic.dto.examination.response.TypeOfExamResponseDTO;
 import com.oncologic.clinic.entity.examination.TypeOfExam;
+import com.oncologic.clinic.exception.runtime.examination.TypeOfExamNotFoundException;
 import com.oncologic.clinic.mapper.examination.TypeOfExamMapper;
 import com.oncologic.clinic.repository.examination.TypeOfExamRepository;
 import com.oncologic.clinic.service.examination.TypeOfExamService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ public class TypeOfExamServiceImpl implements TypeOfExamService {
     @Transactional(readOnly = true)
     public TypeOfExamResponseDTO getTypeOfExamById(Long id) {
         TypeOfExam type = typeOfExamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Type of exam not found"));
+                .orElseThrow(() -> new TypeOfExamNotFoundException(id));
         return mapper.toDto(type);
     }
 
@@ -49,7 +49,7 @@ public class TypeOfExamServiceImpl implements TypeOfExamService {
     @Transactional
     public TypeOfExamResponseDTO updateTypeOfExam(Long id, TypeOfExamDTO updateDTO) {
         TypeOfExam type = typeOfExamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Type of exam not found"));
+                .orElseThrow(() -> new TypeOfExamNotFoundException(id));
 
         mapper.updateEntityFromDto(updateDTO, type);
         TypeOfExam updatedType = typeOfExamRepository.save(type);
@@ -60,7 +60,7 @@ public class TypeOfExamServiceImpl implements TypeOfExamService {
     @Transactional
     public void deleteTypeOfExam(Long id) {
         if (!typeOfExamRepository.existsById(id)) {
-            throw new EntityNotFoundException("Type of exam not found");
+            throw new TypeOfExamNotFoundException(id);
         }
         typeOfExamRepository.deleteById(id);
     }

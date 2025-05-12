@@ -3,10 +3,10 @@ package com.oncologic.clinic.service.appointment.impl;
 import com.oncologic.clinic.dto.appointment.TypeOfMedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.TypeOfMedicalAppointmentResponseDTO;
 import com.oncologic.clinic.entity.appointment.TypeOfMedicalAppointment;
+import com.oncologic.clinic.exception.runtime.appointment.TypeOfMedicalAppointmentNotFoundException;
 import com.oncologic.clinic.mapper.appointment.TypeOfMedicalAppointmentMapper;
 import com.oncologic.clinic.repository.appointment.TypeOfMedicalAppointmentRepository;
 import com.oncologic.clinic.service.appointment.TypeOfMedicalAppointmentService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ public class TypeOfMedicalAppointmentServiceImpl implements TypeOfMedicalAppoint
     @Transactional(readOnly = true)
     public TypeOfMedicalAppointmentResponseDTO getTypeOfMedicalAppointmentById(Long id) {
         TypeOfMedicalAppointment type = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Type of medical appointment not found"));
+                .orElseThrow(() -> new TypeOfMedicalAppointmentNotFoundException(id));
         return mapper.toDto(type);
     }
 
@@ -48,7 +48,7 @@ public class TypeOfMedicalAppointmentServiceImpl implements TypeOfMedicalAppoint
     @Transactional
     public TypeOfMedicalAppointmentResponseDTO updateTypeOfMedicalAppointment(Long id, TypeOfMedicalAppointmentDTO dto) {
         TypeOfMedicalAppointment existing = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Type of medical appointment not found"));
+                .orElseThrow(() -> new TypeOfMedicalAppointmentNotFoundException(id));
 
         mapper.updateEntityFromDto(dto, existing);
         return mapper.toDto(repository.save(existing));
@@ -58,7 +58,7 @@ public class TypeOfMedicalAppointmentServiceImpl implements TypeOfMedicalAppoint
     @Transactional
     public void deleteTypeOfMedicalAppointment(Long id) {
         if(!repository.existsById(id)) {
-            throw new EntityNotFoundException("Type of medical appointment not found");
+            throw new TypeOfMedicalAppointmentNotFoundException(id);
         }
         repository.deleteById(id);
     }

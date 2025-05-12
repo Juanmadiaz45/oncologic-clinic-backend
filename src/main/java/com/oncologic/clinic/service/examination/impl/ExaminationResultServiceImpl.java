@@ -5,11 +5,12 @@ import com.oncologic.clinic.dto.examination.response.ExaminationResultResponseDT
 import com.oncologic.clinic.dto.examination.update.ExaminationResultUpdateDTO;
 import com.oncologic.clinic.entity.examination.ExaminationResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
+import com.oncologic.clinic.exception.runtime.examination.ExaminationResultNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.mapper.examination.ExaminationResultMapper;
 import com.oncologic.clinic.repository.examination.ExaminationResultRepository;
 import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.service.examination.ExaminationResultService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class ExaminationResultServiceImpl implements ExaminationResultService {
     @Transactional(readOnly = true)
     public ExaminationResultResponseDTO getExaminationResultById(Long id) {
         ExaminationResult result = examinationResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Examination result not found"));
+                .orElseThrow(() -> new ExaminationResultNotFoundException(id));
         return mapper.toDto(result);
     }
 
@@ -45,7 +46,7 @@ public class ExaminationResultServiceImpl implements ExaminationResultService {
     @Transactional
     public ExaminationResultResponseDTO createExaminationResult(ExaminationResultRequestDTO requestDTO) {
         MedicalHistory medicalHistory = medicalHistoryRepository.findById(requestDTO.getMedicalHistoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Medical history not found"));
+                .orElseThrow(() -> new MedicalHistoryNotFoundException(requestDTO.getMedicalHistoryId()));
 
         ExaminationResult result = mapper.toEntity(requestDTO);
         result.setMedicalHistory(medicalHistory);
@@ -58,7 +59,7 @@ public class ExaminationResultServiceImpl implements ExaminationResultService {
     @Transactional
     public ExaminationResultResponseDTO updateExaminationResult(Long id, ExaminationResultUpdateDTO updateDTO) {
         ExaminationResult result = examinationResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Examination result not found"));
+                .orElseThrow(() -> new ExaminationResultNotFoundException(id));
 
         mapper.updateEntityFromDto(updateDTO, result);
         ExaminationResult updatedResult = examinationResultRepository.save(result);
@@ -69,7 +70,7 @@ public class ExaminationResultServiceImpl implements ExaminationResultService {
     @Transactional
     public void deleteExaminationResult(Long id) {
         if (!examinationResultRepository.existsById(id)) {
-            throw new EntityNotFoundException("Examination result not found");
+            throw new ExaminationResultNotFoundException(id);
         }
         examinationResultRepository.deleteById(id);
     }
