@@ -4,11 +4,11 @@ import com.oncologic.clinic.dto.patient.request.TypeOfTreatmentRequestDTO;
 import com.oncologic.clinic.dto.patient.response.TypeOfTreatmentResponseDTO;
 import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.patient.TypeOfTreatment;
+import com.oncologic.clinic.exception.runtime.patient.ResourceNotFoundException;
 import com.oncologic.clinic.mapper.patient.TypeOfTreatmentMapper;
 import com.oncologic.clinic.repository.patient.TreatmentRepository;
 import com.oncologic.clinic.repository.patient.TypeOfTreatmentRepository;
 import com.oncologic.clinic.service.patient.TypeOfTreatmentService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +29,7 @@ public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
     @Override
     public TypeOfTreatmentResponseDTO getTypeOfTreatmentById(Long id) {
         TypeOfTreatment type = typeOfTreatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tipo de tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Type of treatment not found with ID: " + id));
         return typeOfTreatmentMapper.toDto(type);
     }
 
@@ -45,7 +45,7 @@ public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
     @Transactional
     public TypeOfTreatmentResponseDTO createTypeOfTreatment(TypeOfTreatmentRequestDTO dto) {
         Treatment treatment = treatmentRepository.findById(dto.getTreatmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado con el ID: " + dto.getTreatmentId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Treatment not found with ID: " + dto.getTreatmentId()));
 
         TypeOfTreatment type = typeOfTreatmentMapper.toEntity(dto);
         type.setTreatment(treatment);
@@ -58,11 +58,11 @@ public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
     @Transactional
     public TypeOfTreatmentResponseDTO updateTypeOfTreatment(Long id, TypeOfTreatmentRequestDTO dto) {
         TypeOfTreatment type = typeOfTreatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tipo de tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Type of treatment not found with ID: " + id));
 
         if (dto.getTreatmentId() != null) {
             Treatment treatment = treatmentRepository.findById(dto.getTreatmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado con el ID: " + dto.getTreatmentId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Treatment not found with ID: " + dto.getTreatmentId()));
             type.setTreatment(treatment);
         }
 
@@ -75,7 +75,7 @@ public class TypeOfTreatmentServiceImpl implements TypeOfTreatmentService {
     @Transactional
     public void deleteTypeOfTreatment(Long id) {
         TypeOfTreatment type = typeOfTreatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tipo de tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Type of treatment not found with ID: " + id));
         typeOfTreatmentRepository.delete(type);
     }
 }

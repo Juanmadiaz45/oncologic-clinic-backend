@@ -5,11 +5,11 @@ import com.oncologic.clinic.dto.patient.response.TreatmentResponseDTO;
 import com.oncologic.clinic.dto.patient.update.TreatmentUpdateDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.Treatment;
+import com.oncologic.clinic.exception.runtime.patient.ResourceNotFoundException;
 import com.oncologic.clinic.mapper.patient.TreatmentMapper;
 import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
 import com.oncologic.clinic.repository.patient.TreatmentRepository;
 import com.oncologic.clinic.service.patient.TreatmentService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +30,7 @@ public class TreatmentServiceImpl implements TreatmentService {
     @Override
     public TreatmentResponseDTO getTreatmentById(Long id) {
         Treatment treatment = treatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Treatment not found with ID: " + id));
         return treatmentMapper.toDto(treatment);
     }
 
@@ -46,7 +46,7 @@ public class TreatmentServiceImpl implements TreatmentService {
     @Transactional
     public TreatmentResponseDTO createTreatment(TreatmentRequestDTO treatmentDTO) {
         AppointmentResult appointmentResult = appointmentResultRepository.findById(treatmentDTO.getAppointmentResultId())
-                .orElseThrow(() -> new EntityNotFoundException("Resultado de cita no encontrado con el ID: " + treatmentDTO.getAppointmentResultId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment result not found with ID: " + treatmentDTO.getAppointmentResultId()));
 
         Treatment treatment = treatmentMapper.toEntity(treatmentDTO);
         treatment.setAppointmentResult(appointmentResult);
@@ -59,7 +59,7 @@ public class TreatmentServiceImpl implements TreatmentService {
     @Transactional
     public TreatmentResponseDTO updateTreatment(Long id, TreatmentUpdateDTO treatmentDTO) {
         Treatment treatment = treatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Treatment not found with ID: " + id));
 
         treatmentMapper.updateEntityFromDto(treatmentDTO, treatment);
         Treatment updated = treatmentRepository.save(treatment);
@@ -70,7 +70,7 @@ public class TreatmentServiceImpl implements TreatmentService {
     @Transactional
     public void deleteTreatment(Long id) {
         Treatment treatment = treatmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tratamiento no encontrado con el ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Treatment not found with ID: " + id));
         treatmentRepository.delete(treatment);
     }
 }

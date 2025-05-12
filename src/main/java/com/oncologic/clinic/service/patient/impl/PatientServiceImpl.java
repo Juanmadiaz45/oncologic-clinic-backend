@@ -5,11 +5,12 @@ import com.oncologic.clinic.dto.patient.request.PatientRequestDTO;
 import com.oncologic.clinic.dto.patient.response.PatientResponseDTO;
 import com.oncologic.clinic.dto.patient.update.PatientUpdateDTO;
 import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
-import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Patient;
 import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.exception.runtime.patient.PatientNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.UserCreationException;
 import com.oncologic.clinic.mapper.patient.MedicalHistoryMapper;
 import com.oncologic.clinic.mapper.patient.PatientMapper;
 import com.oncologic.clinic.repository.patient.PatientRepository;
@@ -18,42 +19,63 @@ import com.oncologic.clinic.service.patient.MedicalHistoryService;
 import com.oncologic.clinic.service.patient.PatientService;
 import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Service
 public class PatientServiceImpl implements PatientService {
+    private static final Logger logger = LoggerFactory.getLogger(PatientServiceImpl.class);
+
     private final PatientRepository patientRepository;
     private final UserService userService;
     private final MedicalHistoryService medicalHistoryService;
     private final PatientMapper patientMapper;
-    private final MedicalHistoryMapper medicalHistoryMapper;
     private final UserRepository userRepository;
 
-    PatientServiceImpl(PatientRepository patientRepository, UserService userService, MedicalHistoryService medicalHistoryService, PatientMapper patientMapper, MedicalHistoryMapper medicalHistoryMapper, UserRepository userRepository) {
+    public PatientServiceImpl(PatientRepository patientRepository,
+                              UserService userService,
+                              MedicalHistoryService medicalHistoryService,
+                              PatientMapper patientMapper,
+                              MedicalHistoryMapper medicalHistoryMapper,
+                              UserRepository userRepository) {
         this.patientRepository = patientRepository;
         this.userService = userService;
         this.medicalHistoryService = medicalHistoryService;
         this.patientMapper = patientMapper;
-        this.medicalHistoryMapper = medicalHistoryMapper;
         this.userRepository = userRepository;
     }
 
     @Override
     public PatientResponseDTO getPatientById(Long id) {
+        logger.info("Fetching patient with ID: {}", id);
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Paciente con el ID " + id + " no encontrado"));
-
+                .orElseThrow(() -> {
+                    logger.warn("Patient not found with ID: {}", id);
+                    return new PatientNotFoundException(id);
+                });
         return patientMapper.toDto(patient);
     }
 
     @Override
     public List<PatientResponseDTO> getAllPatients() {
-        return patientRepository.findAll().stream().map(patientMapper::toDto).toList();
+        logger.info("Fetching all patients");
+        List<PatientResponseDTO> patients = patientRepository.findAll()
+                .stream()
+                .map(patientMapper::toDto)
+                .toList();
+
+        if (patients.isEmpty()) {
+            logger.info("No patients found in database");
+        }
+        return patients;
     }
 
     @Override
@@ -86,50 +108,113 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
-    public PatientResponseDTO createPatient(PatientRequestDTO patientDTO){
-        UserDTO userRequestDTO = patientDTO.getUserData();
-        UserResponseDTO userResponse = userService.createUser(userRequestDTO);
-        User user = userService.getUserEntityById(userResponse.getId());
+    public PatientResponseDTO createPatient(PatientRequestDTO patientDTO) {
+        logger.info("Creating new patient with username: {}", patientDTO.getUserData().getUsername());
 
-        Patient patient = patientMapper.toEntity(patientDTO);
-        patient.setUser(user);
+        try {
+            UserResponseDTO userResponse;
+            try {
+                userResponse = userService.createUser(patientDTO.getUserData());
+            } catch (Exception e) {
+                logger.error("Failed to create user: {}", e.getMessage());
+                throw new UserCreationException("Failed to create user: " + e.getMessage());
+            }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate date = LocalDate.parse(patientDTO.getBirthDate(), formatter);
-        patient.setBirthdate(date.atStartOfDay());
+            User user = userService.getUserEntityById(userResponse.getId());
 
-        Patient savedPatient = patientRepository.save(patient);
+            Patient patient = patientMapper.toEntity(patientDTO);
+            patient.setUser(user);
 
-        MedicalHistoryRequestDTO historyDTO = new MedicalHistoryRequestDTO();
-        historyDTO.setPatientId(savedPatient.getId());
-        historyDTO.setCurrentHealthStatus(patientDTO.getCurrentHealthStatus());
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate date = LocalDate.parse(patientDTO.getBirthDate(), formatter);
+                patient.setBirthdate(date.atStartOfDay());
+            } catch (DateTimeParseException e) {
+                logger.error("Invalid date format for birthDate: {}", patientDTO.getBirthDate());
+                throw new IllegalArgumentException("Invalid date format. Expected yyyy-MM-dd");
+            }
 
-        medicalHistoryService.createMedicalHistory(historyDTO);
+            Patient savedPatient = patientRepository.save(patient);
+            logger.info("Patient created with ID: {}", savedPatient.getId());
 
-        MedicalHistory medicalHistory = medicalHistoryMapper.toEntity(historyDTO);
-        savedPatient.setMedicalHistory(medicalHistory);
-        Patient updatedPatient = patientRepository.save(savedPatient);
+            MedicalHistoryRequestDTO historyDTO = new MedicalHistoryRequestDTO();
+            historyDTO.setPatientId(savedPatient.getId());
+            historyDTO.setCurrentHealthStatus(patientDTO.getCurrentHealthStatus());
 
-        return patientMapper.toDto(updatedPatient);
+            medicalHistoryService.createMedicalHistory(historyDTO);
+
+            Patient updatedPatient = patientRepository.findById(savedPatient.getId())
+                    .orElseThrow(() -> new PatientNotFoundException(savedPatient.getId()));
+
+            return patientMapper.toDto(updatedPatient);
+
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Data integrity violation while creating patient: {}", e.getMessage());
+            throw new DataIntegrityViolationException("Failed to create patient due to data integrity violation", e);
+        }
     }
 
     @Override
     @Transactional
     public PatientResponseDTO updatePatient(Long id, PatientUpdateDTO patientDTO) {
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Paciente con el ID " + id + " no encontrado"));
+        logger.info("Updating patient with ID: {}", id);
 
-        patientMapper.updateEntityFromDto(patientDTO, patient);
+        try {
+            Patient patient = patientRepository.findById(id)
+                    .orElseThrow(() -> {
+                        logger.warn("Patient not found with ID: {}", id);
+                        return new PatientNotFoundException(id);
+                    });
 
-        return patientMapper.toDto(patientRepository.save(patient));
+            patientMapper.updateEntityFromDto(patientDTO, patient);
+
+            if (patientDTO.getBirthDate() != null) {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    LocalDate date = LocalDate.parse(patientDTO.getBirthDate(), formatter);
+                    patient.setBirthdate(date.atStartOfDay());
+                } catch (DateTimeParseException e) {
+                    logger.error("Invalid date format for birthDate: {}", patientDTO.getBirthDate());
+                    throw new IllegalArgumentException("Invalid date format. Expected yyyy-MM-dd");
+                }
+            }
+
+            Patient updated = patientRepository.save(patient);
+            logger.info("Patient updated successfully with ID: {}", id);
+            return patientMapper.toDto(updated);
+
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Data integrity violation while updating patient: {}", e.getMessage());
+            throw new DataIntegrityViolationException("Failed to update patient due to data integrity violation", e);
+        }
     }
 
-    public void deletePatient(Long id){
+    @Override
+    @Transactional
+    public void deletePatient(Long id) {
+        logger.info("Deleting patient with ID: {}", id);
+
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado con el ID: " + id));
-        if (patient.getUser() != null) {
-            userService.deleteUser(patient.getUser().getId());
+                .orElseThrow(() -> {
+                    logger.warn("Patient not found with ID: {}", id);
+                    return new PatientNotFoundException(id);
+                });
+
+        if (patient.getMedicalHistory() != null) {
+            medicalHistoryService.deleteMedicalHistory(patient.getMedicalHistory().getId());
         }
-        patientRepository.deleteById(id);
+
+        patientRepository.delete(patient);
+        logger.info("Patient record deleted with ID: {}", id);
+
+        if (patient.getUser() != null) {
+            try {
+                userService.deleteUser(patient.getUser().getId());
+                logger.info("Deleted user associated with patient ID: {}", id);
+            } catch (Exception e) {
+                logger.error("Failed to delete user for patient ID {}: {}", id, e.getMessage());
+                throw new RuntimeException("Failed to delete associated user", e);
+            }
+        }
     }
 }
