@@ -4,10 +4,10 @@ import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
 import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
-import com.oncologic.clinic.exception.runtime.AppointmentResultCreationException;
-import com.oncologic.clinic.exception.runtime.AppointmentResultNotFoundException;
-import com.oncologic.clinic.exception.runtime.AppointmentResultUpdateException;
-import com.oncologic.clinic.exception.runtime.MedicalHistoryNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultCreationException;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultUpdateException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.mapper.patient.AppointmentResultMapper;
 import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
 import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
@@ -50,7 +50,7 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
         } catch (Exception ex) {
             logger.error("Error inesperado al obtener resultado de cita con ID {}", id, ex);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al recuperar el resultado de cita", ex);
+                    "Error retrieving appointment result", ex);
         }
     }
 
@@ -65,7 +65,7 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
         } catch (Exception ex) {
             logger.error("Error al recuperar todos los resultados de cita", ex);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al recuperar los resultados de cita", ex);
+                    "Error retrieving appointment results", ex);
         }
     }
 
@@ -90,14 +90,14 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
             throw ex;
 
         } catch (DataIntegrityViolationException ex) {
-            String errorMsg = "Error de integridad de datos al crear resultado de cita: " +
+            String errorMsg = "Data integrity error while creating citation result: " +
                     ex.getMostSpecificCause().getMessage();
             logger.error(errorMsg, ex);
             throw new AppointmentResultCreationException(errorMsg, ex);
 
         } catch (Exception ex) {
             logger.error("Error inesperado al crear resultado de cita", ex);
-            throw new AppointmentResultCreationException("Error al crear el resultado de cita", ex);
+            throw new AppointmentResultCreationException("Error creating appointment result", ex);
         }
     }
 
@@ -126,14 +126,14 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
             throw ex;
 
         } catch (DataIntegrityViolationException ex) {
-            String errorMsg = "Error de integridad de datos al actualizar resultado de cita: " +
+            String errorMsg = "Data integrity error when updating appointment result: " +
                     ex.getMostSpecificCause().getMessage();
             logger.error(errorMsg, ex);
             throw new AppointmentResultUpdateException(errorMsg, ex);
 
         } catch (Exception ex) {
             logger.error("Error inesperado al actualizar resultado de cita con ID {}", id, ex);
-            throw new AppointmentResultUpdateException("Error al actualizar el resultado de cita", ex);
+            throw new AppointmentResultUpdateException("Error updating appointment result", ex);
         }
     }
 
@@ -151,11 +151,11 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
 
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Error al eliminar el resultado de cita: " + e.getMostSpecificCause().getMessage(), e);
+                    "Error deleting quote result: " + e.getMostSpecificCause().getMessage(), e);
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error inesperado al eliminar el resultado de cita", e);
+                    "Unexpected error when deleting the appointment result", e);
         }
     }
 }

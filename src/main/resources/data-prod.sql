@@ -134,9 +134,9 @@ VALUES (7, 'ADM002', 'Elena', 'Morales', 'elena.morales@hospital.com', '555-9012
 
 -- Inicialización de DOCTORS
 INSERT INTO DOCTORS (id, medical_license_number)
-VALUES (2, 'MED12345');
+VALUES (1, 'MED12345');
 INSERT INTO DOCTORS (id, medical_license_number)
-VALUES (5, 'MED54321');
+VALUES (2, 'MED54321');
 
 -- Inicialización de ADMINISTRATIVE
 INSERT INTO ADMINISTRATIVE (id, position, department)
@@ -214,10 +214,10 @@ VALUES (2, 'Control de hipertensión', 'Seguimiento de presión arterial', TIMES
 -- Inicialización de MEDICAL_APPOINTMENTS
 INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, id3, treatment_id,
                                   medical_history_id)
-VALUES (1, 2, 1, TIMESTAMP '2023-03-01 09:00:00', 1, 1, 1);
+VALUES (1, 1, 1, TIMESTAMP '2023-03-01 09:00:00', 1, 1, 1);
 INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, id3, treatment_id,
                                   medical_history_id)
-VALUES (2, 5, 2, TIMESTAMP '2023-03-02 10:00:00', 2, 2, 2);
+VALUES (2, 2, 2, TIMESTAMP '2023-03-02 10:00:00', 2, 2, 2);
 
 -- Inicialización de MEDICAL_OFFICES
 INSERT INTO MEDICAL_OFFICES (id, medical_appointment_id, name)
@@ -244,7 +244,6 @@ INSERT INTO MEDICAL_EXAMINATIONS (id, date_of_realization, laboratory_id, type_o
 VALUES ('EX0002', TIMESTAMP '2023-03-04 14:30:00', 2, 2, 2);
 
 -- Inicialización de EXAMINATION_RESULTS
--- Nota: El campo BLOB se inserta como una cadena vacía, ajustar según sea necesario
 -- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
 -- VALUES (1, TIMESTAMP '2023-03-03 15:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-1.jpg'), 1);
 -- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
@@ -265,20 +264,15 @@ INSERT INTO TYPE_OF_TREATMENTS (id, name, description, treatment_id)
 VALUES (2, 'Control y seguimiento', 'Monitoreo periódico de signos vitales', 2);
 
 -- Inicialización de SPECIALITIES
--- INSERT INTO SPECIALITIES (id, name, description, doctor_id)
--- VALUES (1, 'Medicina General', 'Atención médica primaria', 2);
--- INSERT INTO SPECIALITIES (id, name, description, doctor_id)
--- VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular', 5);
-
 INSERT INTO SPECIALITIES (id, name, description)
 VALUES (1, 'Medicina General', 'Atención médica primaria');
 INSERT INTO SPECIALITIES (id, name, description)
 VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular');
 
 INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
-VALUES (2, 1);
+VALUES (1, 1);
 INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
-VALUES (5, 2);
+VALUES (2, 2);
 
 -- Inicialización de MEDICAL_TASKS
 INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible)

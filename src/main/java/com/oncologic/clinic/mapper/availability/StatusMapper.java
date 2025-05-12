@@ -9,9 +9,9 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface StatusMapper {
-    @Mapping(target = "availability", ignore = true)
     Status toEntity(StatusDTO dto);
 
+    @Mapping(source = "availability.id", target = "availabilityId")
     StatusResponseDTO toDto(Status entity);
 
     @Mapping(target = "availability", ignore = true)

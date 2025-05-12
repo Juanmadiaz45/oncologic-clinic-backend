@@ -4,7 +4,7 @@ import com.oncologic.clinic.dto.availability.AvailabilityDTO;
 import com.oncologic.clinic.dto.availability.response.AvailabilityResponseDTO;
 import com.oncologic.clinic.entity.availability.Availability;
 import com.oncologic.clinic.entity.personal.Personal;
-import com.oncologic.clinic.exception.runtime.AvailabilityNotFoundException;
+import com.oncologic.clinic.exception.runtime.availability.AvailabilityNotFoundException;
 import com.oncologic.clinic.mapper.availability.AvailabilityMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.personal.PersonalRepository;
@@ -57,8 +57,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
         mapper.updateEntityFromDto(updateDTO, availability);
 
-        if (updateDTO.getPersonalIds() != null && !updateDTO.getPersonalIds().isEmpty())
-            updateAvailabilityPersonalsFromDTO(availability, updateDTO);
+        // if (updateDTO.getPersonalIds() != null && !updateDTO.getPersonalIds().isEmpty()) updateAvailabilityPersonalsFromDTO(availability, updateDTO);
 
         Availability updatedAvailability = availabilityRepository.save(availability);
         return mapper.toDto(updatedAvailability);
@@ -75,7 +74,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     private void updateAvailabilityPersonalsFromDTO(Availability availability, AvailabilityDTO requestDTO) {
         Set<Personal> personals = new HashSet<>(personalRepository.findAllById(requestDTO.getPersonalIds()));
-        System.out.println(personals);
         availability.getPersonals().clear();
         availability.getPersonals().addAll(personals);
     }

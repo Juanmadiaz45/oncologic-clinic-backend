@@ -2,7 +2,6 @@ package com.oncologic.clinic.controller.rest.patient;
 
 import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
 import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
-import com.oncologic.clinic.exception.runtime.AppointmentResultNotFoundException;
 import com.oncologic.clinic.service.patient.AppointmentResultService;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -53,11 +52,9 @@ public class AppointmentResultRestController {
         try {
             appointmentResultService.deleteAppointmentResult(id);
             return ResponseEntity.noContent().build();
-        } catch (AppointmentResultNotFoundException ex) {
-            throw ex;
         } catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "No se puede eliminar porque tiene registros asociados", ex);
+                    "Cannot be deleted because it has associated records", ex);
         }
     }
 }

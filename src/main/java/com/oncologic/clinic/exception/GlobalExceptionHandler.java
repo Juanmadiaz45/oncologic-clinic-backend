@@ -1,9 +1,10 @@
 package com.oncologic.clinic.exception;
 
 import com.oncologic.clinic.exception.runtime.*;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultCreationException;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultUpdateException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -48,11 +49,6 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, message);
     }
 
-    @ExceptionHandler(RoleNotFoundException.class)
-    public ProblemDetail handleRoleNotFoundException(RoleNotFoundException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -60,22 +56,9 @@ public class GlobalExceptionHandler {
                 .body("Error: " + ex.getMessage());
     }
 
-    @ExceptionHandler(AvailabilityNotFoundException.class)
-    public ProblemDetail handleAvailabilityNotFoundException(AvailabilityNotFoundException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(StatusNotFoundException.class)
-    public ProblemDetail handleStatusNotFoundException(StatusNotFoundException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler({
-            AppointmentResultNotFoundException.class,
-            MedicalHistoryNotFoundException.class
-    })
-    public ProblemDetail handleNotFoundException(RuntimeException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    @ExceptionHandler(DomainNotFoundException.class)
+    public ResponseEntity<?> handleNotFound(DomainNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(AppointmentResultCreationException.class)
@@ -93,6 +76,5 @@ public class GlobalExceptionHandler {
         problem.setProperty("errorType", "UPDATE_ERROR");
         return problem;
     }
-
 
 }
