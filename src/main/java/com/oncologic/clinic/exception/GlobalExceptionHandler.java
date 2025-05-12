@@ -3,6 +3,7 @@ package com.oncologic.clinic.exception;
 import com.oncologic.clinic.exception.runtime.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -67,6 +68,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StatusNotFoundException.class)
     public ProblemDetail handleStatusNotFoundException(StatusNotFoundException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler({
+            AppointmentResultNotFoundException.class,
+            MedicalHistoryNotFoundException.class
+    })
+    public ProblemDetail handleNotFoundException(RuntimeException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(AppointmentResultCreationException.class)
+    public ProblemDetail handleCreationException(AppointmentResultCreationException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setProperty("errorType", "CREATION_ERROR");
+        return problem;
+    }
+
+    @ExceptionHandler(AppointmentResultUpdateException.class)
+    public ProblemDetail handleUpdateException(AppointmentResultUpdateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setProperty("errorType", "UPDATE_ERROR");
+        return problem;
     }
 
 

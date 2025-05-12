@@ -37,13 +37,13 @@ public class Treatment {
     @JoinColumn(name = "appointment_result_id", nullable = false)
     private AppointmentResult appointmentResult;
 
-    @OneToMany(mappedBy = "treatment")
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TypeOfTreatment> typeOfTreatments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "treatment")
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrescribedMedicine> prescribedMedicines = new ArrayList<>();
 
-    @OneToMany(mappedBy = "treatment")
+    @OneToMany(mappedBy = "treatment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicalAppointment> medicalAppointments = new ArrayList<>();
 }
 

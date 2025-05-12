@@ -46,7 +46,7 @@ public class MedicalAppointment {
     @JoinColumn(name = "medical_history_id", nullable = false)
     private MedicalHistory medicalHistory;
 
-    @OneToMany(mappedBy = "medicalAppointment")
+    @OneToMany(mappedBy = "medicalAppointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicalOffice> medicalOffices;
 
     @ManyToMany

@@ -27,10 +27,10 @@ public class AppointmentResult {
     @JoinColumn(name = "medical_history_id", nullable = false)
     private MedicalHistory medicalHistory;
 
-    @OneToMany(mappedBy = "appointmentResult")
+    @OneToMany(mappedBy = "appointmentResult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Observation> observations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "appointmentResult")
+    @OneToMany(mappedBy = "appointmentResult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Treatment> treatments = new ArrayList<>();
 }
 

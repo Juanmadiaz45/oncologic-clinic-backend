@@ -4,13 +4,21 @@ import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
 import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
+import com.oncologic.clinic.exception.runtime.AppointmentResultCreationException;
+import com.oncologic.clinic.exception.runtime.AppointmentResultNotFoundException;
+import com.oncologic.clinic.exception.runtime.AppointmentResultUpdateException;
+import com.oncologic.clinic.exception.runtime.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.mapper.patient.AppointmentResultMapper;
 import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
 import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.service.patient.AppointmentResultService;
-import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,6 +28,7 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
     private final AppointmentResultRepository appointmentResultRepository;
     private final MedicalHistoryRepository medicalHistoryRepository;
     private final AppointmentResultMapper appointmentResultMapper;
+    private static final Logger logger = LoggerFactory.getLogger(AppointmentResultServiceImpl.class);
 
     public AppointmentResultServiceImpl(AppointmentResultRepository appointmentResultRepository, MedicalHistoryRepository medicalHistoryRepository, AppointmentResultMapper appointmentResultMapper) {
         this.appointmentResultRepository = appointmentResultRepository;
@@ -29,55 +38,124 @@ public class AppointmentResultServiceImpl implements AppointmentResultService {
 
     @Override
     public AppointmentResultResponseDTO getAppointmentResultById(Long id) {
-        AppointmentResult result = appointmentResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Resultado de cita no encontrado con el ID: " + id));
-        return appointmentResultMapper.toDto(result);
+        try {
+            AppointmentResult result = appointmentResultRepository.findById(id)
+                    .orElseThrow(() -> new AppointmentResultNotFoundException(id));
+            return appointmentResultMapper.toDto(result);
+
+        } catch (AppointmentResultNotFoundException ex) {
+            logger.warn("Intento de acceso a resultado de cita no existente: ID {}", id);
+            throw ex;
+
+        } catch (Exception ex) {
+            logger.error("Error inesperado al obtener resultado de cita con ID {}", id, ex);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al recuperar el resultado de cita", ex);
+        }
     }
 
     @Override
     public List<AppointmentResultResponseDTO> getAllAppointmentResults() {
-        return appointmentResultRepository.findAll()
-                .stream()
-                .map(appointmentResultMapper::toDto)
-                .toList();
+        try {
+            return appointmentResultRepository.findAll()
+                    .stream()
+                    .map(appointmentResultMapper::toDto)
+                    .toList();
+
+        } catch (Exception ex) {
+            logger.error("Error al recuperar todos los resultados de cita", ex);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al recuperar los resultados de cita", ex);
+        }
     }
 
     @Override
     @Transactional
     public AppointmentResultResponseDTO createAppointmentResult(AppointmentResultRequestDTO dto) {
-        MedicalHistory medicalHistory = medicalHistoryRepository.findById(dto.getMedicalHistoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Historial médico no encontrado con el ID: " + dto.getMedicalHistoryId()));
+        try {
+            MedicalHistory medicalHistory = medicalHistoryRepository.findById(dto.getMedicalHistoryId())
+                    .orElseThrow(() -> new MedicalHistoryNotFoundException(dto.getMedicalHistoryId()));
 
-        AppointmentResult result = appointmentResultMapper.toEntity(dto);
-        result.setMedicalHistory(medicalHistory);
+            AppointmentResult result = appointmentResultMapper.toEntity(dto);
+            result.setMedicalHistory(medicalHistory);
 
-        AppointmentResult saved = appointmentResultRepository.save(result);
-        return appointmentResultMapper.toDto(saved);
+            AppointmentResult saved = appointmentResultRepository.save(result);
+            logger.info("Resultado de cita creado exitosamente con ID: {}", saved.getId());
+
+            return appointmentResultMapper.toDto(saved);
+
+        } catch (MedicalHistoryNotFoundException ex) {
+            logger.warn("Intento de crear resultado de cita con historial médico no existente: ID {}",
+                    dto.getMedicalHistoryId());
+            throw ex;
+
+        } catch (DataIntegrityViolationException ex) {
+            String errorMsg = "Error de integridad de datos al crear resultado de cita: " +
+                    ex.getMostSpecificCause().getMessage();
+            logger.error(errorMsg, ex);
+            throw new AppointmentResultCreationException(errorMsg, ex);
+
+        } catch (Exception ex) {
+            logger.error("Error inesperado al crear resultado de cita", ex);
+            throw new AppointmentResultCreationException("Error al crear el resultado de cita", ex);
+        }
     }
 
     @Override
     @Transactional
     public AppointmentResultResponseDTO updateAppointmentResult(Long id, AppointmentResultRequestDTO dto) {
-        AppointmentResult existing = appointmentResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Resultado de cita no encontrado con el ID: " + id));
+        try {
+            AppointmentResult existing = appointmentResultRepository.findById(id)
+                    .orElseThrow(() -> new AppointmentResultNotFoundException(id));
 
-        appointmentResultMapper.updateEntityFromDto(dto, existing);
+            appointmentResultMapper.updateEntityFromDto(dto, existing);
 
-        if (dto.getMedicalHistoryId() != null) {
-            MedicalHistory medicalHistory = medicalHistoryRepository.findById(dto.getMedicalHistoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("Historia médica no encontrada con el ID: " + dto.getMedicalHistoryId()));
-            existing.setMedicalHistory(medicalHistory);
+            if (dto.getMedicalHistoryId() != null) {
+                MedicalHistory medicalHistory = medicalHistoryRepository.findById(dto.getMedicalHistoryId())
+                        .orElseThrow(() -> new MedicalHistoryNotFoundException(dto.getMedicalHistoryId()));
+                existing.setMedicalHistory(medicalHistory);
+            }
+
+            AppointmentResult updated = appointmentResultRepository.save(existing);
+            logger.info("Resultado de cita actualizado exitosamente con ID: {}", id);
+
+            return appointmentResultMapper.toDto(updated);
+
+        } catch (AppointmentResultNotFoundException | MedicalHistoryNotFoundException ex) {
+            logger.warn("Intento de actualización con recurso no encontrado: {}", ex.getMessage());
+            throw ex;
+
+        } catch (DataIntegrityViolationException ex) {
+            String errorMsg = "Error de integridad de datos al actualizar resultado de cita: " +
+                    ex.getMostSpecificCause().getMessage();
+            logger.error(errorMsg, ex);
+            throw new AppointmentResultUpdateException(errorMsg, ex);
+
+        } catch (Exception ex) {
+            logger.error("Error inesperado al actualizar resultado de cita con ID {}", id, ex);
+            throw new AppointmentResultUpdateException("Error al actualizar el resultado de cita", ex);
         }
-
-        AppointmentResult updated = appointmentResultRepository.save(existing);
-        return appointmentResultMapper.toDto(updated);
     }
 
     @Override
     @Transactional
     public void deleteAppointmentResult(Long id) {
-        AppointmentResult result = appointmentResultRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Resultado de cita no encontrado con el ID: " + id));
-        appointmentResultRepository.delete(result);
+        try {
+            AppointmentResult result = appointmentResultRepository.findById(id)
+                    .orElseThrow(() -> new AppointmentResultNotFoundException(id));
+
+            appointmentResultRepository.delete(result);
+
+        } catch (AppointmentResultNotFoundException ex) {
+            throw ex;
+
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Error al eliminar el resultado de cita: " + e.getMostSpecificCause().getMessage(), e);
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error inesperado al eliminar el resultado de cita", e);
+        }
     }
 }
