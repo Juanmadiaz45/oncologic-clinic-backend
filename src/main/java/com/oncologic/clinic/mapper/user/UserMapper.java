@@ -14,11 +14,6 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring", uses = {RoleMapper.class})
 public interface UserMapper {
 
-    @Mapping(target = "userRoles", ignore = true)
-    @Mapping(target = "patient", ignore = true)
-    @Mapping(target = "personal", ignore = true)
-    User userDtoToUser(UserDTO userDTO);
-
     @Mapping(target = "roles", source = "userRoles", qualifiedByName = "userRolesToRoleResponseDTOs")
     UserResponseDTO userToUserResponseDto(User user);
 
@@ -28,14 +23,12 @@ public interface UserMapper {
             return null;
         }
 
-        return userRoles.stream()
-                .map(UserRole::getRole)
-                .map(this::roleToRoleResponseDTO)
-                .collect(Collectors.toSet());
+        return userRoles.stream().map(UserRole::getRole).map(this::roleToRoleResponseDTO).collect(Collectors.toSet());
     }
 
     RoleResponseDTO roleToRoleResponseDTO(Role role);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "userRoles", ignore = true)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "personal", ignore = true)

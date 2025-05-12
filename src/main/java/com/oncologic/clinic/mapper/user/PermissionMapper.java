@@ -3,9 +3,7 @@ package com.oncologic.clinic.mapper.user;
 import com.oncologic.clinic.dto.user.PermissionDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.entity.user.Permission;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface PermissionMapper {
@@ -15,6 +13,7 @@ public interface PermissionMapper {
 
     PermissionResponseDTO permissionToPermissionResponseDto(Permission permission);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "rolePermissions", ignore = true)
     void updatePermissionFromDto(PermissionDTO permissionDTO, @MappingTarget Permission permission);
 }

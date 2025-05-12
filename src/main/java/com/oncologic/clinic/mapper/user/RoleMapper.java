@@ -35,6 +35,7 @@ public interface RoleMapper {
 
     PermissionResponseDTO permissionToPermissionResponseDTO(Permission permission);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "rolePermissions", ignore = true)
     @Mapping(target = "userRoles", ignore = true)
     void updateRoleFromDto(RoleDTO roleDTO, @MappingTarget Role role);

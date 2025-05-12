@@ -3,9 +3,7 @@ package com.oncologic.clinic.mapper.availability;
 import com.oncologic.clinic.dto.availability.AvailabilityDTO;
 import com.oncologic.clinic.dto.availability.response.AvailabilityResponseDTO;
 import com.oncologic.clinic.entity.availability.Availability;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface AvailabilityMapper {
@@ -15,6 +13,7 @@ public interface AvailabilityMapper {
 
     AvailabilityResponseDTO toDto(Availability entity);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "personals", ignore = true)
     @Mapping(target = "statuses", ignore = true)
     void updateEntityFromDto(AvailabilityDTO dto, @MappingTarget Availability entity);

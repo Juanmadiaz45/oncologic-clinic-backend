@@ -3,10 +3,10 @@ package com.oncologic.clinic.service.user.impl;
 import com.oncologic.clinic.dto.user.PermissionDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.entity.user.Permission;
+import com.oncologic.clinic.exception.runtime.user.PermissionNotFoundException;
 import com.oncologic.clinic.mapper.user.PermissionMapper;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.service.user.PermissionService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.oncologic.clinic.repository.user.PermissionRepository;
@@ -34,15 +34,15 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public PermissionResponseDTO createPermission(PermissionDTO permissionDTO) {
         if (permissionDTO == null) {
-            throw new IllegalArgumentException("El permiso no puede ser nulo");
+            throw new IllegalArgumentException("The permit cannot be void");
         }
         if (permissionDTO.getName() == null || permissionDTO.getName().isEmpty()) {
-            throw new IllegalArgumentException("El nombre del permiso no puede ser nulo o vacío");
+            throw new IllegalArgumentException("The permission name cannot be null or empty");
         }
 
-        // Verifica si el permiso ya existe
+        // Check if the permit already exists
         if (permissionRepository.existsByName(permissionDTO.getName())) {
-            throw new IllegalArgumentException("El permiso ya existe");
+            throw new IllegalArgumentException("The permit already exists");
         }
 
         Permission permission = permissionMapper.permissionDtoToPermission(permissionDTO);
@@ -53,7 +53,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public PermissionResponseDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         Permission existingPermission = permissionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Permiso no encontrado con ID: " + id));
+                .orElseThrow(() -> new PermissionNotFoundException(id));
 
         permissionMapper.updatePermissionFromDto(permissionDTO, existingPermission);
         Permission updatedPermission = permissionRepository.save(existingPermission);
@@ -64,13 +64,13 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public void deletePermission(Long id) {
         Permission permission = permissionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Permiso no encontrado con ID: " + id));
+                .orElseThrow(() -> new PermissionNotFoundException(id));
 
-        // Verifica si el permiso está asignado a algún rol
+        // Check if the permission is assigned to any role
         boolean isAssignedToRole = rolePermissionRepository.existsByPermissionId(id);
 
         if (isAssignedToRole) {
-            throw new IllegalStateException("No se puede eliminar el permiso porque está asignado a roles");
+            throw new IllegalStateException("The permission cannot be removed because it is assigned to roles");
         }
 
         permissionRepository.delete(permission);
@@ -79,7 +79,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public PermissionResponseDTO getPermissionById(Long id) {
         Permission permission = permissionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Permiso no encontrado con ID: " + id));
+                .orElseThrow(() -> new PermissionNotFoundException(id));
 
         return permissionMapper.permissionToPermissionResponseDto(permission);
     }
@@ -94,6 +94,6 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public Permission getPermissionEntityById(Long id) {
         return permissionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Permiso no encontrado con ID: " + id));
+                .orElseThrow(() -> new PermissionNotFoundException(id));
     }
 }

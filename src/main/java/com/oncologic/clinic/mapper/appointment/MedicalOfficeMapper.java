@@ -3,9 +3,7 @@ package com.oncologic.clinic.mapper.appointment;
 import com.oncologic.clinic.dto.appointment.MedicalOfficeDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalOfficeResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalOffice;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface MedicalOfficeMapper {
@@ -16,5 +14,6 @@ public interface MedicalOfficeMapper {
     MedicalOfficeResponseDTO toDto(MedicalOffice entity);
 
     @Mapping(target = "medicalAppointment", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(MedicalOfficeDTO dto, @MappingTarget MedicalOffice entity);
 }

@@ -29,6 +29,7 @@ public interface AdministrativeMapper {
 
     PersonalResponseDTO mapPersonal(Personal personal);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "idNumber", source = "personalData.idNumber")
     @Mapping(target = "name", source = "personalData.name")
     @Mapping(target = "lastName", source = "personalData.lastName")
@@ -36,6 +37,5 @@ public interface AdministrativeMapper {
     @Mapping(target = "phoneNumber", source = "personalData.phoneNumber")
     @Mapping(target = "dateOfHiring", source = "personalData.dateOfHiring")
     @Mapping(target = "status", source = "personalData.status")
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(AdministrativeDTO dto, @MappingTarget Administrative entity);
 }
