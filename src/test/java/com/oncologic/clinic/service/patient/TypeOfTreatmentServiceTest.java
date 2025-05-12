@@ -1,7 +1,12 @@
-/*package com.oncologic.clinic.service.patient;
+package com.oncologic.clinic.service.patient;
 
+import com.oncologic.clinic.dto.patient.request.TypeOfTreatmentRequestDTO;
+import com.oncologic.clinic.dto.patient.response.TypeOfTreatmentResponseDTO;
 import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.patient.TypeOfTreatment;
+import com.oncologic.clinic.exception.runtime.patient.ResourceNotFoundException;
+import com.oncologic.clinic.mapper.patient.TypeOfTreatmentMapper;
+import com.oncologic.clinic.repository.patient.TreatmentRepository;
 import com.oncologic.clinic.repository.patient.TypeOfTreatmentRepository;
 import com.oncologic.clinic.service.patient.impl.TypeOfTreatmentServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -23,21 +28,49 @@ public class TypeOfTreatmentServiceTest {
     @Mock
     private TypeOfTreatmentRepository typeOfTreatmentRepository;
 
+    @Mock
+    private TreatmentRepository treatmentRepository;
+
+    @Mock
+    private TypeOfTreatmentMapper typeOfTreatmentMapper;
+
     @InjectMocks
     private TypeOfTreatmentServiceImpl typeOfTreatmentService;
 
+    private TypeOfTreatment createTestType(Long id, String name, Treatment treatment) {
+        TypeOfTreatment type = new TypeOfTreatment();
+        type.setId(id);
+        type.setName(name);
+        type.setTreatment(treatment);
+        return type;
+    }
+
+    private TypeOfTreatmentResponseDTO createTestTypeDTO(Long id, String name) {
+        return TypeOfTreatmentResponseDTO.builder()
+                .id(id)
+                .name(name)
+                .build();
+    }
+
+    private Treatment createTestTreatment(Long id) {
+        Treatment treatment = new Treatment();
+        treatment.setId(id);
+        return treatment;
+    }
+
     @Test
-    void getTypeOfTreatmentById_WhenIdExists_ReturnsTypeOfTreatment() {
+    void getTypeOfTreatmentById_WhenIdExists_ReturnsTypeOfTreatmentDTO() {
         // Arrange
         Long id = 1L;
-        TypeOfTreatment expectedType = new TypeOfTreatment();
-        expectedType.setId(id);
-        expectedType.setName("Surgery");
+        Treatment treatment = createTestTreatment(1L);
+        TypeOfTreatment type = createTestType(id, "Surgery", treatment);
+        TypeOfTreatmentResponseDTO expectedDTO = createTestTypeDTO(id, "Surgery");
 
-        when(typeOfTreatmentRepository.findById(id)).thenReturn(Optional.of(expectedType));
+        when(typeOfTreatmentRepository.findById(id)).thenReturn(Optional.of(type));
+        when(typeOfTreatmentMapper.toDto(type)).thenReturn(expectedDTO);
 
         // Act
-        TypeOfTreatment result = typeOfTreatmentService.getTypeOfTreatmentById(id);
+        TypeOfTreatmentResponseDTO result = typeOfTreatmentService.getTypeOfTreatmentById(id);
 
         // Assert
         assertNotNull(result);
@@ -45,6 +78,7 @@ public class TypeOfTreatmentServiceTest {
         assertEquals("Surgery", result.getName());
 
         verify(typeOfTreatmentRepository, times(1)).findById(id);
+        verify(typeOfTreatmentMapper, times(1)).toDto(type);
     }
 
     @Test
@@ -54,28 +88,28 @@ public class TypeOfTreatmentServiceTest {
         when(typeOfTreatmentRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> typeOfTreatmentService.getTypeOfTreatmentById(id));
+        assertThrows(ResourceNotFoundException.class, () -> typeOfTreatmentService.getTypeOfTreatmentById(id));
 
         verify(typeOfTreatmentRepository, times(1)).findById(id);
+        verify(typeOfTreatmentMapper, never()).toDto(any());
     }
 
     @Test
-    void getAllTypesOfTreatment_WhenCalled_ReturnsTypeOfTreatmentList() {
+    void getAllTypesOfTreatment_WhenCalled_ReturnsTypeOfTreatmentDTOList() {
         // Arrange
-        TypeOfTreatment type1 = new TypeOfTreatment();
-        type1.setId(1L);
-        type1.setName("Type 1");
+        Treatment treatment = createTestTreatment(1L);
+        TypeOfTreatment type1 = createTestType(1L, "Type 1", treatment);
+        TypeOfTreatment type2 = createTestType(2L, "Type 2", treatment);
 
-        TypeOfTreatment type2 = new TypeOfTreatment();
-        type2.setId(2L);
-        type2.setName("Type 2");
+        TypeOfTreatmentResponseDTO dto1 = createTestTypeDTO(1L, "Type 1");
+        TypeOfTreatmentResponseDTO dto2 = createTestTypeDTO(2L, "Type 2");
 
-        List<TypeOfTreatment> expectedList = Arrays.asList(type1, type2);
-
-        when(typeOfTreatmentRepository.findAll()).thenReturn(expectedList);
+        when(typeOfTreatmentRepository.findAll()).thenReturn(Arrays.asList(type1, type2));
+        when(typeOfTreatmentMapper.toDto(type1)).thenReturn(dto1);
+        when(typeOfTreatmentMapper.toDto(type2)).thenReturn(dto2);
 
         // Act
-        List<TypeOfTreatment> result = typeOfTreatmentService.getAllTypesOfTreatment();
+        List<TypeOfTreatmentResponseDTO> result = typeOfTreatmentService.getAllTypesOfTreatment();
 
         // Assert
         assertNotNull(result);
@@ -84,59 +118,68 @@ public class TypeOfTreatmentServiceTest {
         assertEquals("Type 2", result.get(1).getName());
 
         verify(typeOfTreatmentRepository, times(1)).findAll();
+        verify(typeOfTreatmentMapper, times(1)).toDto(type1);
+        verify(typeOfTreatmentMapper, times(1)).toDto(type2);
     }
 
     @Test
-    void createTypeOfTreatment_WhenValidType_ReturnsSavedType() {
+    void createTypeOfTreatment_WhenValidData_ReturnsTypeOfTreatmentDTO() {
         // Arrange
-        Treatment treatment = new Treatment();
-        treatment.setId(1L);
+        Long treatmentId = 1L;
+        Treatment treatment = createTestTreatment(treatmentId);
 
-        TypeOfTreatment typeToSave = new TypeOfTreatment();
-        typeToSave.setName("Immunotherapy");
-        typeToSave.setTreatment(treatment);
+        TypeOfTreatmentRequestDTO requestDTO = TypeOfTreatmentRequestDTO.builder()
+                .name("Immunotherapy")
+                .treatmentId(treatmentId)
+                .build();
 
-        TypeOfTreatment savedType = new TypeOfTreatment();
-        savedType.setId(1L);
-        savedType.setName("Immunotherapy");
-        savedType.setTreatment(treatment);
+        TypeOfTreatment typeToSave = createTestType(null, "Immunotherapy", treatment);
+        TypeOfTreatment savedType = createTestType(1L, "Immunotherapy", treatment);
+        TypeOfTreatmentResponseDTO responseDTO = createTestTypeDTO(1L, "Immunotherapy");
 
+        when(treatmentRepository.findById(treatmentId)).thenReturn(Optional.of(treatment));
+        when(typeOfTreatmentMapper.toEntity(requestDTO)).thenReturn(typeToSave);
         when(typeOfTreatmentRepository.save(typeToSave)).thenReturn(savedType);
+        when(typeOfTreatmentMapper.toDto(savedType)).thenReturn(responseDTO);
 
         // Act
-        TypeOfTreatment result = typeOfTreatmentService.createTypeOfTreatment(typeToSave);
+        TypeOfTreatmentResponseDTO result = typeOfTreatmentService.createTypeOfTreatment(requestDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Immunotherapy", result.getName());
-        assertEquals(treatment, result.getTreatment());
 
+        verify(treatmentRepository, times(1)).findById(treatmentId);
+        verify(typeOfTreatmentMapper, times(1)).toEntity(requestDTO);
         verify(typeOfTreatmentRepository, times(1)).save(typeToSave);
+        verify(typeOfTreatmentMapper, times(1)).toDto(savedType);
     }
 
     @Test
-    void updateTypeOfTreatment_WhenTypeExists_ReturnsUpdatedType() {
+    void updateTypeOfTreatment_WhenTypeExists_ReturnsUpdatedTypeDTO() {
         // Arrange
         Long id = 1L;
-        Treatment treatment = new Treatment();
-        treatment.setId(1L);
+        Long newTreatmentId = 2L;
+        Treatment oldTreatment = createTestTreatment(1L);
+        Treatment newTreatment = createTestTreatment(newTreatmentId);
 
-        TypeOfTreatment existingType = new TypeOfTreatment();
-        existingType.setId(id);
-        existingType.setName("Old Type");
-        existingType.setTreatment(treatment);
+        TypeOfTreatmentRequestDTO updateDTO = TypeOfTreatmentRequestDTO.builder()
+                .name("Updated Type")
+                .treatmentId(newTreatmentId)
+                .build();
 
-        TypeOfTreatment updatedType = new TypeOfTreatment();
-        updatedType.setId(id);
-        updatedType.setName("Updated Type");
-        updatedType.setTreatment(treatment);
+        TypeOfTreatment existingType = createTestType(id, "Old Type", oldTreatment);
+        TypeOfTreatment updatedType = createTestType(id, "Updated Type", newTreatment);
+        TypeOfTreatmentResponseDTO responseDTO = createTestTypeDTO(id, "Updated Type");
 
         when(typeOfTreatmentRepository.findById(id)).thenReturn(Optional.of(existingType));
+        when(treatmentRepository.findById(newTreatmentId)).thenReturn(Optional.of(newTreatment));
         when(typeOfTreatmentRepository.save(existingType)).thenReturn(updatedType);
+        when(typeOfTreatmentMapper.toDto(updatedType)).thenReturn(responseDTO);
 
         // Act
-        TypeOfTreatment result = typeOfTreatmentService.updateTypeOfTreatment(updatedType);
+        TypeOfTreatmentResponseDTO result = typeOfTreatmentService.updateTypeOfTreatment(id, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -144,15 +187,17 @@ public class TypeOfTreatmentServiceTest {
         assertEquals("Updated Type", result.getName());
 
         verify(typeOfTreatmentRepository, times(1)).findById(id);
+        verify(treatmentRepository, times(1)).findById(newTreatmentId);
         verify(typeOfTreatmentRepository, times(1)).save(existingType);
+        verify(typeOfTreatmentMapper, times(1)).toDto(updatedType);
     }
 
     @Test
     void deleteTypeOfTreatment_WhenIdExists_DeletesType() {
         // Arrange
         Long id = 1L;
-        TypeOfTreatment type = new TypeOfTreatment();
-        type.setId(id);
+        Treatment treatment = createTestTreatment(1L);
+        TypeOfTreatment type = createTestType(id, "Type", treatment);
 
         when(typeOfTreatmentRepository.findById(id)).thenReturn(Optional.of(type));
 
@@ -163,4 +208,4 @@ public class TypeOfTreatmentServiceTest {
         verify(typeOfTreatmentRepository, times(1)).findById(id);
         verify(typeOfTreatmentRepository, times(1)).delete(type);
     }
-}*/
+}

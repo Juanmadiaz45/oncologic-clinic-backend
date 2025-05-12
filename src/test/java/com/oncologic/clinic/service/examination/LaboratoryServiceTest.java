@@ -1,8 +1,13 @@
-/*package com.oncologic.clinic.service.examination;
+package com.oncologic.clinic.service.examination;
 
+import com.oncologic.clinic.dto.examination.LaboratoryDTO;
+import com.oncologic.clinic.dto.examination.response.LaboratoryResponseDTO;
 import com.oncologic.clinic.entity.examination.Laboratory;
+import com.oncologic.clinic.exception.runtime.examination.LaboratoryNotFoundException;
+import com.oncologic.clinic.mapper.examination.LaboratoryMapper;
 import com.oncologic.clinic.repository.examination.LaboratoryRepository;
 import com.oncologic.clinic.service.examination.impl.LaboratoryServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,129 +27,135 @@ public class LaboratoryServiceTest {
     @Mock
     private LaboratoryRepository laboratoryRepository;
 
+    @Mock
+    private LaboratoryMapper laboratoryMapper;
+
     @InjectMocks
     private LaboratoryServiceImpl laboratoryService;
 
+    private Laboratory laboratory;
+    private LaboratoryResponseDTO laboratoryResponseDTO;
+    private LaboratoryDTO laboratoryDTO;
+
+    @BeforeEach
+    void setUp() {
+        laboratory = new Laboratory();
+        laboratory.setId(1L);
+        laboratory.setName("Lab Corp");
+
+        laboratoryResponseDTO = new LaboratoryResponseDTO();
+        laboratoryResponseDTO.setId(1L);
+        laboratoryResponseDTO.setName("Lab Corp");
+
+        laboratoryDTO = new LaboratoryDTO();
+        laboratoryDTO.setName("Lab Corp");
+    }
+
     @Test
-    void getLaboratoryById_WhenLabExists_ReturnsLaboratory() {
+    void getLaboratoryById_WhenLabExists_ReturnsLaboratoryDTO() {
         // Arrange
-        Long id = 1L;
-        Laboratory mockLab = new Laboratory();
-        mockLab.setId(id);
-        when(laboratoryRepository.findById(id)).thenReturn(Optional.of(mockLab));
+        when(laboratoryRepository.findById(1L)).thenReturn(Optional.of(laboratory));
+        when(laboratoryMapper.toDto(laboratory)).thenReturn(laboratoryResponseDTO);
 
         // Act
-        Laboratory result = laboratoryService.getLaboratoryById(id);
+        LaboratoryResponseDTO result = laboratoryService.getLaboratoryById(1L);
 
         // Assert
         assertNotNull(result);
-        assertEquals(id, result.getId());
-        verify(laboratoryRepository, times(1)).findById(id);
+        assertEquals(1L, result.getId());
+        assertEquals("Lab Corp", result.getName());
+        verify(laboratoryRepository, times(1)).findById(1L);
+        verify(laboratoryMapper, times(1)).toDto(laboratory);
     }
 
     @Test
     void getLaboratoryById_WhenLabDoesNotExist_ThrowsException() {
         // Arrange
-        Long id = 99L;
-        when(laboratoryRepository.findById(id)).thenReturn(Optional.empty());
+        when(laboratoryRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> laboratoryService.getLaboratoryById(id));
-        verify(laboratoryRepository, times(1)).findById(id);
+        assertThrows(LaboratoryNotFoundException.class, () ->
+                laboratoryService.getLaboratoryById(99L));
+        verify(laboratoryRepository, times(1)).findById(99L);
     }
 
     @Test
-    void getAllLaboratories_WhenLabsExist_ReturnsLaboratoryList() {
+    void getAllLaboratories_WhenLabsExist_ReturnsLaboratoryDTOList() {
         // Arrange
-        Laboratory lab1 = new Laboratory();
-        lab1.setId(1L);
         Laboratory lab2 = new Laboratory();
         lab2.setId(2L);
-        List<Laboratory> mockLabs = Arrays.asList(lab1, lab2);
-        when(laboratoryRepository.findAll()).thenReturn(mockLabs);
+        lab2.setName("Another Lab");
+
+        LaboratoryResponseDTO responseDTO2 = new LaboratoryResponseDTO();
+        responseDTO2.setId(2L);
+        responseDTO2.setName("Another Lab");
+
+        when(laboratoryRepository.findAll()).thenReturn(Arrays.asList(laboratory, lab2));
+        when(laboratoryMapper.toDto(laboratory)).thenReturn(laboratoryResponseDTO);
+        when(laboratoryMapper.toDto(lab2)).thenReturn(responseDTO2);
 
         // Act
-        List<Laboratory> results = laboratoryService.getAllLaboratories();
+        List<LaboratoryResponseDTO> results = laboratoryService.getAllLaboratories();
 
         // Assert
         assertEquals(2, results.size());
         verify(laboratoryRepository, times(1)).findAll();
+        verify(laboratoryMapper, times(1)).toDto(laboratory);
+        verify(laboratoryMapper, times(1)).toDto(lab2);
     }
 
     @Test
-    void getAllLaboratories_WhenNoLabsExist_ReturnsEmptyList() {
+    void createLaboratory_WhenValidRequest_ReturnsSavedLaboratoryDTO() {
         // Arrange
-        when(laboratoryRepository.findAll()).thenReturn(List.of());
+        when(laboratoryMapper.toEntity(laboratoryDTO)).thenReturn(laboratory);
+        when(laboratoryRepository.save(laboratory)).thenReturn(laboratory);
+        when(laboratoryMapper.toDto(laboratory)).thenReturn(laboratoryResponseDTO);
 
         // Act
-        List<Laboratory> results = laboratoryService.getAllLaboratories();
+        LaboratoryResponseDTO result = laboratoryService.createLaboratory(laboratoryDTO);
 
         // Assert
-        assertTrue(results.isEmpty());
-        verify(laboratoryRepository, times(1)).findAll();
-    }
-
-    @Test
-    void createLaboratory_WhenValidLab_ReturnsSavedLab() {
-        // Arrange
-        Laboratory newLab = new Laboratory();
-        newLab.setName("Lab Corp");
-
-        Laboratory savedLab = new Laboratory();
-        savedLab.setId(1L);
-        savedLab.setName(newLab.getName());
-
-        when(laboratoryRepository.save(newLab)).thenReturn(savedLab);
-
-        // Act
-        Laboratory result = laboratoryService.createLaboratory(newLab);
-
-        // Assert
-        assertNotNull(result.getId());
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
         assertEquals("Lab Corp", result.getName());
-        verify(laboratoryRepository, times(1)).save(newLab);
+        verify(laboratoryRepository, times(1)).save(laboratory);
+        verify(laboratoryMapper, times(1)).toEntity(laboratoryDTO);
+        verify(laboratoryMapper, times(1)).toDto(laboratory);
     }
 
     @Test
-    void createLaboratory_WhenNullLabProvided_ThrowsIllegalArgumentException() {
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> laboratoryService.createLaboratory(null));
-        verify(laboratoryRepository, never()).save(any());
-    }
-
-    @Test
-    void updateLaboratory_WhenLabExists_ReturnsUpdatedLab() {
+    void updateLaboratory_WhenLabExists_ReturnsUpdatedLaboratoryDTO() {
         // Arrange
-        Long id = 1L;
-        Laboratory existingLab = new Laboratory();
-        existingLab.setId(id);
-        existingLab.setName("Old Name");
-
         Laboratory updatedLab = new Laboratory();
-        updatedLab.setId(id);
-        updatedLab.setName("New Name");
+        updatedLab.setId(1L);
+        updatedLab.setName("Updated Lab");
 
-        when(laboratoryRepository.findById(id)).thenReturn(Optional.of(existingLab));
-        when(laboratoryRepository.save(existingLab)).thenReturn(updatedLab);
+        LaboratoryResponseDTO updatedResponse = new LaboratoryResponseDTO();
+        updatedResponse.setId(1L);
+        updatedResponse.setName("Updated Lab");
+
+        when(laboratoryRepository.findById(1L)).thenReturn(Optional.of(laboratory));
+        when(laboratoryRepository.save(any(Laboratory.class))).thenReturn(updatedLab);
+        when(laboratoryMapper.toDto(updatedLab)).thenReturn(updatedResponse);
 
         // Act
-        Laboratory result = laboratoryService.updateLaboratory(updatedLab);
+        LaboratoryResponseDTO result = laboratoryService.updateLaboratory(1L, laboratoryDTO);
 
         // Assert
-        assertEquals("New Name", result.getName());
-        verify(laboratoryRepository, times(1)).findById(id);
-        verify(laboratoryRepository, times(1)).save(existingLab);
+        assertNotNull(result);
+        assertEquals("Updated Lab", result.getName());
+        verify(laboratoryRepository, times(1)).findById(1L);
+        verify(laboratoryRepository, times(1)).save(any(Laboratory.class));
     }
 
     @Test
     void updateLaboratory_WhenLabDoesNotExist_ThrowsException() {
         // Arrange
-        Laboratory nonExistentLab = new Laboratory();
-        nonExistentLab.setId(99L);
         when(laboratoryRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> laboratoryService.updateLaboratory(nonExistentLab));
+        assertThrows(LaboratoryNotFoundException.class, () ->
+                laboratoryService.updateLaboratory(99L, laboratoryDTO));
         verify(laboratoryRepository, times(1)).findById(99L);
         verify(laboratoryRepository, never()).save(any());
     }
@@ -152,28 +163,26 @@ public class LaboratoryServiceTest {
     @Test
     void deleteLaboratory_WhenLabExists_DeletesLab() {
         // Arrange
-        Long id = 1L;
-        Laboratory lab = new Laboratory();
-        lab.setId(id);
-        when(laboratoryRepository.findById(id)).thenReturn(Optional.of(lab));
+        when(laboratoryRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(laboratoryRepository).deleteById(1L);
 
         // Act
-        laboratoryService.deleteLaboratory(id);
+        laboratoryService.deleteLaboratory(1L);
 
         // Assert
-        verify(laboratoryRepository, times(1)).findById(id);
-        verify(laboratoryRepository, times(1)).delete(lab);
+        verify(laboratoryRepository, times(1)).existsById(1L);
+        verify(laboratoryRepository, times(1)).deleteById(1L);
     }
 
     @Test
     void deleteLaboratory_WhenLabDoesNotExist_ThrowsException() {
         // Arrange
-        Long id = 99L;
-        when(laboratoryRepository.findById(id)).thenReturn(Optional.empty());
+        when(laboratoryRepository.existsById(99L)).thenReturn(false);
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> laboratoryService.deleteLaboratory(id));
-        verify(laboratoryRepository, times(1)).findById(id);
-        verify(laboratoryRepository, never()).delete(any());
+        assertThrows(LaboratoryNotFoundException.class, () ->
+                laboratoryService.deleteLaboratory(99L));
+        verify(laboratoryRepository, times(1)).existsById(99L);
+        verify(laboratoryRepository, never()).deleteById(any());
     }
-}*/
+}

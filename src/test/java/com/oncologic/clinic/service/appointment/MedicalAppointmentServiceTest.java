@@ -1,6 +1,10 @@
-/*package com.oncologic.clinic.service.appointment;
+package com.oncologic.clinic.service.appointment;
 
+import com.oncologic.clinic.dto.appointment.MedicalAppointmentDTO;
+import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalAppointment;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
+import com.oncologic.clinic.mapper.appointment.MedicalAppointmentMapper;
 import com.oncologic.clinic.repository.appointment.MedicalAppointmentRepository;
 import com.oncologic.clinic.service.appointment.impl.MedicalAppointmentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,112 +28,139 @@ class MedicalAppointmentServiceTest {
     @Mock
     private MedicalAppointmentRepository medicalAppointmentRepository;
 
+    @Mock
+    private MedicalAppointmentMapper medicalAppointmentMapper;
+
     @InjectMocks
     private MedicalAppointmentServiceImpl medicalAppointmentService;
 
     private MedicalAppointment medicalAppointment;
+    private MedicalAppointmentResponseDTO medicalAppointmentResponseDTO;
+    private MedicalAppointmentDTO medicalAppointmentDTO;
 
     @BeforeEach
     void setUp() {
         medicalAppointment = new MedicalAppointment();
         medicalAppointment.setId(1L);
         medicalAppointment.setAppointmentDate(LocalDateTime.now());
-        medicalAppointment.setId3(12345L);
+
+        medicalAppointmentResponseDTO = new MedicalAppointmentResponseDTO();
+        medicalAppointmentResponseDTO.setId(1L);
+
+        medicalAppointmentDTO = new MedicalAppointmentDTO();
+        medicalAppointmentDTO.setDoctorId(1L);
+        medicalAppointmentDTO.setTypeOfMedicalAppointmentId(1L);
+        medicalAppointmentDTO.setMedicalHistoryId(1L);
     }
 
     @Test
-    void getMedicalAppointmentById_whenIdExists_shouldReturnAppointment() {
+    void getMedicalAppointmentById_whenIdExists_shouldReturnAppointmentDTO() {
         // Arrange
-        when(medicalAppointmentRepository.findById(1L)).thenReturn(Optional.of(medicalAppointment));
+        when(medicalAppointmentRepository.findById(1L))
+                .thenReturn(Optional.of(medicalAppointment));
+        when(medicalAppointmentMapper.toDto(medicalAppointment))
+                .thenReturn(medicalAppointmentResponseDTO);
 
         // Act
-        MedicalAppointment result = medicalAppointmentService.getMedicalAppointmentById(1L);
+        MedicalAppointmentResponseDTO result = medicalAppointmentService.getMedicalAppointmentById(1L);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         verify(medicalAppointmentRepository, times(1)).findById(1L);
+        verify(medicalAppointmentMapper, times(1)).toDto(medicalAppointment);
     }
 
     @Test
-    void getMedicalAppointmentById_whenIdDoesNotExist_shouldReturnNull() {
+    void getMedicalAppointmentById_whenIdDoesNotExist_shouldThrowException() {
         // Arrange
-        when(medicalAppointmentRepository.findById(1L)).thenReturn(Optional.empty());
+        when(medicalAppointmentRepository.findById(1L))
+                .thenReturn(Optional.empty());
 
-        // Act
-        MedicalAppointment result = medicalAppointmentService.getMedicalAppointmentById(1L);
+        // Act & Assert
+        assertThrows(MedicalAppointmentNotFoundException.class, () -> {
+            medicalAppointmentService.getMedicalAppointmentById(1L);
+        });
 
-        // Assert
-        assertNull(result);
         verify(medicalAppointmentRepository, times(1)).findById(1L);
     }
 
     @Test
-    void getAllMedicalAppointments_whenAppointmentsExist_shouldReturnList() {
+    void getAllMedicalAppointments_whenAppointmentsExist_shouldReturnListOfDTOs() {
         // Arrange
         MedicalAppointment appointment2 = new MedicalAppointment();
         appointment2.setId(2L);
-        List<MedicalAppointment> expectedAppointments = Arrays.asList(medicalAppointment, appointment2);
 
-        when(medicalAppointmentRepository.findAll()).thenReturn(expectedAppointments);
+        MedicalAppointmentResponseDTO dto2 = new MedicalAppointmentResponseDTO();
+        dto2.setId(2L);
+
+        List<MedicalAppointment> appointments = Arrays.asList(medicalAppointment, appointment2);
+        List<MedicalAppointmentResponseDTO> expectedDTOs = Arrays.asList(medicalAppointmentResponseDTO, dto2);
+
+        when(medicalAppointmentRepository.findAll()).thenReturn(appointments);
+        when(medicalAppointmentMapper.toDto(medicalAppointment)).thenReturn(medicalAppointmentResponseDTO);
+        when(medicalAppointmentMapper.toDto(appointment2)).thenReturn(dto2);
 
         // Act
-        List<MedicalAppointment> result = medicalAppointmentService.getAllMedicalAppointments();
+        List<MedicalAppointmentResponseDTO> result = medicalAppointmentService.getAllMedicalAppointments();
 
         // Assert
         assertEquals(2, result.size());
-        assertTrue(result.containsAll(expectedAppointments));
+        assertEquals(expectedDTOs, result);
         verify(medicalAppointmentRepository, times(1)).findAll();
     }
 
     @Test
-    void createMedicalAppointment_whenValidAppointment_shouldSaveAndReturn() {
+    void createMedicalAppointment_whenValidAppointment_shouldSaveAndReturnDTO() {
         // Arrange
-        when(medicalAppointmentRepository.save(medicalAppointment)).thenReturn(medicalAppointment);
+        when(medicalAppointmentMapper.toEntity(medicalAppointmentDTO))
+                .thenReturn(medicalAppointment);
+        when(medicalAppointmentRepository.save(medicalAppointment))
+                .thenReturn(medicalAppointment);
+        when(medicalAppointmentMapper.toDto(medicalAppointment))
+                .thenReturn(medicalAppointmentResponseDTO);
 
         // Act
-        MedicalAppointment result = medicalAppointmentService.createMedicalAppointment(medicalAppointment);
+        MedicalAppointmentResponseDTO result = medicalAppointmentService
+                .createMedicalAppointment(medicalAppointmentDTO);
 
         // Assert
         assertNotNull(result);
-        assertEquals(medicalAppointment, result);
+        assertEquals(medicalAppointmentResponseDTO, result);
         verify(medicalAppointmentRepository, times(1)).save(medicalAppointment);
     }
 
     @Test
-    void updateMedicalAppointment_whenIdExists_shouldUpdateAndReturnAppointment() {
+    void updateMedicalAppointment_whenIdExists_shouldUpdateAndReturnDTO() {
         // Arrange
-        MedicalAppointment updatedAppointment = new MedicalAppointment();
-        updatedAppointment.setId(1L);
-        updatedAppointment.setAppointmentDate(LocalDateTime.now().plusDays(1));
-        updatedAppointment.setId3(54321L);
-
         when(medicalAppointmentRepository.existsById(1L)).thenReturn(true);
-        when(medicalAppointmentRepository.save(updatedAppointment)).thenReturn(updatedAppointment);
+        when(medicalAppointmentRepository.findById(1L))
+                .thenReturn(Optional.of(medicalAppointment));
+        when(medicalAppointmentRepository.save(medicalAppointment))
+                .thenReturn(medicalAppointment);
+        when(medicalAppointmentMapper.toDto(medicalAppointment))
+                .thenReturn(medicalAppointmentResponseDTO);
 
         // Act
-        MedicalAppointment result = medicalAppointmentService.updateMedicalAppointment(updatedAppointment);
+        MedicalAppointmentResponseDTO result = medicalAppointmentService
+                .updateMedicalAppointment(1L, medicalAppointmentDTO);
 
         // Assert
         assertNotNull(result);
-        assertEquals(54321L, result.getId3());
         verify(medicalAppointmentRepository, times(1)).existsById(1L);
-        verify(medicalAppointmentRepository, times(1)).save(updatedAppointment);
+        verify(medicalAppointmentRepository, times(1)).save(medicalAppointment);
     }
 
     @Test
-    void updateMedicalAppointment_whenIdDoesNotExist_shouldReturnNull() {
+    void updateMedicalAppointment_whenIdDoesNotExist_shouldThrowException() {
         // Arrange
-        MedicalAppointment updatedAppointment = new MedicalAppointment();
-        updatedAppointment.setId(99L);
-
         when(medicalAppointmentRepository.existsById(99L)).thenReturn(false);
 
-        // Act
-        MedicalAppointment result = medicalAppointmentService.updateMedicalAppointment(updatedAppointment);
+        // Act & Assert
+        assertThrows(MedicalAppointmentNotFoundException.class, () -> {
+            medicalAppointmentService.updateMedicalAppointment(99L, medicalAppointmentDTO);
+        });
 
-        // Assert
-        assertNull(result);
         verify(medicalAppointmentRepository, times(1)).existsById(99L);
         verify(medicalAppointmentRepository, never()).save(any());
     }
@@ -149,16 +180,16 @@ class MedicalAppointmentServiceTest {
     }
 
     @Test
-    void deleteMedicalAppointment_whenIdDoesNotExist_shouldNotDelete() {
+    void deleteMedicalAppointment_whenIdDoesNotExist_shouldThrowException() {
         // Arrange
         when(medicalAppointmentRepository.existsById(1L)).thenReturn(false);
 
-        // Act
-        medicalAppointmentService.deleteMedicalAppointment(1L);
+        // Act & Assert
+        assertThrows(MedicalAppointmentNotFoundException.class, () -> {
+            medicalAppointmentService.deleteMedicalAppointment(1L);
+        });
 
-        // Assert
         verify(medicalAppointmentRepository, times(1)).existsById(1L);
         verify(medicalAppointmentRepository, never()).deleteById(any());
     }
 }
- */

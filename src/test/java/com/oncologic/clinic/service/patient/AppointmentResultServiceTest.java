@@ -1,9 +1,16 @@
-/*package com.oncologic.clinic.service.patient;
+package com.oncologic.clinic.service.patient;
 
+import com.oncologic.clinic.dto.patient.request.AppointmentResultRequestDTO;
+import com.oncologic.clinic.dto.patient.response.AppointmentResultResponseDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
+import com.oncologic.clinic.mapper.patient.AppointmentResultMapper;
 import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
+import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.service.patient.impl.AppointmentResultServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,41 +18,64 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AppointmentResultServiceTest {
+
     @Mock
     private AppointmentResultRepository appointmentResultRepository;
+
+    @Mock
+    private MedicalHistoryRepository medicalHistoryRepository;
+
+    @Mock
+    private AppointmentResultMapper appointmentResultMapper;
 
     @InjectMocks
     private AppointmentResultServiceImpl appointmentResultService;
 
-    @Test
-    void getAppointmentResultById_WhenResultExists_ReturnsAppointmentResult() {
-        // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
+    private AppointmentResult appointmentResult;
+    private AppointmentResultResponseDTO responseDTO;
+    private AppointmentResultRequestDTO requestDTO;
+    private MedicalHistory medicalHistory;
+
+    @BeforeEach
+    void setUp() {
+        medicalHistory = new MedicalHistory();
         medicalHistory.setId(1L);
 
-        AppointmentResult result = new AppointmentResult();
-        result.setId(1L);
-        result.setEvaluationDate(LocalDateTime.now());
-        result.setMedicalHistory(medicalHistory);
+        appointmentResult = new AppointmentResult();
+        appointmentResult.setId(1L);
+        appointmentResult.setEvaluationDate(LocalDateTime.now());
+        appointmentResult.setMedicalHistory(medicalHistory);
 
-        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(result));
+        responseDTO = new AppointmentResultResponseDTO();
+        responseDTO.setId(1L);
+        responseDTO.setEvaluationDate(appointmentResult.getEvaluationDate());
+
+        requestDTO = new AppointmentResultRequestDTO();
+        requestDTO.setMedicalHistoryId(1L);
+    }
+
+    @Test
+    void getAppointmentResultById_WhenResultExists_ReturnsAppointmentResultDTO() {
+        // Arrange
+        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(appointmentResult));
+        when(appointmentResultMapper.toDto(appointmentResult)).thenReturn(responseDTO);
 
         // Act
-        AppointmentResult foundResult = appointmentResultService.getAppointmentResultById(1L);
+        AppointmentResultResponseDTO result = appointmentResultService.getAppointmentResultById(1L);
 
         // Assert
-        assertNotNull(foundResult);
-        assertEquals(1L, foundResult.getId());
-        assertEquals(medicalHistory, foundResult.getMedicalHistory());
-
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
         verify(appointmentResultRepository, times(1)).findById(1L);
+        verify(appointmentResultMapper, times(1)).toDto(appointmentResult);
     }
 
     @Test
@@ -54,176 +84,102 @@ public class AppointmentResultServiceTest {
         when(appointmentResultRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () ->
+        assertThrows(AppointmentResultNotFoundException.class, () ->
                 appointmentResultService.getAppointmentResultById(99L));
-
-        assertEquals("Appointment result not found", exception.getMessage());
-
         verify(appointmentResultRepository, times(1)).findById(99L);
     }
 
     @Test
-    void getAllAppointmentResults_WhenResultsExist_ReturnsResultsList() {
+    void getAllAppointmentResults_WhenResultsExist_ReturnsAppointmentResultDTOList() {
         // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
-
-        AppointmentResult result1 = new AppointmentResult();
-        result1.setId(1L);
-        result1.setEvaluationDate(LocalDateTime.now());
-        result1.setMedicalHistory(medicalHistory);
-
         AppointmentResult result2 = new AppointmentResult();
         result2.setId(2L);
-        result2.setEvaluationDate(LocalDateTime.now().plusDays(1));
-        result2.setMedicalHistory(medicalHistory);
 
-        List<AppointmentResult> mockResults = Arrays.asList(result1, result2);
+        AppointmentResultResponseDTO responseDTO2 = new AppointmentResultResponseDTO();
+        responseDTO2.setId(2L);
 
-        when(appointmentResultRepository.findAll()).thenReturn(mockResults);
+        when(appointmentResultRepository.findAll()).thenReturn(List.of(appointmentResult, result2));
+        when(appointmentResultMapper.toDto(appointmentResult)).thenReturn(responseDTO);
+        when(appointmentResultMapper.toDto(result2)).thenReturn(responseDTO2);
 
         // Act
-        List<AppointmentResult> results = appointmentResultService.getAllAppointmentResults();
+        List<AppointmentResultResponseDTO> results = appointmentResultService.getAllAppointmentResults();
 
         // Assert
-        assertNotNull(results);
         assertEquals(2, results.size());
-        assertEquals(1L, results.get(0).getId());
-        assertEquals(2L, results.get(1).getId());
-
         verify(appointmentResultRepository, times(1)).findAll();
+        verify(appointmentResultMapper, times(1)).toDto(appointmentResult);
+        verify(appointmentResultMapper, times(1)).toDto(result2);
     }
 
     @Test
-    void getAllAppointmentResults_WhenNoResultsExist_ReturnsEmptyList() {
+    void createAppointmentResult_WhenValidRequest_ReturnsSavedAppointmentResultDTO() {
         // Arrange
-        when(appointmentResultRepository.findAll()).thenReturn(Collections.emptyList());
+        when(medicalHistoryRepository.findById(1L)).thenReturn(Optional.of(medicalHistory));
+        when(appointmentResultMapper.toEntity(requestDTO)).thenReturn(appointmentResult);
+        when(appointmentResultRepository.save(appointmentResult)).thenReturn(appointmentResult);
+        when(appointmentResultMapper.toDto(appointmentResult)).thenReturn(responseDTO);
 
         // Act
-        List<AppointmentResult> results = appointmentResultService.getAllAppointmentResults();
-
-        // Assert
-        assertNotNull(results);
-        assertTrue(results.isEmpty());
-
-        verify(appointmentResultRepository, times(1)).findAll();
-    }
-
-    @Test
-    void createAppointmentResult_WhenValidResult_ReturnsSavedResult() {
-        // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
-
-        AppointmentResult result = new AppointmentResult();
-        result.setEvaluationDate(LocalDateTime.now());
-        result.setMedicalHistory(medicalHistory);
-
-        AppointmentResult savedResult = new AppointmentResult();
-        savedResult.setId(1L);
-        savedResult.setEvaluationDate(result.getEvaluationDate());
-        savedResult.setMedicalHistory(medicalHistory);
-
-        when(appointmentResultRepository.save(result)).thenReturn(savedResult);
-
-        // Act
-        AppointmentResult createdResult = appointmentResultService.createAppointmentResult(result);
-
-        // Assert
-        assertNotNull(createdResult);
-        assertEquals(1L, createdResult.getId());
-        assertEquals(result.getEvaluationDate(), createdResult.getEvaluationDate());
-        assertEquals(medicalHistory, createdResult.getMedicalHistory());
-
-        verify(appointmentResultRepository, times(1)).save(result);
-    }
-
-    @Test
-    void createAppointmentResult_WhenNullResultProvided_ThrowsIllegalArgumentException() {
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                appointmentResultService.createAppointmentResult(null));
-
-        verify(appointmentResultRepository, never()).save(any());
-    }
-
-    @Test
-    void updateAppointmentResult_WhenResultExists_ReturnsUpdatedResult() {
-        // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
-
-        LocalDateTime oldDate = LocalDateTime.now();
-        LocalDateTime newDate = LocalDateTime.now().plusDays(1);
-
-        AppointmentResult existingResult = new AppointmentResult();
-        existingResult.setId(1L);
-        existingResult.setEvaluationDate(oldDate);
-        existingResult.setMedicalHistory(medicalHistory);
-
-        AppointmentResult updatedResult = new AppointmentResult();
-        updatedResult.setId(1L);
-        updatedResult.setEvaluationDate(newDate);
-        updatedResult.setMedicalHistory(medicalHistory);
-
-        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(existingResult));
-        when(appointmentResultRepository.save(any(AppointmentResult.class))).thenReturn(updatedResult);
-
-        // Act
-        AppointmentResult result = appointmentResultService.updateAppointmentResult(updatedResult);
+        AppointmentResultResponseDTO result = appointmentResultService.createAppointmentResult(requestDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        assertEquals(newDate, result.getEvaluationDate());
-
-        verify(appointmentResultRepository, times(1)).findById(1L);
-        verify(appointmentResultRepository, times(1)).save(existingResult);
+        verify(medicalHistoryRepository, times(1)).findById(1L);
+        verify(appointmentResultRepository, times(1)).save(appointmentResult);
     }
 
     @Test
-    void updateAppointmentResult_WhenResultDoesNotExist_ThrowsException() {
+    void createAppointmentResult_WhenMedicalHistoryNotFound_ThrowsException() {
         // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
-
-        AppointmentResult nonExistentResult = new AppointmentResult();
-        nonExistentResult.setId(99L);
-        nonExistentResult.setEvaluationDate(LocalDateTime.now());
-        nonExistentResult.setMedicalHistory(medicalHistory);
-
-        when(appointmentResultRepository.findById(99L)).thenReturn(Optional.empty());
+        when(medicalHistoryRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                appointmentResultService.updateAppointmentResult(nonExistentResult));
+        assertThrows(MedicalHistoryNotFoundException.class, () ->
+                appointmentResultService.createAppointmentResult(requestDTO));
+        verify(medicalHistoryRepository, times(1)).findById(1L);
+        verify(appointmentResultRepository, never()).save(any());
+    }
 
-        assertEquals("Appointment result not found", exception.getMessage());
+    @Test
+    void updateAppointmentResult_WhenResultExists_ReturnsUpdatedAppointmentResultDTO() {
+        // Arrange
+        AppointmentResult updated = new AppointmentResult();
+        updated.setId(1L);
+        updated.setEvaluationDate(LocalDateTime.now().plusDays(1));
 
-        verify(appointmentResultRepository, times(1)).findById(99L);
-        verify(appointmentResultRepository, never()).save(any(AppointmentResult.class));
+        AppointmentResultResponseDTO updatedResponse = new AppointmentResultResponseDTO();
+        updatedResponse.setId(1L);
+        updatedResponse.setEvaluationDate(updated.getEvaluationDate());
+
+        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(appointmentResult));
+        when(medicalHistoryRepository.findById(1L)).thenReturn(Optional.of(medicalHistory));
+        when(appointmentResultRepository.save(any(AppointmentResult.class))).thenReturn(updated);
+        when(appointmentResultMapper.toDto(updated)).thenReturn(updatedResponse);
+
+        // Act
+        AppointmentResultResponseDTO result = appointmentResultService.updateAppointmentResult(1L, requestDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(updated.getEvaluationDate(), result.getEvaluationDate());
+        verify(appointmentResultRepository, times(1)).findById(1L);
+        verify(appointmentResultRepository, times(1)).save(any(AppointmentResult.class));
     }
 
     @Test
     void deleteAppointmentResult_WhenResultExists_DeletesResult() {
         // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
-
-        AppointmentResult result = new AppointmentResult();
-        result.setId(1L);
-        result.setEvaluationDate(LocalDateTime.now());
-        result.setMedicalHistory(medicalHistory);
-
-        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(result));
+        when(appointmentResultRepository.findById(1L)).thenReturn(Optional.of(appointmentResult));
+        doNothing().when(appointmentResultRepository).delete(appointmentResult);
 
         // Act
         appointmentResultService.deleteAppointmentResult(1L);
 
         // Assert
         verify(appointmentResultRepository, times(1)).findById(1L);
-        verify(appointmentResultRepository, times(1)).delete(result);
+        verify(appointmentResultRepository, times(1)).delete(appointmentResult);
     }
 
     @Test
@@ -232,12 +188,9 @@ public class AppointmentResultServiceTest {
         when(appointmentResultRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () ->
+        assertThrows(AppointmentResultNotFoundException.class, () ->
                 appointmentResultService.deleteAppointmentResult(99L));
-
-        assertEquals("Appointment result not found", exception.getMessage());
-
         verify(appointmentResultRepository, times(1)).findById(99L);
-        verify(appointmentResultRepository, never()).delete(any(AppointmentResult.class));
+        verify(appointmentResultRepository, never()).delete(any());
     }
-}*/
+}

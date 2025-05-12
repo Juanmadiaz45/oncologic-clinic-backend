@@ -1,6 +1,10 @@
-/*package com.oncologic.clinic.service.availability;
+package com.oncologic.clinic.service.availability;
 
+import com.oncologic.clinic.dto.availability.AvailabilityDTO;
+import com.oncologic.clinic.dto.availability.response.AvailabilityResponseDTO;
 import com.oncologic.clinic.entity.availability.Availability;
+import com.oncologic.clinic.exception.runtime.availability.AvailabilityNotFoundException;
+import com.oncologic.clinic.mapper.availability.AvailabilityMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.service.availability.impl.AvailabilityServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,10 +28,15 @@ class AvailabilityServiceTest {
     @Mock
     private AvailabilityRepository availabilityRepository;
 
+    @Mock
+    private AvailabilityMapper availabilityMapper;
+
     @InjectMocks
     private AvailabilityServiceImpl availabilityService;
 
     private Availability availability;
+    private AvailabilityResponseDTO availabilityResponseDTO;
+    private AvailabilityDTO availabilityDTO;
 
     @BeforeEach
     void setUp() {
@@ -35,102 +44,129 @@ class AvailabilityServiceTest {
         availability.setId(1L);
         availability.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
         availability.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
+
+        availabilityResponseDTO = new AvailabilityResponseDTO();
+        availabilityResponseDTO.setId(1L);
+        availabilityResponseDTO.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
+        availabilityResponseDTO.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
+
+        availabilityDTO = new AvailabilityDTO();
+        availabilityDTO.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
+        availabilityDTO.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
     }
 
     @Test
-    void getAvailabilityById_ShouldReturnAvailability_WhenIdExists() {
+    void getAvailabilityById_ShouldReturnAvailabilityDTO_WhenIdExists() {
         // Arrange
         when(availabilityRepository.findById(1L)).thenReturn(Optional.of(availability));
+        when(availabilityMapper.toDto(availability)).thenReturn(availabilityResponseDTO);
 
         // Act
-        Availability result = availabilityService.getAvailabilityById(1L);
+        AvailabilityResponseDTO result = availabilityService.getAvailabilityById(1L);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         verify(availabilityRepository, times(1)).findById(1L);
+        verify(availabilityMapper, times(1)).toDto(availability);
     }
 
     @Test
-    void getAvailabilityById_ShouldReturnNull_WhenIdDoesNotExist() {
+    void getAvailabilityById_ShouldThrowException_WhenIdDoesNotExist() {
         // Arrange
         when(availabilityRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        Availability result = availabilityService.getAvailabilityById(1L);
+        // Act & Assert
+        assertThrows(AvailabilityNotFoundException.class, () -> {
+            availabilityService.getAvailabilityById(1L);
+        });
 
-        // Assert
-        assertNull(result);
         verify(availabilityRepository, times(1)).findById(1L);
     }
 
     @Test
-    void getAllAvailabilities_ShouldReturnListOfAvailabilities() {
+    void getAllAvailabilities_ShouldReturnListOfAvailabilityDTOs() {
         // Arrange
         Availability anotherAvailability = new Availability();
         anotherAvailability.setId(2L);
         anotherAvailability.setStartTime(LocalDateTime.of(2025, 4, 21, 8, 0));
         anotherAvailability.setEndTime(LocalDateTime.of(2025, 4, 21, 16, 0));
 
+        AvailabilityResponseDTO anotherResponseDTO = new AvailabilityResponseDTO();
+        anotherResponseDTO.setId(2L);
+        anotherResponseDTO.setStartTime(LocalDateTime.of(2025, 4, 21, 8, 0));
+        anotherResponseDTO.setEndTime(LocalDateTime.of(2025, 4, 21, 16, 0));
+
         when(availabilityRepository.findAll()).thenReturn(Arrays.asList(availability, anotherAvailability));
+        when(availabilityMapper.toDto(availability)).thenReturn(availabilityResponseDTO);
+        when(availabilityMapper.toDto(anotherAvailability)).thenReturn(anotherResponseDTO);
 
         // Act
-        List<Availability> result = availabilityService.getAllAvailabilities();
+        List<AvailabilityResponseDTO> result = availabilityService.getAllAvailabilities();
 
         // Assert
         assertEquals(2, result.size());
         verify(availabilityRepository, times(1)).findAll();
+        verify(availabilityMapper, times(1)).toDto(availability);
+        verify(availabilityMapper, times(1)).toDto(anotherAvailability);
     }
 
     @Test
-    void createAvailability_ShouldSaveAndReturnAvailability() {
+    void createAvailability_ShouldSaveAndReturnAvailabilityDTO() {
         // Arrange
+        when(availabilityMapper.toEntity(availabilityDTO)).thenReturn(availability);
         when(availabilityRepository.save(availability)).thenReturn(availability);
+        when(availabilityMapper.toDto(availability)).thenReturn(availabilityResponseDTO);
 
         // Act
-        Availability result = availabilityService.createAvailability(availability);
+        AvailabilityResponseDTO result = availabilityService.createAvailability(availabilityDTO);
 
         // Assert
         assertNotNull(result);
-        assertEquals(availability, result);
+        assertEquals(availabilityResponseDTO, result);
         verify(availabilityRepository, times(1)).save(availability);
+        verify(availabilityMapper, times(1)).toEntity(availabilityDTO);
+        verify(availabilityMapper, times(1)).toDto(availability);
     }
 
     @Test
-    void updateAvailability_ShouldUpdateAndReturnAvailability_WhenIdExists() {
+    void updateAvailability_ShouldUpdateAndReturnAvailabilityDTO_WhenIdExists() {
         // Arrange
-        Availability updated = new Availability();
-        updated.setId(1L);
-        updated.setStartTime(LocalDateTime.of(2025, 4, 22, 10, 0));
-        updated.setEndTime(LocalDateTime.of(2025, 4, 22, 18, 0));
+        Availability updatedAvailability = new Availability();
+        updatedAvailability.setId(1L);
+        updatedAvailability.setStartTime(LocalDateTime.of(2025, 4, 22, 10, 0));
+        updatedAvailability.setEndTime(LocalDateTime.of(2025, 4, 22, 18, 0));
 
-        when(availabilityRepository.existsById(1L)).thenReturn(true);
-        when(availabilityRepository.save(updated)).thenReturn(updated);
+        AvailabilityResponseDTO updatedResponseDTO = new AvailabilityResponseDTO();
+        updatedResponseDTO.setId(1L);
+        updatedResponseDTO.setStartTime(LocalDateTime.of(2025, 4, 22, 10, 0));
+        updatedResponseDTO.setEndTime(LocalDateTime.of(2025, 4, 22, 18, 0));
+
+        when(availabilityRepository.findById(1L)).thenReturn(Optional.of(availability));
+        when(availabilityRepository.save(any(Availability.class))).thenReturn(updatedAvailability);
+        when(availabilityMapper.toDto(updatedAvailability)).thenReturn(updatedResponseDTO);
 
         // Act
-        Availability result = availabilityService.updateAvailability(updated);
+        AvailabilityResponseDTO result = availabilityService.updateAvailability(1L, availabilityDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        verify(availabilityRepository, times(1)).existsById(1L);
-        verify(availabilityRepository, times(1)).save(updated);
+        verify(availabilityRepository, times(1)).findById(1L);
+        verify(availabilityRepository, times(1)).save(any(Availability.class));
     }
 
     @Test
-    void updateAvailability_ShouldReturnNull_WhenIdDoesNotExist() {
+    void updateAvailability_ShouldThrowException_WhenIdDoesNotExist() {
         // Arrange
-        Availability updated = new Availability();
-        updated.setId(99L);
+        when(availabilityRepository.findById(99L)).thenReturn(Optional.empty());
 
-        when(availabilityRepository.existsById(99L)).thenReturn(false);
+        // Act & Assert
+        assertThrows(AvailabilityNotFoundException.class, () -> {
+            availabilityService.updateAvailability(99L, availabilityDTO);
+        });
 
-        // Act
-        Availability result = availabilityService.updateAvailability(updated);
-
-        // Assert
-        assertNull(result);
-        verify(availabilityRepository, times(1)).existsById(99L);
+        verify(availabilityRepository, times(1)).findById(99L);
         verify(availabilityRepository, never()).save(any());
     }
 
@@ -149,15 +185,16 @@ class AvailabilityServiceTest {
     }
 
     @Test
-    void deleteAvailability_ShouldNotDelete_WhenIdDoesNotExist() {
+    void deleteAvailability_ShouldThrowException_WhenIdDoesNotExist() {
         // Arrange
         when(availabilityRepository.existsById(1L)).thenReturn(false);
 
-        // Act
-        availabilityService.deleteAvailability(1L);
+        // Act & Assert
+        assertThrows(AvailabilityNotFoundException.class, () -> {
+            availabilityService.deleteAvailability(1L);
+        });
 
-        // Assert
         verify(availabilityRepository, times(1)).existsById(1L);
         verify(availabilityRepository, never()).deleteById(any());
     }
-}*/
+}

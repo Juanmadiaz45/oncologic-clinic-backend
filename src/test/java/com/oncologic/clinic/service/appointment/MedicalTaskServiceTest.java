@@ -1,6 +1,10 @@
-/*package com.oncologic.clinic.service.appointment;
+package com.oncologic.clinic.service.appointment;
 
+import com.oncologic.clinic.dto.appointment.MedicalTaskDTO;
+import com.oncologic.clinic.dto.appointment.response.MedicalTaskResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalTask;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalTaskNotFoundException;
+import com.oncologic.clinic.mapper.appointment.MedicalTaskMapper;
 import com.oncologic.clinic.repository.appointment.MedicalTaskRepository;
 import com.oncologic.clinic.service.appointment.impl.MedicalTaskServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,10 +27,15 @@ class MedicalTaskServiceTest {
     @Mock
     private MedicalTaskRepository medicalTaskRepository;
 
+    @Mock
+    private MedicalTaskMapper medicalTaskMapper;
+
     @InjectMocks
     private MedicalTaskServiceImpl medicalTaskService;
 
     private MedicalTask medicalTask;
+    private MedicalTaskResponseDTO medicalTaskResponseDTO;
+    private MedicalTaskDTO medicalTaskDTO;
 
     @BeforeEach
     void setUp() {
@@ -36,102 +45,132 @@ class MedicalTaskServiceTest {
         medicalTask.setEstimatedTime(30L);
         medicalTask.setStatus("Pendiente");
         medicalTask.setResponsible("Laboratorio Central");
+
+        medicalTaskResponseDTO = new MedicalTaskResponseDTO();
+        medicalTaskResponseDTO.setId(1L);
+        medicalTaskResponseDTO.setDescription("Análisis de sangre");
+        medicalTaskResponseDTO.setEstimatedTime(30L);
+        medicalTaskResponseDTO.setStatus("Pendiente");
+        medicalTaskResponseDTO.setResponsible("Laboratorio Central");
+
+        medicalTaskDTO = new MedicalTaskDTO();
+        medicalTaskDTO.setDescription("Análisis de sangre");
+        medicalTaskDTO.setEstimatedTime(30L);
+        medicalTaskDTO.setStatus("Pendiente");
+        medicalTaskDTO.setResponsible("Laboratorio Central");
     }
 
     @Test
-    void getMedicalTaskById_WhenIdExists_ShouldReturnMedicalTask() {
+    void getMedicalTaskById_WhenIdExists_ShouldReturnMedicalTaskDTO() {
         // Arrange
         when(medicalTaskRepository.findById(1L)).thenReturn(Optional.of(medicalTask));
+        when(medicalTaskMapper.toDto(medicalTask)).thenReturn(medicalTaskResponseDTO);
 
         // Act
-        MedicalTask result = medicalTaskService.getMedicalTaskById(1L);
+        MedicalTaskResponseDTO result = medicalTaskService.getMedicalTaskById(1L);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Análisis de sangre", result.getDescription());
         verify(medicalTaskRepository, times(1)).findById(1L);
+        verify(medicalTaskMapper, times(1)).toDto(medicalTask);
     }
 
     @Test
-    void getMedicalTaskById_WhenIdNotExists_ShouldReturnNull() {
+    void getMedicalTaskById_WhenIdNotExists_ShouldThrowException() {
         // Arrange
         when(medicalTaskRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
-        MedicalTask result = medicalTaskService.getMedicalTaskById(1L);
+        // Act & Assert
+        assertThrows(MedicalTaskNotFoundException.class, () -> {
+            medicalTaskService.getMedicalTaskById(1L);
+        });
 
-        // Assert
-        assertNull(result);
         verify(medicalTaskRepository, times(1)).findById(1L);
     }
 
     @Test
-    void getAllMedicalTasks_WhenTasksExist_ShouldReturnTaskList() {
+    void getAllMedicalTasks_WhenTasksExist_ShouldReturnTaskDTOList() {
         // Arrange
         MedicalTask task2 = new MedicalTask();
         task2.setId(2L);
         task2.setDescription("Radiografía");
 
+        MedicalTaskResponseDTO dto2 = new MedicalTaskResponseDTO();
+        dto2.setId(2L);
+        dto2.setDescription("Radiografía");
+
         when(medicalTaskRepository.findAll()).thenReturn(Arrays.asList(medicalTask, task2));
+        when(medicalTaskMapper.toDto(medicalTask)).thenReturn(medicalTaskResponseDTO);
+        when(medicalTaskMapper.toDto(task2)).thenReturn(dto2);
 
         // Act
-        List<MedicalTask> result = medicalTaskService.getAllMedicalTasks();
+        List<MedicalTaskResponseDTO> result = medicalTaskService.getAllMedicalTasks();
 
         // Assert
         assertEquals(2, result.size());
         verify(medicalTaskRepository, times(1)).findAll();
+        verify(medicalTaskMapper, times(1)).toDto(medicalTask);
+        verify(medicalTaskMapper, times(1)).toDto(task2);
     }
 
     @Test
-    void createMedicalTask_WhenValidTask_ShouldReturnSavedTask() {
+    void createMedicalTask_WhenValidTask_ShouldReturnSavedTaskDTO() {
         // Arrange
+        when(medicalTaskMapper.toEntity(medicalTaskDTO)).thenReturn(medicalTask);
         when(medicalTaskRepository.save(medicalTask)).thenReturn(medicalTask);
+        when(medicalTaskMapper.toDto(medicalTask)).thenReturn(medicalTaskResponseDTO);
 
         // Act
-        MedicalTask result = medicalTaskService.createMedicalTask(medicalTask);
+        MedicalTaskResponseDTO result = medicalTaskService.createMedicalTask(medicalTaskDTO);
 
         // Assert
         assertNotNull(result);
-        assertEquals(medicalTask, result);
+        assertEquals(medicalTaskResponseDTO, result);
         verify(medicalTaskRepository, times(1)).save(medicalTask);
+        verify(medicalTaskMapper, times(1)).toEntity(medicalTaskDTO);
+        verify(medicalTaskMapper, times(1)).toDto(medicalTask);
     }
 
     @Test
-    void updateMedicalTask_WhenTaskExists_ShouldReturnUpdatedTask() {
+    void updateMedicalTask_WhenTaskExists_ShouldReturnUpdatedTaskDTO() {
         // Arrange
         MedicalTask updatedTask = new MedicalTask();
         updatedTask.setId(1L);
         updatedTask.setDescription("Análisis de sangre completo");
         updatedTask.setStatus("Completado");
 
-        when(medicalTaskRepository.existsById(1L)).thenReturn(true);
-        when(medicalTaskRepository.save(updatedTask)).thenReturn(updatedTask);
+        MedicalTaskResponseDTO updatedDTO = new MedicalTaskResponseDTO();
+        updatedDTO.setId(1L);
+        updatedDTO.setDescription("Análisis de sangre completo");
+        updatedDTO.setStatus("Completado");
+
+        when(medicalTaskRepository.findById(1L)).thenReturn(Optional.of(medicalTask));
+        when(medicalTaskRepository.save(any(MedicalTask.class))).thenReturn(updatedTask);
+        when(medicalTaskMapper.toDto(updatedTask)).thenReturn(updatedDTO);
 
         // Act
-        MedicalTask result = medicalTaskService.updateMedicalTask(updatedTask);
+        MedicalTaskResponseDTO result = medicalTaskService.updateMedicalTask(1L, medicalTaskDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals("Completado", result.getStatus());
-        verify(medicalTaskRepository, times(1)).existsById(1L);
-        verify(medicalTaskRepository, times(1)).save(updatedTask);
+        verify(medicalTaskRepository, times(1)).findById(1L);
+        verify(medicalTaskRepository, times(1)).save(any(MedicalTask.class));
     }
 
     @Test
-    void updateMedicalTask_WhenTaskNotExists_ShouldReturnNull() {
+    void updateMedicalTask_WhenTaskNotExists_ShouldThrowException() {
         // Arrange
-        MedicalTask nonExistingTask = new MedicalTask();
-        nonExistingTask.setId(99L);
+        when(medicalTaskRepository.findById(99L)).thenReturn(Optional.empty());
 
-        when(medicalTaskRepository.existsById(99L)).thenReturn(false);
+        // Act & Assert
+        assertThrows(MedicalTaskNotFoundException.class, () -> {
+            medicalTaskService.updateMedicalTask(99L, medicalTaskDTO);
+        });
 
-        // Act
-        MedicalTask result = medicalTaskService.updateMedicalTask(nonExistingTask);
-
-        // Assert
-        assertNull(result);
-        verify(medicalTaskRepository, times(1)).existsById(99L);
+        verify(medicalTaskRepository, times(1)).findById(99L);
         verify(medicalTaskRepository, never()).save(any());
     }
 
@@ -150,16 +189,16 @@ class MedicalTaskServiceTest {
     }
 
     @Test
-    void deleteMedicalTask_WhenTaskNotExists_ShouldDoNothing() {
+    void deleteMedicalTask_WhenTaskNotExists_ShouldThrowException() {
         // Arrange
         when(medicalTaskRepository.existsById(1L)).thenReturn(false);
 
-        // Act
-        medicalTaskService.deleteMedicalTask(1L);
+        // Act & Assert
+        assertThrows(MedicalTaskNotFoundException.class, () -> {
+            medicalTaskService.deleteMedicalTask(1L);
+        });
 
-        // Assert
         verify(medicalTaskRepository, times(1)).existsById(1L);
         verify(medicalTaskRepository, never()).deleteById(any());
     }
 }
- */
