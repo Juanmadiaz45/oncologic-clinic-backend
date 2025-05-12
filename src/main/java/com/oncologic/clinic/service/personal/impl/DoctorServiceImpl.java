@@ -5,16 +5,16 @@ import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
-import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.exception.runtime.personal.DoctorNotFoundException;
+import com.oncologic.clinic.exception.runtime.personal.SpecialityNotFoundException;
 import com.oncologic.clinic.mapper.personal.DoctorMapper;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
 import com.oncologic.clinic.service.personal.DoctorService;
 import com.oncologic.clinic.service.user.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +41,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorResponseDTO getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor con ID " + id + " no encontrado"));
+                .orElseThrow(() -> new DoctorNotFoundException(id));
 
         return doctorMapper.toDto(doctor);
     }
@@ -77,9 +77,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private void assignSpecialitiesToDoctor(Doctor doctor, Set<Long> specialityIds) {
-        Set<Speciality> newSpecialities = specialityRepository.findAllById(specialityIds)
-                .stream()
-                .collect(Collectors.toSet());
+        Set<Speciality> newSpecialities = new HashSet<>(specialityRepository.findAllById(specialityIds));
 
         Set<Speciality> currentSpecialities = new HashSet<>(doctor.getSpecialities());
 
@@ -107,7 +105,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     public DoctorResponseDTO createDoctor(DoctorDTO doctorDTO) {
         if (doctorDTO.getMedicalLicenseNumber() == null || doctorDTO.getMedicalLicenseNumber().isEmpty()) {
-            throw new IllegalArgumentException("El número de licencia médica no puede estar vacío");
+            throw new IllegalArgumentException("The medical leave number cannot be empty");
         }
 
         RegisterDoctorDTO registerDto = new RegisterDoctorDTO();
@@ -142,13 +140,13 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     public DoctorResponseDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor con el ID " + id + " no encontrado"));
+                .orElseThrow(() -> new DoctorNotFoundException(id));
 
         doctorMapper.updateEntityFromDto(doctorDTO, doctor);
 
-        // Si vienen especialidades nuevas
+        // If new specialties come
         if (doctorDTO.getSpecialityIds() != null) {
-            // 1. Quitar doctor de especialidades antiguas que ya no están
+            // 1. Remove doctors from old specialties that are no longer there
             Set<Speciality> currentSpecialities = doctor.getSpecialities() != null
                     ? new HashSet<>(doctor.getSpecialities())
                     : new HashSet<>();
@@ -160,11 +158,11 @@ public class DoctorServiceImpl implements DoctorService {
                 }
             }
 
-            // 2. Agregar doctor a nuevas especialidades
+            // 2. Add doctors to new specialties
             Set<Speciality> updatedSpecialities = new HashSet<>();
             for (Long specialityId : doctorDTO.getSpecialityIds()) {
                 Speciality speciality = specialityRepository.findById(specialityId)
-                        .orElseThrow(() -> new EntityNotFoundException("Especialidad con el ID " + specialityId + " no encontrada"));
+                        .orElseThrow(() -> new SpecialityNotFoundException(specialityId));
                 speciality.getDoctors().add(doctor);
                 updatedSpecialities.add(speciality);
             }
@@ -180,17 +178,13 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     public void deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor no encontrado con el ID: " + id));
+                .orElseThrow(() -> new DoctorNotFoundException(id));
 
         if (doctor.getSpecialities() != null && !doctor.getSpecialities().isEmpty()) {
             for (Speciality speciality : doctor.getSpecialities()) {
                 speciality.getDoctors().remove(doctor);
             }
             doctor.getSpecialities().clear();
-        }
-
-        if (doctor.getUser() != null) {
-            userService.deleteUser(doctor.getUser().getId());
         }
         doctorRepository.delete(doctor);
     }

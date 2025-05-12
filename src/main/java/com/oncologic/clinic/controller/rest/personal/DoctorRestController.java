@@ -2,7 +2,6 @@ package com.oncologic.clinic.controller.rest.personal;
 
 import com.oncologic.clinic.dto.personal.DoctorDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
-import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.service.personal.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +25,6 @@ public class DoctorRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDoctor);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<DoctorResponseDTO> registerDoctor(
-            @Valid @RequestBody RegisterDoctorDTO registerDoctorDTO) {
-        DoctorResponseDTO registeredDoctor = doctorService.createDoctor(mapRegisterToDoctorDTO(registerDoctorDTO));
-        return ResponseEntity.status(HttpStatus.CREATED).body(registeredDoctor);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<DoctorResponseDTO> getDoctorById(@PathVariable Long id) {
         return ResponseEntity.ok(doctorService.getDoctorById(id));
@@ -54,12 +46,5 @@ public class DoctorRestController {
     public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
         doctorService.deleteDoctor(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private DoctorDTO mapRegisterToDoctorDTO(RegisterDoctorDTO registerDTO) {
-        // Implementación del mapeo según la estructura de tus DTOs
-        DoctorDTO doctorDTO = new DoctorDTO();
-        // Mapear campos necesarios
-        return doctorDTO;
     }
 }
