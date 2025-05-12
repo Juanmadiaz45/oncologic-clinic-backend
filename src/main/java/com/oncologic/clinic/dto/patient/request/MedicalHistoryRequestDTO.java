@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MedicalHistoryRequestDTO {
     private Long patientId;
-    private LocalDateTime creationDate;
     private String currentHealthStatus;
 }

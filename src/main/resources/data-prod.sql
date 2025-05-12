@@ -18,6 +18,9 @@ VALUES (8, 'labtech1', '$2a$12$qNFiU2ZY7gPhOjGZNFqgsuMZw/YKIf9BKvKE8RIJiHE.xfV2f
 
 INSERT INTO USERS (id, username, password)
 VALUES (9, 'administrative1', '$2a$12$Ne0e0Y2V7CPWEVOJ6Y3fIOkPsmWj56AQtx/vO1JBcPVCDqQaomwGO');
+
+INSERT INTO USERS (id, username, password)
+VALUES (10, 'patient3', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
 -- password: administrative123
 
 
@@ -53,6 +56,8 @@ INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (8, 5); -- labtech1 -> LAB_TECHNICIAN
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (9, 4);
+INSERT INTO USER_ROLES (user_id, role_id)
+VALUES (10, 3);
 -- administrative1 -> ADMINITRATIVE
 
 
@@ -152,6 +157,9 @@ VALUES (1, 4, 'Ana López', TIMESTAMP '1985-05-10 00:00:00', 'F', 'Calle Princip
 INSERT INTO PATIENTS (id, user_id, name, birthdate, gender, address, phone_number, email)
 VALUES (2, 5, 'Roberto Fernández', TIMESTAMP '1978-08-15 00:00:00', 'M', 'Avenida Central 456', '555-7890',
         'roberto.fernandez@email.com');
+
+INSERT INTO PATIENTS (id, user_id, name, birthdate, gender, address, phone_number, email)
+VALUES (3, 10, 'Nuevo Paciente', TIMESTAMP '1990-01-01 00:00:00', 'M', 'Nueva Dirección 123', '555-1111', 'nuevo.paciente@email.com');
 
 -- Inicialización de MEDICAL_HISTORIES
 INSERT INTO MEDICAL_HISTORIES (id, patient_id, creation_date, current_health_status)

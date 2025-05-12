@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,7 +28,8 @@ public class MedicalHistory {
     @JoinColumn(name = "patient_id", nullable = false, unique = true)
     private Patient patient;
 
-    @Column(name = "creation_date", nullable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime creationDate;
 
     @Column(name = "current_health_status", nullable = false, length = 200)
