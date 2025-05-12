@@ -6,4 +6,8 @@ public class PermissionNotFoundException extends DomainNotFoundException {
     public PermissionNotFoundException(Long id) {
         super("Permission not found with ID: " + id);
     }
+
+    public PermissionNotFoundException(String message) {
+        super(message);
+    }
 }
