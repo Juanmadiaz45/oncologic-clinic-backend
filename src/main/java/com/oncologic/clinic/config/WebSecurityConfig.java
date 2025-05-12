@@ -49,7 +49,16 @@ public class WebSecurityConfig {
                         // Allow access to static resources
                         .requestMatchers("/styles/**", "/images/**").permitAll()
                         // Allow all requests starting with /auth, such as login or registration
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/g5/siscom/v3/api-docs/**",
+                                "/g5/siscom/v3/api-docs.yaml",
+                                "/g5/siscom/swagger-ui/**",
+                                "/g5/siscom/swagger-ui.html").permitAll()
                         // Allow SSE connections
                         // Any other request must be authenticated
                         .anyRequest().authenticated())
