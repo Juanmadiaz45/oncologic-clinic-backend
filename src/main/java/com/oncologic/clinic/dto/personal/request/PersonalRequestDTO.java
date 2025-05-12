@@ -22,6 +22,5 @@ public class PersonalRequestDTO {
     private String phoneNumber;
     private LocalDateTime dateOfHiring;
     private Character status;
-    private Long userId;
     private Set<Long> availabilityIds;
 }

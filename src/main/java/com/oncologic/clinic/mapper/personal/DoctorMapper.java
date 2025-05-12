@@ -32,7 +32,6 @@ public interface DoctorMapper {
                 .phoneNumber(doctor.getPhoneNumber())
                 .dateOfHiring(doctor.getDateOfHiring())
                 .status(doctor.getStatus())
-                .userId(doctor.getUser().getId())
                 .build();
     }
 }

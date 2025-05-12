@@ -15,6 +15,7 @@ import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.entity.user.RolePermission.RolePermissionId;
 import com.oncologic.clinic.service.user.RoleService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleMapper roleMapper;
     private final PermissionMapper permissionMapper;
 
+    @Autowired
     public RoleServiceImpl(
             RoleRepository roleRepository,
             PermissionRepository permissionRepository,

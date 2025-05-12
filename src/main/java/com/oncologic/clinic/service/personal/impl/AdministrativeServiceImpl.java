@@ -5,16 +5,16 @@ import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
 import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
-import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
 import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.exception.runtime.personal.AdministrativeNotFoundException;
 import com.oncologic.clinic.mapper.personal.AdministrativeMapper;
 import com.oncologic.clinic.repository.personal.AdministrativeRepository;
 import com.oncologic.clinic.service.personal.AdministrativeService;
 import com.oncologic.clinic.service.user.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,8 +34,7 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     @Override
     public AdministrativeResponseDTO getAdministrativeById(Long id) {
         Administrative administrative = administrativeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Administrativo con ID " + id + " no encontrado"));
-
+                .orElseThrow(() -> new AdministrativeNotFoundException(id));
         return administrativeMapper.toDto(administrative);
     }
 
@@ -69,7 +68,7 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     @Transactional
     public AdministrativeResponseDTO createAdministrative(AdministrativeDTO administrativeDTO) {
         if (administrativeDTO.getPosition() == null || administrativeDTO.getPosition().isEmpty()) {
-            throw new IllegalArgumentException("El puesto administrativo no puede estar vacío");
+            throw new IllegalArgumentException("The administrative position cannot be vacant");
         }
 
         RegisterAdministrativeDTO registerDto = new RegisterAdministrativeDTO();
@@ -99,12 +98,11 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     }
 
 
-
     @Override
     @Transactional
     public AdministrativeResponseDTO updateAdministrative(Long id, AdministrativeDTO updateDTO) {
         Administrative existingAdministrative = administrativeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Administrativo con ID " + id + " no encontrado"));
+                .orElseThrow(() -> new AdministrativeNotFoundException(id));
 
         administrativeMapper.updateEntityFromDto(updateDTO, existingAdministrative);
 
@@ -118,11 +116,8 @@ public class AdministrativeServiceImpl implements AdministrativeService {
     @Transactional
     public void deleteAdministrative(Long id) {
         Administrative administrative = administrativeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Administrativo no encontrado con el ID: " + id));
-        if (administrative.getUser() != null) {
-            userService.deleteUser(administrative.getUser().getId());
-        }
-        administrativeRepository.deleteById(id);
+                .orElseThrow(() -> new AdministrativeNotFoundException(id));
+        administrativeRepository.delete(administrative);
     }
 
 }

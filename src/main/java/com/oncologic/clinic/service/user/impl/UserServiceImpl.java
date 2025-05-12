@@ -13,6 +13,7 @@ import com.oncologic.clinic.repository.user.UserRepository;
 import com.oncologic.clinic.repository.user.UserRoleRepository;
 import com.oncologic.clinic.service.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
+    @Autowired
     public UserServiceImpl(
             UserRepository userRepository,
             RoleRepository roleRepository,

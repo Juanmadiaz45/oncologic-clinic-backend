@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -13,5 +15,5 @@ public class SpecialityResponseDTO {
     private Long id;
     private String name;
     private String description;
-    private Long doctorId;
+    private Set<Long> doctorIds;
 }

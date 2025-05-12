@@ -18,8 +18,7 @@ public class Speciality {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Speciality)) return false;
-        Speciality that = (Speciality) o;
+        if (!(o instanceof Speciality that)) return false;
         return id != null && id.equals(that.id);
     }
 

@@ -44,23 +44,18 @@ public class Personal {
     @Column(name = "status", nullable = false, length = 1)
     private Character status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @ManyToMany
-    @JoinTable(
-            name = "PERSONAL_AVAILABILITIES",
-            joinColumns = @JoinColumn(name = "personal_id"),
-            inverseJoinColumns = @JoinColumn(name = "availability_id")
-    )
+    @JoinTable(name = "PERSONAL_AVAILABILITIES", joinColumns = @JoinColumn(name = "personal_id"), inverseJoinColumns = @JoinColumn(name = "availability_id"))
     private Set<Availability> availabilities = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Personal)) return false;
-        Personal that = (Personal) o;
+        if (!(o instanceof Personal that)) return false;
         return id != null && id.equals(that.id);
     }
 

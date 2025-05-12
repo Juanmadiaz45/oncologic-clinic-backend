@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/administratives")
+@RequestMapping("/api/administrative")
 @RequiredArgsConstructor
 public class AdministrativeRestController {
 
@@ -31,7 +31,7 @@ public class AdministrativeRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AdministrativeResponseDTO>> getAllAdministratives() {
+    public ResponseEntity<List<AdministrativeResponseDTO>> getAllAdministrative() {
         return ResponseEntity.ok(administrativeService.getAllAdministrative());
     }
 
