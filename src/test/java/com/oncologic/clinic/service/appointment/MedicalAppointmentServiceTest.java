@@ -3,9 +3,18 @@ package com.oncologic.clinic.service.appointment;
 import com.oncologic.clinic.dto.appointment.MedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalAppointment;
+import com.oncologic.clinic.entity.appointment.TypeOfMedicalAppointment;
+import com.oncologic.clinic.entity.patient.MedicalHistory;
+import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
 import com.oncologic.clinic.mapper.appointment.MedicalAppointmentMapper;
 import com.oncologic.clinic.repository.appointment.MedicalAppointmentRepository;
+import com.oncologic.clinic.repository.appointment.MedicalOfficeRepository;
+import com.oncologic.clinic.repository.appointment.MedicalTaskRepository;
+import com.oncologic.clinic.repository.appointment.TypeOfMedicalAppointmentRepository;
+import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
+import com.oncologic.clinic.repository.patient.TreatmentRepository;
+import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.service.appointment.impl.MedicalAppointmentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +42,24 @@ class MedicalAppointmentServiceTest {
 
     @InjectMocks
     private MedicalAppointmentServiceImpl medicalAppointmentService;
+
+    @Mock
+    private DoctorRepository doctorRepository;
+
+    @Mock
+    private TypeOfMedicalAppointmentRepository typeRepository;
+
+    @Mock
+    private TreatmentRepository treatmentRepository;
+
+    @Mock
+    private MedicalHistoryRepository medicalHistoryRepository;
+
+    @Mock
+    private MedicalTaskRepository medicalTaskRepository;
+
+    @Mock
+    private MedicalOfficeRepository medicalOfficeRepository;
 
     private MedicalAppointment medicalAppointment;
     private MedicalAppointmentResponseDTO medicalAppointmentResponseDTO;
@@ -115,6 +142,11 @@ class MedicalAppointmentServiceTest {
         // Arrange
         when(medicalAppointmentMapper.toEntity(medicalAppointmentDTO))
                 .thenReturn(medicalAppointment);
+
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(new Doctor()));
+        when(typeRepository.findById(1L)).thenReturn(Optional.of(new TypeOfMedicalAppointment()));
+        when(medicalHistoryRepository.findById(1L)).thenReturn(Optional.of(new MedicalHistory()));
+
         when(medicalAppointmentRepository.save(medicalAppointment))
                 .thenReturn(medicalAppointment);
         when(medicalAppointmentMapper.toDto(medicalAppointment))
@@ -127,18 +159,22 @@ class MedicalAppointmentServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(medicalAppointmentResponseDTO, result);
-        verify(medicalAppointmentRepository, times(1)).save(medicalAppointment);
+        verify(medicalAppointmentRepository, times(2)).save(medicalAppointment); // Se llama 2 veces en el servicio
     }
 
     @Test
     void updateMedicalAppointment_whenIdExists_shouldUpdateAndReturnDTO() {
         // Arrange
-        when(medicalAppointmentRepository.existsById(1L)).thenReturn(true);
+        MedicalAppointment existingAppointment = new MedicalAppointment();
+        existingAppointment.setId(1L);
+
         when(medicalAppointmentRepository.findById(1L))
-                .thenReturn(Optional.of(medicalAppointment));
-        when(medicalAppointmentRepository.save(medicalAppointment))
-                .thenReturn(medicalAppointment);
-        when(medicalAppointmentMapper.toDto(medicalAppointment))
+                .thenReturn(Optional.of(existingAppointment));
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(new Doctor()));
+        when(typeRepository.findById(1L)).thenReturn(Optional.of(new TypeOfMedicalAppointment()));
+        when(medicalAppointmentRepository.save(existingAppointment))
+                .thenReturn(existingAppointment);
+        when(medicalAppointmentMapper.toDto(existingAppointment))
                 .thenReturn(medicalAppointmentResponseDTO);
 
         // Act
@@ -147,21 +183,22 @@ class MedicalAppointmentServiceTest {
 
         // Assert
         assertNotNull(result);
-        verify(medicalAppointmentRepository, times(1)).existsById(1L);
-        verify(medicalAppointmentRepository, times(1)).save(medicalAppointment);
+        verify(medicalAppointmentRepository, times(1)).findById(1L);
+        verify(medicalAppointmentRepository, times(1)).save(existingAppointment);
     }
 
     @Test
     void updateMedicalAppointment_whenIdDoesNotExist_shouldThrowException() {
         // Arrange
-        when(medicalAppointmentRepository.existsById(99L)).thenReturn(false);
+        when(medicalAppointmentRepository.findById(99L))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(MedicalAppointmentNotFoundException.class, () -> {
             medicalAppointmentService.updateMedicalAppointment(99L, medicalAppointmentDTO);
         });
 
-        verify(medicalAppointmentRepository, times(1)).existsById(99L);
+        verify(medicalAppointmentRepository, times(1)).findById(99L);
         verify(medicalAppointmentRepository, never()).save(any());
     }
 
