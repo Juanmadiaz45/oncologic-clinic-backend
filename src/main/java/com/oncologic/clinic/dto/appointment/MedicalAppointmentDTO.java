@@ -17,7 +17,6 @@ public class MedicalAppointmentDTO {
     private Long doctorId;
     private Long typeOfMedicalAppointmentId;
     private LocalDateTime appointmentDate;
-    private Long id3;
     private Long treatmentId;
     private Long medicalHistoryId;
     private List<Long> medicalOfficeIds;

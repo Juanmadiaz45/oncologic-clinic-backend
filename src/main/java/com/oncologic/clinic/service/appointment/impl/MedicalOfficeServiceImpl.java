@@ -3,11 +3,12 @@ package com.oncologic.clinic.service.appointment.impl;
 import com.oncologic.clinic.dto.appointment.MedicalOfficeDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalOfficeResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalOffice;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalOfficeNotFoundException;
 import com.oncologic.clinic.mapper.appointment.MedicalOfficeMapper;
 import com.oncologic.clinic.repository.appointment.MedicalAppointmentRepository;
 import com.oncologic.clinic.repository.appointment.MedicalOfficeRepository;
 import com.oncologic.clinic.service.appointment.MedicalOfficeService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class MedicalOfficeServiceImpl implements MedicalOfficeService {
     @Transactional(readOnly = true)
     public MedicalOfficeResponseDTO getMedicalOfficeById(Long id) {
         MedicalOffice office = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical office not found"));
+                .orElseThrow(() -> new MedicalOfficeNotFoundException(id));
         return mapper.toDto(office);
     }
 
@@ -44,9 +45,9 @@ public class MedicalOfficeServiceImpl implements MedicalOfficeService {
     public MedicalOfficeResponseDTO createMedicalOffice(MedicalOfficeDTO dto) {
         MedicalOffice office = mapper.toEntity(dto);
 
-        if(dto.getMedicalAppointmentId() != null) {
+        if (dto.getMedicalAppointmentId() != null) {
             office.setMedicalAppointment(appointmentRepository.findById(dto.getMedicalAppointmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Medical appointment not found")));
+                    .orElseThrow(() -> new MedicalAppointmentNotFoundException(dto.getMedicalAppointmentId())));
         }
 
         return mapper.toDto(repository.save(office));
@@ -56,13 +57,13 @@ public class MedicalOfficeServiceImpl implements MedicalOfficeService {
     @Transactional
     public MedicalOfficeResponseDTO updateMedicalOffice(Long id, MedicalOfficeDTO dto) {
         MedicalOffice existing = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical office not found"));
+                .orElseThrow(() -> new MedicalOfficeNotFoundException(id));
 
         mapper.updateEntityFromDto(dto, existing);
 
-        if(dto.getMedicalAppointmentId() != null) {
+        if (dto.getMedicalAppointmentId() != null) {
             existing.setMedicalAppointment(appointmentRepository.findById(dto.getMedicalAppointmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Medical appointment not found")));
+                    .orElseThrow(() -> new MedicalAppointmentNotFoundException(dto.getMedicalAppointmentId())));
         }
 
         return mapper.toDto(repository.save(existing));
@@ -71,8 +72,8 @@ public class MedicalOfficeServiceImpl implements MedicalOfficeService {
     @Override
     @Transactional
     public void deleteMedicalOffice(Long id) {
-        if(!repository.existsById(id)) {
-            throw new EntityNotFoundException("Medical office not found");
+        if (!repository.existsById(id)) {
+            throw new MedicalOfficeNotFoundException(id);
         }
         repository.deleteById(id);
     }
