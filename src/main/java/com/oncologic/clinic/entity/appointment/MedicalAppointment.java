@@ -35,9 +35,6 @@ public class MedicalAppointment {
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;
 
-    @Column(name = "id3", nullable = false)
-    private Long id3;
-
     @ManyToOne
     @JoinColumn(name = "treatment_id")
     private Treatment treatment;

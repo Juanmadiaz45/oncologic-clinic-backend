@@ -220,12 +220,12 @@ VALUES (2, 'Control de hipertensión', 'Seguimiento de presión arterial', TIMES
         TIMESTAMP '2023-04-02 23:59:59', 2);
 
 -- Inicialización de MEDICAL_APPOINTMENTS
-INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, id3, treatment_id,
+INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id,
                                   medical_history_id)
-VALUES (1, 1, 1, TIMESTAMP '2023-03-01 09:00:00', 1, 1, 1);
-INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, id3, treatment_id,
+VALUES (1, 1, 1, TIMESTAMP '2023-03-01 09:00:00', 1, 1);
+INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id,
                                   medical_history_id)
-VALUES (2, 2, 2, TIMESTAMP '2023-03-02 10:00:00', 2, 2, 2);
+VALUES (2, 2, 2, TIMESTAMP '2023-03-02 10:00:00', 2, 2);
 
 -- Inicialización de MEDICAL_OFFICES
 INSERT INTO MEDICAL_OFFICES (id, medical_appointment_id, name)

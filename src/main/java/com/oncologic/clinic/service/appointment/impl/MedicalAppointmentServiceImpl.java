@@ -5,6 +5,11 @@ import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseD
 import com.oncologic.clinic.entity.appointment.MedicalAppointment;
 import com.oncologic.clinic.entity.appointment.MedicalOffice;
 import com.oncologic.clinic.entity.appointment.MedicalTask;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
+import com.oncologic.clinic.exception.runtime.appointment.TypeOfMedicalAppointmentNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.TreatmentNotFoundException;
+import com.oncologic.clinic.exception.runtime.personal.DoctorNotFoundException;
 import com.oncologic.clinic.mapper.appointment.MedicalAppointmentMapper;
 import com.oncologic.clinic.repository.appointment.MedicalAppointmentRepository;
 import com.oncologic.clinic.repository.appointment.MedicalOfficeRepository;
@@ -14,7 +19,6 @@ import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.repository.patient.TreatmentRepository;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.service.appointment.MedicalAppointmentService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,7 +45,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Transactional(readOnly = true)
     public MedicalAppointmentResponseDTO getMedicalAppointmentById(Long id) {
         MedicalAppointment appointment = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical appointment not found"));
+                .orElseThrow(() -> new MedicalAppointmentNotFoundException(id));
         return mapper.toDto(appointment);
     }
 
@@ -59,27 +63,27 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
         MedicalAppointment appointment = mapper.toEntity(dto);
 
         appointment.setDoctor(doctorRepository.findById(dto.getDoctorId())
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found")));
+                .orElseThrow(() -> new DoctorNotFoundException(dto.getDoctorId())));
 
         appointment.setTypeOfMedicalAppointment(typeRepository.findById(dto.getTypeOfMedicalAppointmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Type of appointment not found")));
+                .orElseThrow(() -> new TypeOfMedicalAppointmentNotFoundException(dto.getTypeOfMedicalAppointmentId())));
 
-        if(dto.getTreatmentId() != null) {
+        if (dto.getTreatmentId() != null) {
             appointment.setTreatment(treatmentRepository.findById(dto.getTreatmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Treatment not found")));
+                    .orElseThrow(() -> new TreatmentNotFoundException(dto.getTreatmentId())));
         }
 
         appointment.setMedicalHistory(medicalHistoryRepository.findById(dto.getMedicalHistoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Medical history not found")));
+                .orElseThrow(() -> new MedicalHistoryNotFoundException(dto.getMedicalHistoryId())));
 
         MedicalAppointment savedAppointment = repository.save(appointment);
 
-        if(dto.getMedicalTaskIds() != null && !dto.getMedicalTaskIds().isEmpty()) {
+        if (dto.getMedicalTaskIds() != null && !dto.getMedicalTaskIds().isEmpty()) {
             Set<MedicalTask> tasks = new HashSet<>(medicalTaskRepository.findAllById(dto.getMedicalTaskIds()));
             savedAppointment.setMedicalTasks(tasks);
         }
 
-        if(dto.getMedicalOfficeIds() != null && !dto.getMedicalOfficeIds().isEmpty()) {
+        if (dto.getMedicalOfficeIds() != null && !dto.getMedicalOfficeIds().isEmpty()) {
             List<MedicalOffice> offices = medicalOfficeRepository.findAllById(dto.getMedicalOfficeIds());
             savedAppointment.setMedicalOffices(offices);
         }
@@ -91,18 +95,18 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Transactional
     public MedicalAppointmentResponseDTO updateMedicalAppointment(Long id, MedicalAppointmentDTO dto) {
         MedicalAppointment existing = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical appointment not found"));
+                .orElseThrow(() -> new MedicalAppointmentNotFoundException(id));
 
         mapper.updateFromDto(dto, existing);
 
-        if(dto.getDoctorId() != null) {
+        if (dto.getDoctorId() != null) {
             existing.setDoctor(doctorRepository.findById(dto.getDoctorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found")));
+                    .orElseThrow(() -> new DoctorNotFoundException(dto.getDoctorId())));
         }
 
-        if(dto.getTypeOfMedicalAppointmentId() != null) {
+        if (dto.getTypeOfMedicalAppointmentId() != null) {
             existing.setTypeOfMedicalAppointment(typeRepository.findById(dto.getTypeOfMedicalAppointmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Type of appointment not found")));
+                    .orElseThrow(() -> new TypeOfMedicalAppointmentNotFoundException(dto.getTypeOfMedicalAppointmentId())));
         }
 
         return mapper.toDto(repository.save(existing));
@@ -111,8 +115,8 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional
     public void deleteMedicalAppointment(Long id) {
-        if(!repository.existsById(id)) {
-            throw new EntityNotFoundException("Medical appointment not found");
+        if (!repository.existsById(id)) {
+            throw new MedicalAppointmentNotFoundException(id);
         }
         repository.deleteById(id);
     }
