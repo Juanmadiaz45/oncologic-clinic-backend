@@ -2,6 +2,8 @@ package com.oncologic.clinic.dto.registration;
 
 import lombok.*;
 
+import java.util.Set;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -9,8 +11,5 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class RegisterDoctorDTO extends RegisterPersonalDTO {
     private String medicalLicenseNumber;
-
-    private Long selectedSpecialityId;
-    private String newSpecialityName;
-    private String newSpecialityDescription;
+    private Set<Long> specialityIds;
 }

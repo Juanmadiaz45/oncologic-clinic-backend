@@ -1,5 +1,6 @@
 package com.oncologic.clinic.service.user.impl;
 
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.user.Role;
@@ -49,6 +50,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO createUser(UserDTO userDTO) {
+        RegisterUserDTO registerUserDTO = new RegisterUserDTO();
+        registerUserDTO.setUsername(userDTO.getUsername());
+        registerUserDTO.setPassword(userDTO.getPassword());
+        registerUserDTO.setRoleIds(userDTO.getRoleIds());
+
+        User createdUser = this.createUser(registerUserDTO);
+
+        return userMapper.userToUserResponseDto(createdUser);
+    }
+
+    @Override
+    public User createUser(RegisterUserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
@@ -58,19 +71,19 @@ public class UserServiceImpl implements UserService {
         }
 
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(userDTO.getRoleIds()));
-        if (roles.isEmpty() || roles.size() != userDTO.getRoleIds().size()) {
-            throw new IllegalArgumentException("Uno o más roles proporcionados no existen");
+        if (roles.isEmpty()) {
+            throw new IllegalArgumentException("Los roles proporcionados no existen");
         }
 
-        User user = userMapper.userDtoToUser(userDTO);
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         User savedUser = userRepository.save(user);
 
         addRolesToUser(savedUser, roles);
-        savedUser = userRepository.save(savedUser);
 
-        return userMapper.userToUserResponseDto(savedUser);
+        return savedUser;
     }
 
     @Override

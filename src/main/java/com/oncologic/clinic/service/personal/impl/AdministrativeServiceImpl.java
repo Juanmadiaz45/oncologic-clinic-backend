@@ -1,7 +1,9 @@
 package com.oncologic.clinic.service.personal.impl;
 
 import com.oncologic.clinic.dto.personal.AdministrativeDTO;
+import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
 import com.oncologic.clinic.dto.personal.response.AdministrativeResponseDTO;
+import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
 import com.oncologic.clinic.entity.personal.Administrative;
@@ -45,24 +47,55 @@ public class AdministrativeServiceImpl implements AdministrativeService {
 
     @Override
     @Transactional
+    public Administrative registerAdministrative(RegisterAdministrativeDTO administrativeDTO) {
+        User user = userService.createUser(administrativeDTO);
+
+        Administrative administrative = new Administrative();
+        administrative.setUser(user);
+        administrative.setIdNumber(administrativeDTO.getIdNumber());
+        administrative.setName(administrativeDTO.getName());
+        administrative.setLastName(administrativeDTO.getLastname());
+        administrative.setEmail(administrativeDTO.getEmail());
+        administrative.setPhoneNumber(administrativeDTO.getPhoneNumber());
+        administrative.setPosition(administrativeDTO.getPosition());
+        administrative.setDepartment(administrativeDTO.getDepartment());
+        administrative.setDateOfHiring(LocalDateTime.now());
+        administrative.setStatus('A');
+
+        return administrativeRepository.save(administrative);
+    }
+
+    @Override
+    @Transactional
     public AdministrativeResponseDTO createAdministrative(AdministrativeDTO administrativeDTO) {
         if (administrativeDTO.getPosition() == null || administrativeDTO.getPosition().isEmpty()) {
             throw new IllegalArgumentException("El puesto administrativo no puede estar vacío");
         }
 
-        UserDTO userRequestDTO = administrativeDTO.getPersonalData().getUserData();
-        UserResponseDTO userResponse = userService.createUser(userRequestDTO);
+        RegisterAdministrativeDTO registerDto = new RegisterAdministrativeDTO();
 
-        User user = userService.getUserEntityById(userResponse.getId());
+        if (administrativeDTO.getPersonalData() != null) {
+            PersonalRequestDTO personalData = administrativeDTO.getPersonalData();
+            registerDto.setIdNumber(personalData.getIdNumber());
+            registerDto.setName(personalData.getName());
+            registerDto.setLastname(personalData.getLastName());
+            registerDto.setEmail(personalData.getEmail());
+            registerDto.setPhoneNumber(personalData.getPhoneNumber());
 
-        Administrative administrative = administrativeMapper.toEntity(administrativeDTO);
-        administrative.setUser(user);
-        administrative.setDateOfHiring(LocalDateTime.now());
-        administrative.setStatus('A');
+            if (personalData.getUserData() != null) {
+                UserDTO userData = personalData.getUserData();
+                registerDto.setUsername(userData.getUsername());
+                registerDto.setPassword(userData.getPassword());
+                registerDto.setRoleIds(userData.getRoleIds());
+            }
+        }
 
-        Administrative savedAdministrative = administrativeRepository.save(administrative);
+        registerDto.setPosition(administrativeDTO.getPosition());
+        registerDto.setDepartment(administrativeDTO.getDepartment());
 
-        return administrativeMapper.toDto(savedAdministrative);
+        Administrative administrative = registerAdministrative(registerDto);
+
+        return administrativeMapper.toDto(administrative);
     }
 
 

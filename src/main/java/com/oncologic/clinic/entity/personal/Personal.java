@@ -55,5 +55,18 @@ public class Personal {
             inverseJoinColumns = @JoinColumn(name = "availability_id")
     )
     private Set<Availability> availabilities = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Personal)) return false;
+        Personal that = (Personal) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
 

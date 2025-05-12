@@ -15,6 +15,19 @@ import java.util.Set;
 @AllArgsConstructor
 public class Speciality {
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Speciality)) return false;
+        Speciality that = (Speciality) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

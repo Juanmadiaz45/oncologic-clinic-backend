@@ -89,9 +89,9 @@ public class RoleController {
 
     @GetMapping("/delete")
     public String showDeleteRoleForm(@RequestParam(required = false) Long roleId, Model model) {
-        model.addAttribute("allRoles", roleService.getAllRoles());
+        model.addAttribute("allRoles", roleService.getRoles());
         if (roleId != null) {
-            model.addAttribute("selectedRole", roleService.getRoleById(roleId));
+            model.addAttribute("selectedRole", roleService.getRoleEntityById(roleId));
         }
         return "delete-role";
     }
@@ -102,7 +102,7 @@ public class RoleController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            String roleName = roleService.getRoleById(roleId).getName();
+            String roleName = roleService.getRoleEntityById(roleId).getName();
             roleService.deleteRole(roleId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Rol '" + roleName + "' eliminado correctamente");

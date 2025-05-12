@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             event.stopPropagation();
         }
-
         form.classList.add('was-validated');
     }, false);
 
@@ -35,15 +34,52 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('successMessage') || urlParams.has('error') || document.getElementById('errorMessage')?.textContent) {
-        if (typeof bootstrap !== 'undefined') {
-            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
-            resultModal.show();
+    const successMessage = document.getElementById('successMessage')?.textContent;
+    const errorMessage = document.getElementById('errorMessage')?.textContent;
+
+    if (successMessage || errorMessage) {
+        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+        const modalTitle = document.querySelector('#resultModal .modal-title');
+        const modalHeader = document.querySelector('#resultModal .modal-header');
+        const modalMessage = document.querySelector('#resultModal #modalMessage');
+        const modalCloseBtn = document.querySelector('#resultModal .btn-close');
+        const modalAcceptBtn = document.querySelector('#resultModal .btn-primary');
+
+        if (successMessage) {
+            modalHeader.className = 'modal-header bg-success text-white';
+            modalTitle.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Registro Exitoso';
+            modalMessage.textContent = successMessage;
+
+            const redirect = () => window.location.href = '/g5/siscom/dashboard';
+
+            modalCloseBtn.addEventListener('click', redirect);
+
+            modalAcceptBtn.addEventListener('click', redirect);
+
+            document.getElementById('resultModal').addEventListener('hidden.bs.modal', redirect);
+
+            setTimeout(redirect, 3000);
+
+        } else if (errorMessage) {
+            modalHeader.className = 'modal-header bg-danger text-white';
+            modalTitle.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Error en el registro';
+            modalMessage.textContent = errorMessage;
         }
+
+        resultModal.show();
+    }
+
+    function refreshSpecialities() {
+        fetch('/users/register/doctor/specialities')
+            .then(response => response.text())
+            .then(html => {
+                const container = document.querySelector('.specialities-container');
+                if (container) {
+                    container.innerHTML = new DOMParser()
+                        .parseFromString(html, 'text/html')
+                        .querySelector('.specialities-container').innerHTML;
+                }
+            })
+            .catch(error => console.error('Error refreshing specialities:', error));
     }
 });
-
-function redirectToDashboard() {
-    window.location.href = '/g5/siscom/dashboard';
-}
