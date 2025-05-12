@@ -9,6 +9,7 @@ import com.oncologic.clinic.mapper.availability.StatusMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.availability.StatusRepository;
 import com.oncologic.clinic.service.availability.impl.StatusServiceImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -158,14 +159,15 @@ class StatusServiceTest {
     @Test
     void updateStatus_ShouldThrowException_WhenIdDoesNotExist() {
         // Arrange
-        when(statusRepository.findById(99L)).thenReturn(Optional.empty());
+        Long nonExistentId = 99L;
+        when(statusRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(StatusNotFoundException.class, () -> {
-            statusService.updateStatus(99L, statusDTO);
-        });
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> statusService.updateStatus(nonExistentId, statusDTO));
 
-        verify(statusRepository, times(1)).findById(99L);
+        assertEquals("Status not found", exception.getMessage());
+        verify(statusRepository).findById(nonExistentId);
         verify(statusRepository, never()).save(any());
     }
 

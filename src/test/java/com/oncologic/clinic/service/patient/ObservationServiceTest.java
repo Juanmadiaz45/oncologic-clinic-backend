@@ -6,8 +6,10 @@ import com.oncologic.clinic.dto.patient.update.ObservationUpdateDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Observation;
+import com.oncologic.clinic.exception.runtime.patient.AppointmentResultNotFoundException;
 import com.oncologic.clinic.exception.runtime.patient.ObservationNotFoundException;
 import com.oncologic.clinic.mapper.patient.ObservationMapper;
+import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
 import com.oncologic.clinic.repository.patient.ObservationRepository;
 import com.oncologic.clinic.service.patient.impl.ObservationServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -16,8 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,95 +32,90 @@ public class ObservationServiceTest {
     private ObservationRepository observationRepository;
 
     @Mock
+    private AppointmentResultRepository appointmentResultRepository;
+
+    @Mock
     private ObservationMapper observationMapper;
 
     @InjectMocks
     private ObservationServiceImpl observationService;
 
+    private AppointmentResult createTestAppointmentResult(Long id) {
+        AppointmentResult result = new AppointmentResult();
+        result.setId(id);
+        MedicalHistory medicalHistory = new MedicalHistory();
+        medicalHistory.setId(1L);
+        result.setMedicalHistory(medicalHistory);
+        return result;
+    }
+
+    private Observation createTestObservation(Long id, String content, String recommendation, AppointmentResult result) {
+        Observation observation = new Observation();
+        observation.setId(id);
+        observation.setContent(content);
+        observation.setRecommendation(recommendation);
+        observation.setAppointmentResult(result);
+        return observation;
+    }
+
+    private ObservationResponseDTO createTestObservationDTO(Long id, String content, String recommendation) {
+        return ObservationResponseDTO.builder()
+                .id(id)
+                .content(content)
+                .recommendation(recommendation)
+                .build();
+    }
+
     @Test
     void getObservationById_WhenObservationExists_ReturnsObservationDTO() {
         // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
+        Long id = 1L;
+        AppointmentResult result = createTestAppointmentResult(1L);
+        Observation observation = createTestObservation(id, "Paciente mejora notable", "Continuar tratamiento", result);
+        ObservationResponseDTO responseDTO = createTestObservationDTO(id, "Paciente mejora notable", "Continuar tratamiento");
 
-        AppointmentResult appointmentResult = new AppointmentResult();
-        appointmentResult.setId(1L);
-        appointmentResult.setMedicalHistory(medicalHistory);
-
-        Observation observation = new Observation();
-        observation.setId(1L);
-        observation.setContent("Paciente presenta mejora notable");
-        observation.setRecommendation("Continuar con el tratamiento");
-        observation.setAppointmentResult(appointmentResult);
-
-        ObservationResponseDTO responseDTO = new ObservationResponseDTO();
-        responseDTO.setId(1L);
-        responseDTO.setContent("Paciente presenta mejora notable");
-        responseDTO.setRecommendation("Continuar con el tratamiento");
-
-        when(observationRepository.findById(1L)).thenReturn(Optional.of(observation));
+        when(observationRepository.findById(id)).thenReturn(Optional.of(observation));
         when(observationMapper.toDto(observation)).thenReturn(responseDTO);
 
         // Act
-        ObservationResponseDTO foundObservation = observationService.getObservationById(1L);
+        ObservationResponseDTO foundObservation = observationService.getObservationById(id);
 
         // Assert
         assertNotNull(foundObservation);
-        assertEquals(1L, foundObservation.getId());
-        assertEquals("Paciente presenta mejora notable", foundObservation.getContent());
-        assertEquals("Continuar con el tratamiento", foundObservation.getRecommendation());
+        assertEquals(id, foundObservation.getId());
+        assertEquals("Paciente mejora notable", foundObservation.getContent());
+        assertEquals("Continuar tratamiento", foundObservation.getRecommendation());
 
-        verify(observationRepository, times(1)).findById(1L);
-        verify(observationMapper, times(1)).toDto(observation);
+        verify(observationRepository).findById(id);
+        verify(observationMapper).toDto(observation);
     }
 
     @Test
     void getObservationById_WhenObservationDoesNotExist_ThrowsException() {
         // Arrange
-        when(observationRepository.findById(99L)).thenReturn(Optional.empty());
+        Long nonExistentId = 99L;
+        when(observationRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(ObservationNotFoundException.class, () ->
-                observationService.getObservationById(99L));
+        Exception exception = assertThrows(ObservationNotFoundException.class,
+                () -> observationService.getObservationById(nonExistentId));
 
-        assertEquals("Observation not found with id: 99", exception.getMessage());
-
-        verify(observationRepository, times(1)).findById(99L);
+        assertEquals("Observation not found with ID: " + nonExistentId, exception.getMessage());
+        verify(observationRepository).findById(nonExistentId);
         verify(observationMapper, never()).toDto(any());
     }
 
     @Test
     void getAllObservations_WhenObservationsExist_ReturnsObservationsDTOList() {
         // Arrange
-        MedicalHistory medicalHistory = new MedicalHistory();
-        medicalHistory.setId(1L);
+        AppointmentResult result = createTestAppointmentResult(1L);
+        Observation observation1 = createTestObservation(1L, "Primera observación", "Recomendación 1", result);
+        Observation observation2 = createTestObservation(2L, "Segunda observación", "Recomendación 2", result);
 
-        AppointmentResult appointmentResult = new AppointmentResult();
-        appointmentResult.setId(1L);
-        appointmentResult.setMedicalHistory(medicalHistory);
+        ObservationResponseDTO dto1 = createTestObservationDTO(1L, "Primera observación", "Recomendación 1");
+        ObservationResponseDTO dto2 = createTestObservationDTO(2L, "Segunda observación", "Recomendación 2");
 
-        Observation observation1 = new Observation();
-        observation1.setId(1L);
-        observation1.setContent("Primera observación");
-        observation1.setAppointmentResult(appointmentResult);
-
-        Observation observation2 = new Observation();
-        observation2.setId(2L);
-        observation2.setContent("Segunda observación");
-        observation2.setAppointmentResult(appointmentResult);
-
-        ObservationResponseDTO dto1 = new ObservationResponseDTO();
-        dto1.setId(1L);
-        dto1.setContent("Primera observación");
-
-        ObservationResponseDTO dto2 = new ObservationResponseDTO();
-        dto2.setId(2L);
-        dto2.setContent("Segunda observación");
-
-        List<Observation> mockObservations = Arrays.asList(observation1, observation2);
-        List<ObservationResponseDTO> mockDTOs = Arrays.asList(dto1, dto2);
-
-        when(observationRepository.findAll()).thenReturn(mockObservations);
+        when(observationRepository.findAll()).thenReturn(Arrays.asList(observation1, observation2));
         when(observationMapper.toDto(observation1)).thenReturn(dto1);
         when(observationMapper.toDto(observation2)).thenReturn(dto2);
 
@@ -129,9 +128,9 @@ public class ObservationServiceTest {
         assertEquals("Primera observación", observations.get(0).getContent());
         assertEquals("Segunda observación", observations.get(1).getContent());
 
-        verify(observationRepository, times(1)).findAll();
-        verify(observationMapper, times(1)).toDto(observation1);
-        verify(observationMapper, times(1)).toDto(observation2);
+        verify(observationRepository).findAll();
+        verify(observationMapper).toDto(observation1);
+        verify(observationMapper).toDto(observation2);
     }
 
     @Test
@@ -146,37 +145,27 @@ public class ObservationServiceTest {
         assertNotNull(observations);
         assertTrue(observations.isEmpty());
 
-        verify(observationRepository, times(1)).findAll();
+        verify(observationRepository).findAll();
         verify(observationMapper, never()).toDto(any());
     }
 
     @Test
     void createObservation_WhenValidObservation_ReturnsSavedObservationDTO() {
         // Arrange
-        ObservationRequestDTO requestDTO = new ObservationRequestDTO();
-        requestDTO.setContent("Observación del paciente");
-        requestDTO.setRecommendation("Recomendación para el paciente");
-        requestDTO.setAppointmentResultId(1L);
+        Long appointmentResultId = 1L;
+        AppointmentResult result = createTestAppointmentResult(appointmentResultId);
 
-        AppointmentResult appointmentResult = new AppointmentResult();
-        appointmentResult.setId(1L);
+        ObservationRequestDTO requestDTO = ObservationRequestDTO.builder()
+                .content("Observación del paciente")
+                .recommendation("Recomendación para el paciente")
+                .appointmentResultId(appointmentResultId)
+                .build();
 
-        Observation observation = new Observation();
-        observation.setContent("Observación del paciente");
-        observation.setRecommendation("Recomendación para el paciente");
-        observation.setAppointmentResult(appointmentResult);
+        Observation observation = createTestObservation(null, "Observación del paciente", "Recomendación para el paciente", null);
+        Observation savedObservation = createTestObservation(1L, "Observación del paciente", "Recomendación para el paciente", result);
+        ObservationResponseDTO responseDTO = createTestObservationDTO(1L, "Observación del paciente", "Recomendación para el paciente");
 
-        Observation savedObservation = new Observation();
-        savedObservation.setId(1L);
-        savedObservation.setContent("Observación del paciente");
-        savedObservation.setRecommendation("Recomendación para el paciente");
-        savedObservation.setAppointmentResult(appointmentResult);
-
-        ObservationResponseDTO responseDTO = new ObservationResponseDTO();
-        responseDTO.setId(1L);
-        responseDTO.setContent("Observación del paciente");
-        responseDTO.setRecommendation("Recomendación para el paciente");
-
+        when(appointmentResultRepository.findById(appointmentResultId)).thenReturn(Optional.of(result));
         when(observationMapper.toEntity(requestDTO)).thenReturn(observation);
         when(observationRepository.save(observation)).thenReturn(savedObservation);
         when(observationMapper.toDto(savedObservation)).thenReturn(responseDTO);
@@ -190,74 +179,77 @@ public class ObservationServiceTest {
         assertEquals("Observación del paciente", createdObservation.getContent());
         assertEquals("Recomendación para el paciente", createdObservation.getRecommendation());
 
-        verify(observationMapper, times(1)).toEntity(requestDTO);
-        verify(observationRepository, times(1)).save(observation);
-        verify(observationMapper, times(1)).toDto(savedObservation);
+        verify(appointmentResultRepository).findById(appointmentResultId);
+        verify(observationMapper).toEntity(requestDTO);
+        verify(observationRepository).save(observation);
+        verify(observationMapper).toDto(savedObservation);
+    }
+
+    @Test
+    void createObservation_WhenAppointmentResultNotFound_ThrowsException() {
+        // Arrange
+        Long nonExistentAppointmentId = 99L;
+        ObservationRequestDTO requestDTO = ObservationRequestDTO.builder()
+                .appointmentResultId(nonExistentAppointmentId)
+                .build();
+
+        when(appointmentResultRepository.findById(nonExistentAppointmentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(AppointmentResultNotFoundException.class,
+                () -> observationService.createObservation(requestDTO));
+
+        verify(appointmentResultRepository).findById(nonExistentAppointmentId);
+        verify(observationRepository, never()).save(any());
     }
 
     @Test
     void updateObservation_WhenObservationExists_ReturnsUpdatedObservationDTO() {
         // Arrange
-        Long observationId = 1L;
+        Long id = 1L;
+        AppointmentResult result = createTestAppointmentResult(1L);
 
-        ObservationUpdateDTO updateDTO = new ObservationUpdateDTO();
-        updateDTO.setContent("Observación actualizada");
-        updateDTO.setRecommendation("Recomendación actualizada");
+        ObservationUpdateDTO updateDTO = ObservationUpdateDTO.builder()
+                .content("Observación actualizada")
+                .recommendation("Recomendación actualizada")
+                .build();
 
-        AppointmentResult appointmentResult = new AppointmentResult();
-        appointmentResult.setId(1L);
+        Observation existingObservation = createTestObservation(id, "Observación original", "Recomendación original", result);
+        Observation updatedObservation = createTestObservation(id, "Observación actualizada", "Recomendación actualizada", result);
+        ObservationResponseDTO responseDTO = createTestObservationDTO(id, "Observación actualizada", "Recomendación actualizada");
 
-        Observation existingObservation = new Observation();
-        existingObservation.setId(observationId);
-        existingObservation.setContent("Observación original");
-        existingObservation.setRecommendation("Recomendación original");
-        existingObservation.setAppointmentResult(appointmentResult);
-
-        Observation updatedObservation = new Observation();
-        updatedObservation.setId(observationId);
-        updatedObservation.setContent("Observación actualizada");
-        updatedObservation.setRecommendation("Recomendación actualizada");
-        updatedObservation.setAppointmentResult(appointmentResult);
-
-        ObservationResponseDTO responseDTO = new ObservationResponseDTO();
-        responseDTO.setId(observationId);
-        responseDTO.setContent("Observación actualizada");
-        responseDTO.setRecommendation("Recomendación actualizada");
-
-        when(observationRepository.findById(observationId)).thenReturn(Optional.of(existingObservation));
+        when(observationRepository.findById(id)).thenReturn(Optional.of(existingObservation));
         when(observationRepository.save(existingObservation)).thenReturn(updatedObservation);
         when(observationMapper.toDto(updatedObservation)).thenReturn(responseDTO);
 
         // Act
-        ObservationResponseDTO result = observationService.updateObservation(observationId, updateDTO);
+        ObservationResponseDTO resultDTO = observationService.updateObservation(id, updateDTO);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(observationId, result.getId());
-        assertEquals("Observación actualizada", result.getContent());
-        assertEquals("Recomendación actualizada", result.getRecommendation());
+        assertNotNull(resultDTO);
+        assertEquals(id, resultDTO.getId());
+        assertEquals("Observación actualizada", resultDTO.getContent());
+        assertEquals("Recomendación actualizada", resultDTO.getRecommendation());
 
-        verify(observationRepository, times(1)).findById(observationId);
-        verify(observationRepository, times(1)).save(existingObservation);
-        verify(observationMapper, times(1)).toDto(updatedObservation);
+        verify(observationRepository).findById(id);
+        verify(observationRepository).save(existingObservation);
+        verify(observationMapper).toDto(updatedObservation);
     }
 
     @Test
     void updateObservation_WhenObservationDoesNotExist_ThrowsException() {
         // Arrange
         Long nonExistentId = 99L;
-        ObservationUpdateDTO updateDTO = new ObservationUpdateDTO();
-        updateDTO.setContent("Contenido");
+        ObservationUpdateDTO updateDTO = ObservationUpdateDTO.builder().build();
 
         when(observationRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(ObservationNotFoundException.class, () ->
-                observationService.updateObservation(nonExistentId, updateDTO));
+        Exception exception = assertThrows(ObservationNotFoundException.class,
+                () -> observationService.updateObservation(nonExistentId, updateDTO));
 
-        assertEquals("Observation not found with id: " + nonExistentId, exception.getMessage());
-
-        verify(observationRepository, times(1)).findById(nonExistentId);
+        assertEquals("Observation not found with ID: " + nonExistentId, exception.getMessage());
+        verify(observationRepository).findById(nonExistentId);
         verify(observationRepository, never()).save(any());
         verify(observationMapper, never()).toDto(any());
     }
@@ -265,19 +257,18 @@ public class ObservationServiceTest {
     @Test
     void deleteObservation_WhenObservationExists_DeletesObservation() {
         // Arrange
-        Long observationId = 1L;
-        Observation observation = new Observation();
-        observation.setId(observationId);
-        observation.setContent("Contenido");
+        Long id = 1L;
+        AppointmentResult result = createTestAppointmentResult(1L);
+        Observation observation = createTestObservation(id, "Contenido", "Recomendación", result);
 
-        when(observationRepository.findById(observationId)).thenReturn(Optional.of(observation));
+        when(observationRepository.findById(id)).thenReturn(Optional.of(observation));
 
         // Act
-        observationService.deleteObservation(observationId);
+        observationService.deleteObservation(id);
 
         // Assert
-        verify(observationRepository, times(1)).findById(observationId);
-        verify(observationRepository, times(1)).delete(observation);
+        verify(observationRepository).findById(id);
+        verify(observationRepository).delete(observation);
     }
 
     @Test
@@ -287,12 +278,11 @@ public class ObservationServiceTest {
         when(observationRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        Exception exception = assertThrows(ObservationNotFoundException.class, () ->
-                observationService.deleteObservation(nonExistentId));
+        Exception exception = assertThrows(ObservationNotFoundException.class,
+                () -> observationService.deleteObservation(nonExistentId));
 
-        assertEquals("Observation not found with id: " + nonExistentId, exception.getMessage());
-
-        verify(observationRepository, times(1)).findById(nonExistentId);
+        assertEquals("Observation not found with ID: " + nonExistentId, exception.getMessage());
+        verify(observationRepository).findById(nonExistentId);
         verify(observationRepository, never()).delete(any());
     }
 }

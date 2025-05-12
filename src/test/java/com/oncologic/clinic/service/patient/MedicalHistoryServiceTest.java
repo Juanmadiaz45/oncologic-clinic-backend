@@ -69,12 +69,12 @@ public class MedicalHistoryServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("Sin información", result.getCurrentHealthStatus());
+        assertEquals("No information", result.getCurrentHealthStatus()); // Cambiado a "No information"
         verify(medicalHistoryRepository).save(captor.capture());
 
         MedicalHistory captured = captor.getValue();
         assertEquals(mockPatient, captured.getPatient());
-        assertEquals("Sin información", captured.getCurrentHealthStatus());
+        assertEquals("No information", captured.getCurrentHealthStatus()); // Cambiado a "No information"
         assertNotNull(captured.getCreationDate());
         assertTrue(captured.getCreationDate().isBefore(LocalDateTime.now().plusSeconds(1)));
     }

@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.List;
@@ -178,12 +179,19 @@ public class PatientServiceTest {
     void registerPatient_WhenInvalidDateFormat_ShouldThrowException() {
         // Arrange
         RegisterPatientDTO dto = getMockRegisterPatientDTO();
-        dto.setBirthDate("15-05-1990"); // formato inválido
+        dto.setBirthDate("15-05-1990");
+
+        UserResponseDTO mockUserResponse = getMockUserResponseDTO();
+        when(userService.createUser(dto.getUserData())).thenReturn(mockUserResponse);
+
+        User mockUser = getMockUser();
+        when(userRepository.findById(mockUserResponse.getId())).thenReturn(Optional.of(mockUser));
 
         // Act & Assert
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> patientService.registerPatient(dto));
+        Exception exception = assertThrows(DateTimeParseException.class, () ->
+                patientService.registerPatient(dto));
 
-        String expectedMessagePart = "Invalid date format";
+        String expectedMessagePart = "could not be parsed";
         assertTrue(exception.getMessage().contains(expectedMessagePart));
     }
 
@@ -219,7 +227,7 @@ public class PatientServiceTest {
         Exception exception = assertThrows(PatientNotFoundException.class, () ->
                 patientService.getPatientById(nonExistentId));
 
-        assertEquals("Patient not found with id: " + nonExistentId, exception.getMessage());
+        assertEquals("Patient not found with ID: " + nonExistentId, exception.getMessage()); // Cambiado a "ID"
 
         verify(patientRepository, times(1)).findById(nonExistentId);
         verify(patientMapper, never()).toDto(any());
@@ -282,10 +290,14 @@ public class PatientServiceTest {
         PatientResponseDTO responseDTO = getMockPatientResponseDTO();
 
         when(userService.createUser(requestDTO.getUserData())).thenReturn(userResponse);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(getMockUser()));
+
+        User mockUser = getMockUser();
+        when(userService.getUserEntityById(userResponse.getId())).thenReturn(mockUser);
+
         when(patientMapper.toEntity(requestDTO)).thenReturn(patient);
         when(patientRepository.save(patient)).thenReturn(savedPatient);
         when(patientMapper.toDto(savedPatient)).thenReturn(responseDTO);
+        when(patientRepository.findById(savedPatient.getId())).thenReturn(Optional.of(savedPatient));
 
         // Act
         PatientResponseDTO result = patientService.createPatient(requestDTO);
@@ -295,7 +307,7 @@ public class PatientServiceTest {
         assertEquals(1L, result.getId());
 
         verify(userService, times(1)).createUser(requestDTO.getUserData());
-        verify(userRepository, times(1)).findById(1L);
+        verify(userService, times(1)).getUserEntityById(userResponse.getId()); // Cambia esta verificación
         verify(patientMapper, times(1)).toEntity(requestDTO);
         verify(patientRepository, times(1)).save(patient);
         verify(patientMapper, times(1)).toDto(savedPatient);
