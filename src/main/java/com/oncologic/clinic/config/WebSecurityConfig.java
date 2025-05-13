@@ -111,7 +111,12 @@ public class WebSecurityConfig {
                 // Apply all security rules to all requests (except for static resources)
                 .securityMatcher("/**")
                 // Configuration of HTTP request authorization rules
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll().requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN").requestMatchers("/patient/registry", "/patient/create", "/patient/new").hasAnyRole("ADMIN", "DOCTOR", "ADMINISTRATIVE").requestMatchers("/administrative/**").hasAnyRole("ADMIN", "ADMINISTRATIVE").requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR").anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll().requestMatchers(
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**").permitAll().requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN").requestMatchers("/patient/registry", "/patient/create", "/patient/new").hasAnyRole("ADMIN", "DOCTOR", "ADMINISTRATIVE").requestMatchers("/administrative/**").hasAnyRole("ADMIN", "ADMINISTRATIVE").requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR").anyRequest().authenticated())
                 // Configure the login form
                 .formLogin(login -> login.loginPage("/login").successHandler(successHandler()).permitAll())
                 // Configure logout
