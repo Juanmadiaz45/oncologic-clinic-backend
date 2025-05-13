@@ -49,16 +49,7 @@ public class WebSecurityConfig {
                         // Allow access to static resources
                         .requestMatchers("/styles/**", "/images/**").permitAll()
                         // Allow all requests starting with /auth, such as login or registration
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs.yaml",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/g5/siscom/v3/api-docs/**",
-                                "/g5/siscom/v3/api-docs.yaml",
-                                "/g5/siscom/swagger-ui/**",
-                                "/g5/siscom/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         // Allow SSE connections
                         // Any other request must be authenticated
                         .anyRequest().authenticated())
@@ -120,7 +111,12 @@ public class WebSecurityConfig {
                 // Apply all security rules to all requests (except for static resources)
                 .securityMatcher("/**")
                 // Configuration of HTTP request authorization rules
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll().requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN").requestMatchers("/patient/registry", "/patient/create", "/patient/new").hasAnyRole("ADMIN", "DOCTOR", "ADMINISTRATIVE").requestMatchers("/administrative/**").hasAnyRole("ADMIN", "ADMINISTRATIVE").requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR").anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll().requestMatchers(
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**").permitAll().requestMatchers("/users/**", "/roles/**", "/dashboard/**").hasRole("ADMIN").requestMatchers("/patient/registry", "/patient/create", "/patient/new").hasAnyRole("ADMIN", "DOCTOR", "ADMINISTRATIVE").requestMatchers("/administrative/**").hasAnyRole("ADMIN", "ADMINISTRATIVE").requestMatchers("/doctor/**").hasAnyRole("ADMIN", "DOCTOR").anyRequest().authenticated())
                 // Configure the login form
                 .formLogin(login -> login.loginPage("/login").successHandler(successHandler()).permitAll())
                 // Configure logout
