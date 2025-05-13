@@ -126,6 +126,7 @@ You can log into the web application using the following default credentials:
 The REST API for this project was documented using **Swagger**. To review the documentation, follow the paths below:
 
 ![swagger-evidence.png](ANNEXES/swagger-evidence.png)
+
 #### 🔧 Development environment (localhost)
 
 * **Graphical interface:**
@@ -152,6 +153,8 @@ The REST API for this project was documented using **Swagger**. To review the do
 ### Testing the API with Postman
 
 This project includes a Postman collection and environment file to facilitate API testing.
+
+![postman-evidence](ANNEXES/postman-evidence.png)
 
 #### Requirements
 
