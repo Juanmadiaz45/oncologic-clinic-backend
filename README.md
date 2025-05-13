@@ -159,6 +159,8 @@ This project includes a Postman collection and environment file to facilitate AP
 #### Requirements
 
 - Postman must be installed.
+- Make sure you have the application running in your local environment. If you do not test it locally, set the
+  `base_url` in the Postman environment variable correctly so it works without issues.
 
 #### Steps to Import and Run Postman Tests
 
