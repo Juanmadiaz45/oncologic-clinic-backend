@@ -7,13 +7,11 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface MedicalOfficeMapper {
-
-    @Mapping(target = "medicalAppointment", ignore = true)
     MedicalOffice toEntity(MedicalOfficeDTO dto);
 
+    @Mapping(target = "medicalAppointmentId", source = "medicalAppointment.id")
     MedicalOfficeResponseDTO toDto(MedicalOffice entity);
 
-    @Mapping(target = "medicalAppointment", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(MedicalOfficeDTO dto, @MappingTarget MedicalOffice entity);
 }

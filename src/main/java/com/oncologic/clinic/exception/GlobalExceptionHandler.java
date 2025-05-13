@@ -6,7 +6,6 @@ import com.oncologic.clinic.exception.runtime.patient.DuplicateMedicalHistoryExc
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -51,13 +50,6 @@ public class GlobalExceptionHandler {
                 ? "The JWT token has expired"
                 : ex.getMessage();
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, message);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.TEXT_EVENT_STREAM)
-                .body("Error: " + ex.getMessage());
     }
 
     @ExceptionHandler(DomainNotFoundException.class)

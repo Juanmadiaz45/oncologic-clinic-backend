@@ -11,12 +11,9 @@ import org.mapstruct.*;
 public interface PatientMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "medicalHistory", ignore = true)
-    @Mapping(target = "birthdate", ignore = true)
     Patient toEntity(PatientRequestDTO dto);
 
     @Mapping(target = "userData", source = "user")
-    @Mapping(target = "birthDate", ignore = true)
     @Mapping(target = "medicalHistory", source = "medicalHistory")
     PatientResponseDTO toDto(Patient entity);
 

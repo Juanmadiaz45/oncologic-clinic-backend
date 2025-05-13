@@ -11,7 +11,6 @@ import com.oncologic.clinic.entity.patient.Patient;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.exception.runtime.patient.PatientNotFoundException;
 import com.oncologic.clinic.exception.runtime.patient.UserCreationException;
-import com.oncologic.clinic.mapper.patient.MedicalHistoryMapper;
 import com.oncologic.clinic.mapper.patient.PatientMapper;
 import com.oncologic.clinic.repository.patient.PatientRepository;
 import com.oncologic.clinic.repository.user.UserRepository;
@@ -44,7 +43,6 @@ public class PatientServiceImpl implements PatientService {
                               UserService userService,
                               MedicalHistoryService medicalHistoryService,
                               PatientMapper patientMapper,
-                              MedicalHistoryMapper medicalHistoryMapper,
                               UserRepository userRepository) {
         this.patientRepository = patientRepository;
         this.userService = userService;
@@ -80,7 +78,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
-    public Patient registerPatient(RegisterPatientDTO patientDTO){
+    public Patient registerPatient(RegisterPatientDTO patientDTO) {
         UserResponseDTO userResponseDTO = userService.createUser(patientDTO.getUserData());
         User user = userRepository.findById(userResponseDTO.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userResponseDTO.getId()));
@@ -206,15 +204,5 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.delete(patient);
         logger.info("Patient record deleted with ID: {}", id);
-
-        if (patient.getUser() != null) {
-            try {
-                userService.deleteUser(patient.getUser().getId());
-                logger.info("Deleted user associated with patient ID: {}", id);
-            } catch (Exception e) {
-                logger.error("Failed to delete user for patient ID {}: {}", id, e.getMessage());
-                throw new RuntimeException("Failed to delete associated user", e);
-            }
-        }
     }
 }

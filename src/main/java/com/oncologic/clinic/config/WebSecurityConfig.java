@@ -124,10 +124,10 @@ public class WebSecurityConfig {
                 // Configure exception handling
                 .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
                     // Redirects to log in if not authenticated
-                    response.sendRedirect("/login");
+                    response.sendRedirect(request.getContextPath() + "/login");
                 }).accessDeniedHandler((request, response, accessDeniedException) -> {
                     // Redirects to an access-denied page
-                    response.sendRedirect("/denied");
+                    response.sendRedirect(request.getContextPath() + "/denied");
                 }));
 
         return http.build();

@@ -19,4 +19,9 @@ public class WebAuthController {
     public String welcomeUser() {
         return "welcome";
     }
+
+    @GetMapping("/denied")
+    public String deniedAccess() {
+        return "denied";
+    }
 }
