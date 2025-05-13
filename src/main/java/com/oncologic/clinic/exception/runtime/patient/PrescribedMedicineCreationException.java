@@ -1,6 +1,8 @@
 package com.oncologic.clinic.exception.runtime.patient;
 
-public class PrescribedMedicineCreationException extends RuntimeException {
+import com.oncologic.clinic.exception.runtime.DomainCreationException;
+
+public class PrescribedMedicineCreationException extends DomainCreationException {
     public PrescribedMedicineCreationException(String message) {
         super(message);
     }

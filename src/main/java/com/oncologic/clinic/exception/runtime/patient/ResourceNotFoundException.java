@@ -1,6 +1,8 @@
 package com.oncologic.clinic.exception.runtime.patient;
 
-public class ResourceNotFoundException extends RuntimeException {
+import com.oncologic.clinic.exception.runtime.DomainNotFoundException;
+
+public class ResourceNotFoundException extends DomainNotFoundException {
     public ResourceNotFoundException(String message) {
         super(message);
     }

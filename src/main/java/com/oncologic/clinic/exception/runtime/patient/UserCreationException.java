@@ -1,6 +1,8 @@
 package com.oncologic.clinic.exception.runtime.patient;
 
-public class UserCreationException extends RuntimeException {
+import com.oncologic.clinic.exception.runtime.DomainCreationException;
+
+public class UserCreationException extends DomainCreationException {
     public UserCreationException(String message) {
         super(message);
     }

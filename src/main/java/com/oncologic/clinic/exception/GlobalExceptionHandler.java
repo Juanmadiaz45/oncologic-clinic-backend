@@ -1,8 +1,8 @@
 package com.oncologic.clinic.exception;
 
 import com.oncologic.clinic.exception.runtime.*;
-import com.oncologic.clinic.exception.runtime.patient.AppointmentResultCreationException;
 import com.oncologic.clinic.exception.runtime.patient.AppointmentResultUpdateException;
+import com.oncologic.clinic.exception.runtime.patient.DuplicateMedicalHistoryException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
@@ -65,8 +65,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(AppointmentResultCreationException.class)
-    public ProblemDetail handleCreationException(AppointmentResultCreationException ex) {
+    @ExceptionHandler(DomainCreationException.class)
+    public ProblemDetail handleCreationException(DomainCreationException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setProperty("errorType", "CREATION_ERROR");
@@ -92,5 +92,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DuplicateMedicalHistoryException.class)
+    public ProblemDetail handleDuplicateMedicalHistoryException(DuplicateMedicalHistoryException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setProperty("errorType", "DUPLICATE_MEDICAL_HISTORY");
+        return problem;
+    }
 
 }
