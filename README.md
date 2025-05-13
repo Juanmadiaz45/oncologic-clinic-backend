@@ -107,6 +107,67 @@ You can log into the web application using the following default credentials:
 | **labtech1**        | `lab123`            | Laboratory technician   |
 | **administrative1** | `administrative123` | Administrative staff    |
 
+### Documentation with Swagger
+The REST API for this project was documented using Swagger. To review the documentation, follow the path below after successfully running the application:
+
+- **With graphical interface:**  
+[http://localhost:8080/g5/siscom/swagger-ui/index.html](http://localhost:8080/g5/siscom/swagger-ui/index.html)
+- **In JSON format:**  
+[http://localhost:8080/g5/siscom/v3/api-docs](http://localhost:8080/g5/siscom/v3/api-docs)
+
+## Testing the API with Postman
+This project includes a Postman collection and environment file to facilitate API testing.
+
+### Requirements
+Postman must be installed.
+
+### Steps to Import and Run Postman Tests
+1. Download the Postman Files
+
+- Inside the repository, there is a postman/ directory containing:
+
+- collection_name.postman_collection.json – the collection of API requests.
+
+- environment_name.postman_environment.json – the environment with variables.
+
+2. Import Files into Postman
+
+a) Open Postman
+- Launch the Postman application.
+
+b) Import the Collection
+
+- Click the Import button in the top-left corner.
+
+- Select the collection_name.postman_collection.json file.
+
+- Click Import.
+
+c) Import the Environment
+
+- Click the gear icon (⚙️) in the top-right corner and choose Manage Environments.
+
+- Click Import.
+
+- Select the environment_name.postman_environment.json file.
+
+3. Select the Environment
+
+- Use the environment dropdown in the top-right corner of Postman to select the imported environment.
+
+4. Run the Test Collection
+
+- Go to the Collections tab in Postman.
+
+- Select the imported collection.
+
+- Click the Run button (▶️ icon or "Runner").
+
+- Make sure the correct environment is selected in the Collection Runner.
+
+- Click Run collection_name to execute the tests.
+
+
 > **Note:**  
 > The users admin and admin2 have full access to all core functionalities from
 > the [MVC Workshop Assignment](https://docs.google.com/document/d/1Py-Sxh_E5yLJ0SNuNIP1N5Qo8y5lQbc0/edit?tab=t.0),
