@@ -8,12 +8,14 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface MedicalTaskMapper {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "medicalAppointments", ignore = true)
     MedicalTask toEntity(MedicalTaskDTO dto);
 
     MedicalTaskResponseDTO toDto(MedicalTask entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "medicalAppointments", ignore = true)
     void updateEntityFromDto(MedicalTaskDTO dto, @MappingTarget MedicalTask entity);
 }

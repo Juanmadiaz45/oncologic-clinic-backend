@@ -10,6 +10,7 @@ import com.oncologic.clinic.repository.appointment.MedicalAppointmentRepository;
 import com.oncologic.clinic.repository.appointment.MedicalTaskRepository;
 import com.oncologic.clinic.service.appointment.MedicalTaskService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MedicalTaskServiceImpl implements MedicalTaskService {
@@ -45,30 +47,89 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
     @Override
     @Transactional
     public MedicalTaskResponseDTO createMedicalTask(MedicalTaskDTO dto) {
-        MedicalTask task = mapper.toEntity(dto);
+        try {
+            log.info("Creating medical task with description: {}", dto.getDescription());
 
-        if (dto.getMedicalAppointmentIds() != null && !dto.getMedicalAppointmentIds().isEmpty()) {
-            Set<MedicalAppointment> appointments = new HashSet<>(appointmentRepository.findAllById(dto.getMedicalAppointmentIds()));
-            task.setMedicalAppointments(appointments);
+            MedicalTask task = mapper.toEntity(dto);
+
+            if (dto.getMedicalAppointmentIds() != null && !dto.getMedicalAppointmentIds().isEmpty()) {
+                validateMedicalAppointments(dto.getMedicalAppointmentIds());
+            }
+
+            MedicalTask savedTask = repository.save(task);
+
+            if (dto.getMedicalAppointmentIds() != null && !dto.getMedicalAppointmentIds().isEmpty()) {
+                createTaskAppointmentRelations(savedTask.getId(), dto.getMedicalAppointmentIds());
+            }
+
+            return buildTaskResponseDTO(savedTask, dto);
+
+        } catch (Exception e) {
+            log.error("Error creating medical task: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create medical task", e);
         }
+    }
 
-        return mapper.toDto(repository.save(task));
+    private void validateMedicalAppointments(Set<Long> appointmentIds) {
+        for (Long appointmentId : appointmentIds) {
+            if (!appointmentRepository.existsById(appointmentId)) {
+                throw new IllegalArgumentException("Medical appointment with ID " + appointmentId + " does not exist");
+            }
+        }
+    }
+
+    private void createTaskAppointmentRelations(Long taskId, Set<Long> appointmentIds) {
+        log.info("Task {} will be associated with {} appointments", taskId, appointmentIds.size());
+    }
+
+    private MedicalTaskResponseDTO buildTaskResponseDTO(MedicalTask savedTask, MedicalTaskDTO originalDto) {
+        return MedicalTaskResponseDTO.builder()
+                .id(savedTask.getId())
+                .description(savedTask.getDescription())
+                .estimatedTime(savedTask.getEstimatedTime())
+                .status(savedTask.getStatus())
+                .responsible(savedTask.getResponsible())
+                .build();
     }
 
     @Override
     @Transactional
     public MedicalTaskResponseDTO updateMedicalTask(Long id, MedicalTaskDTO dto) {
-        MedicalTask existing = repository.findById(id)
-                .orElseThrow(() -> new MedicalTaskNotFoundException(id));
+        try {
+            log.info("Updating medical task with ID: {}", id);
 
-        mapper.updateEntityFromDto(dto, existing);
+            MedicalTask existing = repository.findById(id)
+                    .orElseThrow(() -> new MedicalTaskNotFoundException(id));
 
-        if (dto.getMedicalAppointmentIds() != null) {
-            Set<MedicalAppointment> appointments = new HashSet<>(appointmentRepository.findAllById(dto.getMedicalAppointmentIds()));
-            existing.setMedicalAppointments(appointments);
+            if (dto.getDescription() != null) {
+                existing.setDescription(dto.getDescription());
+            }
+            if (dto.getEstimatedTime() != null) {
+                existing.setEstimatedTime(dto.getEstimatedTime());
+            }
+            if (dto.getStatus() != null) {
+                existing.setStatus(dto.getStatus());
+            }
+            if (dto.getResponsible() != null) {
+                existing.setResponsible(dto.getResponsible());
+            }
+
+            MedicalTask savedTask = repository.save(existing);
+
+            return MedicalTaskResponseDTO.builder()
+                    .id(savedTask.getId())
+                    .description(savedTask.getDescription())
+                    .estimatedTime(savedTask.getEstimatedTime())
+                    .status(savedTask.getStatus())
+                    .responsible(savedTask.getResponsible())
+                    .build();
+
+        } catch (MedicalTaskNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating medical task with ID {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to update medical task", e);
         }
-
-        return mapper.toDto(repository.save(existing));
     }
 
     @Override
