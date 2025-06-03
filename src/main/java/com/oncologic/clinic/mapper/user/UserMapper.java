@@ -3,10 +3,10 @@ package com.oncologic.clinic.mapper.user;
 import com.oncologic.clinic.dto.user.UserDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
 import com.oncologic.clinic.dto.user.response.UserResponseDTO;
-import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.entity.user.UserRole;
 import org.mapstruct.*;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,11 +22,10 @@ public interface UserMapper {
         if (userRoles == null) {
             return null;
         }
+        RoleMapper roleMapper = Mappers.getMapper(RoleMapper.class);
 
-        return userRoles.stream().map(UserRole::getRole).map(this::roleToRoleResponseDTO).collect(Collectors.toSet());
+        return userRoles.stream().map(UserRole::getRole).map(roleMapper::roleToRoleResponseDto).collect(Collectors.toSet());
     }
-
-    RoleResponseDTO roleToRoleResponseDTO(Role role);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "userRoles", ignore = true)

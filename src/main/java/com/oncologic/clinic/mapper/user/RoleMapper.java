@@ -3,10 +3,10 @@ package com.oncologic.clinic.mapper.user;
 import com.oncologic.clinic.dto.user.RoleDTO;
 import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
-import com.oncologic.clinic.entity.user.Permission;
 import com.oncologic.clinic.entity.user.Role;
 import com.oncologic.clinic.entity.user.RolePermission;
 import org.mapstruct.*;
+import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,13 +27,12 @@ public interface RoleMapper {
             return null;
         }
 
+        PermissionMapper permissionMapper = Mappers.getMapper(PermissionMapper.class);
         return rolePermissions.stream()
                 .map(RolePermission::getPermission)
-                .map(this::permissionToPermissionResponseDTO)
+                .map(permissionMapper::permissionToPermissionResponseDto)
                 .collect(Collectors.toSet());
     }
-
-    PermissionResponseDTO permissionToPermissionResponseDTO(Permission permission);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "rolePermissions", ignore = true)
