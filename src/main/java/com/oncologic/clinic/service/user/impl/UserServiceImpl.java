@@ -17,7 +17,6 @@ import com.oncologic.clinic.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -248,12 +247,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserEntityByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-    }
-
-    @Override
     public List<User> getAllUserEntities() {
         return userRepository.findAll();
     }
@@ -281,5 +274,28 @@ public class UserServiceImpl implements UserService {
                 searchTerm,
                 pageable
         );
+    }
+
+    @Override
+    @Transactional
+    public void updateUserRoles(Long userId, Set<Long> roleIds) {
+        User user = getUserEntityById(userId);
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new IllegalArgumentException("A user must have at least one role");
+        }
+
+        Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
+        if (roles.isEmpty() || roles.size() != roleIds.size()) {
+            throw new IllegalArgumentException("One or more provided roles do not exist");
+        }
+
+        // Clear current roles
+        userRoleRepository.deleteByUser(user);
+        user.getUserRoles().clear();
+
+        // Assign new roles
+        addRolesToUser(user, roles);
+        userRepository.save(user);
     }
 }

@@ -13,21 +13,34 @@ import java.util.Set;
 
 public interface UserService {
     UserResponseDTO createUser(UserDTO userDTO);
+
     User createUser(RegisterUserDTO userDTO);
+
     UserResponseDTO updateUser(Long id, UserDTO userDTO);
+
     void deleteUser(Long id);
+
     UserResponseDTO getUserById(Long id);
+
     User getUserByUsername(String username);
+
     List<UserResponseDTO> getAllUsers();
+
     Page<UserResponseDTO> getAllUsersPaginated(Pageable pageable);
+
     Page<UserResponseDTO> searchUsers(String searchTerm, Pageable pageable);
 
     UserResponseDTO addRolesToUser(Long userId, Set<Long> roleIds);
+
     UserResponseDTO removeRolesFromUser(Long userId, Set<Long> roleIds);
 
     User getUserEntityById(Long id);
-    User getUserEntityByUsername(String username);
+
     List<User> getAllUserEntities();
+
     Page<User> getAllUserEntitiesPaginated(Pageable pageable);
+
     Page<User> searchUserEntities(String searchTerm, Pageable pageable);
+
+    void updateUserRoles(Long userId, Set<Long> roleIds);
 }

@@ -1,6 +1,5 @@
 package com.oncologic.clinic.dto.personal.response;
 
-import com.oncologic.clinic.dto.SpecialityDTO;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DoctorResponseDTO {
-    private PersonalResponseDTO personalData;
+    private Long id;
     private String medicalLicenseNumber;
-    private Set<SpecialityDTO> specialities;
+    private Set<Long> specialityIds; // Doctor's specialty IDs
+    private PersonalResponseDTO personalData;
 }

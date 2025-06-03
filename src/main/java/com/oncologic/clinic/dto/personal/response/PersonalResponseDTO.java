@@ -14,7 +14,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PersonalResponseDTO {
-    private UserResponseDTO userData;
     private Long id;
     private String idNumber;
     private String name;
@@ -23,6 +22,6 @@ public class PersonalResponseDTO {
     private String phoneNumber;
     private LocalDateTime dateOfHiring;
     private Character status;
-    private Long userId;
+    private UserResponseDTO userData;
     private Set<Long> availabilityIds;
 }

@@ -1,16 +1,18 @@
 package com.oncologic.clinic.service.personal.impl;
 
 import com.oncologic.clinic.dto.personal.DoctorDTO;
-import com.oncologic.clinic.dto.personal.request.PersonalRequestDTO;
+import com.oncologic.clinic.dto.personal.PersonalDTO;
 import com.oncologic.clinic.dto.personal.response.DoctorResponseDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.user.UserDTO;
+import com.oncologic.clinic.entity.availability.Availability;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
 import com.oncologic.clinic.exception.runtime.personal.DoctorNotFoundException;
 import com.oncologic.clinic.exception.runtime.personal.SpecialityNotFoundException;
 import com.oncologic.clinic.mapper.personal.DoctorMapper;
+import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
 import com.oncologic.clinic.service.personal.DoctorService;
@@ -22,18 +24,21 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
-public class DoctorServiceImpl implements DoctorService {
+public class DoctorServiceImpl extends BasePersonalService<Doctor> implements DoctorService {
+
     private final DoctorRepository doctorRepository;
-    private final UserService userService;
     private final SpecialityRepository specialityRepository;
     private final DoctorMapper doctorMapper;
 
-    DoctorServiceImpl(DoctorRepository doctorRepository, UserService userService, SpecialityRepository specialityRepository, DoctorMapper doctorMapper) {
+    public DoctorServiceImpl(DoctorRepository doctorRepository,
+                             UserService userService,
+                             SpecialityRepository specialityRepository,
+                             AvailabilityRepository availabilityRepository,
+                             DoctorMapper doctorMapper) {
+        super(userService, availabilityRepository);
         this.doctorRepository = doctorRepository;
-        this.userService = userService;
         this.specialityRepository = specialityRepository;
         this.doctorMapper = doctorMapper;
     }
@@ -42,150 +47,203 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorResponseDTO getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException(id));
-
         return doctorMapper.toDto(doctor);
     }
 
     @Override
     public List<DoctorResponseDTO> getAllDoctors() {
-        return doctorRepository.findAll().stream().map(doctorMapper::toDto).toList();
+        return doctorRepository.findAll().stream()
+                .map(doctorMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional
     public Doctor registerDoctor(RegisterDoctorDTO doctorDTO) {
-        User user = userService.createUser(doctorDTO);
+        try {
+            // Create user first
+            User user = userService.createUser(doctorDTO);
 
-        Doctor doctor = new Doctor();
-        doctor.setUser(user);
-        doctor.setIdNumber(doctorDTO.getIdNumber());
-        doctor.setName(doctorDTO.getName());
-        doctor.setLastName(doctorDTO.getLastname());
-        doctor.setEmail(doctorDTO.getEmail());
-        doctor.setPhoneNumber(doctorDTO.getPhoneNumber());
-        doctor.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
-        doctor.setDateOfHiring(LocalDateTime.now());
-        doctor.setStatus('A');
+            // Create doctor with default values
+            Doctor doctor = new Doctor();
+            doctor.setUser(user);
+            doctor.setIdNumber(doctorDTO.getIdNumber());
+            doctor.setName(doctorDTO.getName());
+            doctor.setLastName(doctorDTO.getLastname());
+            doctor.setEmail(doctorDTO.getEmail());
+            doctor.setPhoneNumber(doctorDTO.getPhoneNumber());
+            doctor.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
+            doctor.setDateOfHiring(LocalDateTime.now());
+            doctor.setStatus('A'); // Active by default
 
-        Doctor savedDoctor = doctorRepository.save(doctor);
+            Doctor savedDoctor = doctorRepository.save(doctor);
 
-        if (doctorDTO.getSpecialityIds() != null && !doctorDTO.getSpecialityIds().isEmpty()) {
-            assignSpecialitiesToDoctor(savedDoctor, doctorDTO.getSpecialityIds());
-        }
-
-        return savedDoctor;
-    }
-
-    private void assignSpecialitiesToDoctor(Doctor doctor, Set<Long> specialityIds) {
-        Set<Speciality> newSpecialities = new HashSet<>(specialityRepository.findAllById(specialityIds));
-
-        Set<Speciality> currentSpecialities = new HashSet<>(doctor.getSpecialities());
-
-        Set<Speciality> toRemove = currentSpecialities.stream()
-                .filter(spec -> !newSpecialities.contains(spec))
-                .collect(Collectors.toSet());
-
-        toRemove.forEach(spec -> {
-            spec.getDoctors().remove(doctor);
-            doctor.getSpecialities().remove(spec);
-        });
-
-        newSpecialities.forEach(spec -> {
-            if (!currentSpecialities.contains(spec)) {
-                if (spec.getDoctors() == null) {
-                    spec.setDoctors(new HashSet<>());
-                }
-                spec.getDoctors().add(doctor);
-                doctor.getSpecialities().add(spec);
+            // Assign specialties if present
+            if (doctorDTO.getSpecialityIds() != null && !doctorDTO.getSpecialityIds().isEmpty()) {
+                Set<Speciality> specialities = validateAndGetSpecialities(doctorDTO.getSpecialityIds());
+                assignSpecialitiesToDoctor(savedDoctor, specialities);
             }
-        });
+
+            return savedDoctor;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error registering doctor: " + e.getMessage(), e);
+        }
     }
 
     @Override
     @Transactional
     public DoctorResponseDTO createDoctor(DoctorDTO doctorDTO) {
-        if (doctorDTO.getMedicalLicenseNumber() == null || doctorDTO.getMedicalLicenseNumber().isEmpty()) {
-            throw new IllegalArgumentException("The medical leave number cannot be empty");
-        }
+        // Doctor-specific validations
+        validateDoctorData(doctorDTO);
+        validateRequiredData(doctorDTO.getPersonalData());
 
-        RegisterDoctorDTO registerDto = new RegisterDoctorDTO();
+        // Create RegisterDoctorDTO to reuse existing logic
+        RegisterDoctorDTO registerDto = mapToRegisterDTO(doctorDTO);
 
-        if (doctorDTO.getPersonalData() != null) {
-            PersonalRequestDTO personalData = doctorDTO.getPersonalData();
-            registerDto.setIdNumber(personalData.getIdNumber());
-            registerDto.setName(personalData.getName());
-            registerDto.setLastname(personalData.getLastName());
-            registerDto.setEmail(personalData.getEmail());
-            registerDto.setPhoneNumber(personalData.getPhoneNumber());
-
-            if (personalData.getUserData() != null) {
-                UserDTO userData = personalData.getUserData();
-                registerDto.setUsername(userData.getUsername());
-                registerDto.setPassword(userData.getPassword());
-                registerDto.setRoleIds(userData.getRoleIds());
-            }
-        }
-
-        registerDto.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
-        registerDto.setSpecialityIds(doctorDTO.getSpecialityIds());
-
-
+        // Create doctor using existing method
         Doctor doctor = registerDoctor(registerDto);
+
+        // Assign availabilities if present
+        if (getAvailabilityIds(doctorDTO) != null &&
+                !doctorDTO.getPersonalData().getAvailabilityIds().isEmpty()) {
+            Set<Availability> availabilities = validateAndGetAvailabilities(
+                    doctorDTO.getPersonalData().getAvailabilityIds());
+            doctor.setAvailabilities(availabilities);
+            doctor = doctorRepository.save(doctor);
+        }
 
         return doctorMapper.toDto(doctor);
     }
 
+    private static Set<Long> getAvailabilityIds(DoctorDTO doctorDTO) {
+        return doctorDTO.getPersonalData().getAvailabilityIds();
+    }
 
     @Override
     @Transactional
-    public DoctorResponseDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
-        Doctor doctor = doctorRepository.findById(id)
+    public DoctorResponseDTO updateDoctor(Long id, DoctorDTO updateDTO) {
+        Doctor existingDoctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException(id));
 
-        doctorMapper.updateEntityFromDto(doctorDTO, doctor);
+        // Update basic doctor fields
+        doctorMapper.updateEntityFromDto(updateDTO, existingDoctor);
 
-        // If new specialties come
-        if (doctorDTO.getSpecialityIds() != null) {
-            // 1. Remove doctors from old specialties that are no longer there
-            Set<Speciality> currentSpecialities = doctor.getSpecialities() != null
-                    ? new HashSet<>(doctor.getSpecialities())
-                    : new HashSet<>();
+        // Update user data using base method
+        updateUserData(updateDTO.getPersonalData(), existingDoctor.getUser());
 
-            for (Speciality oldSpeciality : currentSpecialities) {
-                if (!doctorDTO.getSpecialityIds().contains(oldSpeciality.getId())) {
-                    oldSpeciality.getDoctors().remove(doctor);
-                    specialityRepository.save(oldSpeciality);
-                }
+        // Update personal data using base method
+        updatePersonalData(updateDTO.getPersonalData(), existingDoctor);
+
+        // Update specialties if present
+        if (updateDTO.getSpecialityIds() != null) {
+            // Remove current specialties
+            removeSpecialitiesFromDoctor(existingDoctor);
+
+            // Assign new specialties
+            if (!updateDTO.getSpecialityIds().isEmpty()) {
+                Set<Speciality> specialities = validateAndGetSpecialities(updateDTO.getSpecialityIds());
+                assignSpecialitiesToDoctor(existingDoctor, specialities);
             }
-
-            // 2. Add doctors to new specialties
-            Set<Speciality> updatedSpecialities = new HashSet<>();
-            for (Long specialityId : doctorDTO.getSpecialityIds()) {
-                Speciality speciality = specialityRepository.findById(specialityId)
-                        .orElseThrow(() -> new SpecialityNotFoundException(specialityId));
-                speciality.getDoctors().add(doctor);
-                updatedSpecialities.add(speciality);
-            }
-            specialityRepository.saveAll(updatedSpecialities);
-            doctor.setSpecialities(updatedSpecialities);
         }
 
-        return doctorMapper.toDto(doctorRepository.save(doctor));
+        Doctor updatedDoctor = doctorRepository.save(existingDoctor);
+        return doctorMapper.toDto(updatedDoctor);
     }
-
 
     @Override
     @Transactional
     public void deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException(id));
+        doctorRepository.delete(doctor);
+    }
 
-        if (doctor.getSpecialities() != null && !doctor.getSpecialities().isEmpty()) {
-            for (Speciality speciality : doctor.getSpecialities()) {
+    /**
+     * Doctor-specific validations
+     */
+    private void validateDoctorData(DoctorDTO doctorDTO) {
+        if (doctorDTO.getMedicalLicenseNumber() == null || doctorDTO.getMedicalLicenseNumber().isEmpty()) {
+            throw new IllegalArgumentException("Medical license number cannot be empty");
+        }
+    }
+
+    /**
+     * Maps DoctorDTO to RegisterDoctorDTO to reuse logic
+     */
+    private RegisterDoctorDTO mapToRegisterDTO(DoctorDTO doctorDTO) {
+        PersonalDTO personalData = doctorDTO.getPersonalData();
+
+        RegisterDoctorDTO registerDto = new RegisterDoctorDTO();
+
+        // Personal data
+        registerDto.setIdNumber(personalData.getIdNumber());
+        registerDto.setName(personalData.getName());
+        registerDto.setLastname(personalData.getLastName());
+        registerDto.setEmail(personalData.getEmail());
+        registerDto.setPhoneNumber(personalData.getPhoneNumber());
+
+        // Doctor data
+        registerDto.setMedicalLicenseNumber(doctorDTO.getMedicalLicenseNumber());
+        registerDto.setSpecialityIds(doctorDTO.getSpecialityIds());
+
+        // User data
+        UserDTO userData = personalData.getUserData();
+        registerDto.setUsername(userData.getUsername());
+        registerDto.setPassword(userData.getPassword());
+        registerDto.setRoleIds(userData.getRoleIds());
+
+        return registerDto;
+    }
+
+    /**
+     * Validates that all specialty IDs exist and returns them
+     */
+    private Set<Speciality> validateAndGetSpecialities(Set<Long> specialityIds) {
+        Set<Speciality> specialities = new HashSet<>(specialityRepository.findAllById(specialityIds));
+
+        if (specialities.size() != specialityIds.size()) {
+            Set<Long> foundIds = specialities.stream()
+                    .map(Speciality::getId)
+                    .collect(HashSet::new, HashSet::add, HashSet::addAll);
+
+            Set<Long> missingIds = new HashSet<>(specialityIds);
+            missingIds.removeAll(foundIds);
+
+            throw new SpecialityNotFoundException("Specialties not found with IDs: " + missingIds);
+        }
+
+        return specialities;
+    }
+
+    /**
+     * Assigns specialties to a doctor maintaining bidirectional relationship
+     */
+    private void assignSpecialitiesToDoctor(Doctor doctor, Set<Speciality> specialities) {
+        for (Speciality speciality : specialities) {
+            // Assign doctor to specialty
+            if (speciality.getDoctors() == null) {
+                speciality.setDoctors(new HashSet<>());
+            }
+            speciality.getDoctors().add(doctor);
+
+            // Assign specialty to doctor
+            if (doctor.getSpecialities() == null) {
+                doctor.setSpecialities(new HashSet<>());
+            }
+            doctor.getSpecialities().add(speciality);
+        }
+    }
+
+    /**
+     * Removes all specialties from a doctor
+     */
+    private void removeSpecialitiesFromDoctor(Doctor doctor) {
+        if (doctor.getSpecialities() != null) {
+            for (Speciality speciality : new HashSet<>(doctor.getSpecialities())) {
                 speciality.getDoctors().remove(doctor);
             }
             doctor.getSpecialities().clear();
         }
-        doctorRepository.delete(doctor);
     }
 }
