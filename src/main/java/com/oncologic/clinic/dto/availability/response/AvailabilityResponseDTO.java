@@ -16,6 +16,6 @@ public class AvailabilityResponseDTO {
     private Long id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Set<Long> personalIds;
-    private Set<StatusResponseDTO> statuses;
+    private Set<Long> personalIds; // Associated staff IDs
+    private StatusResponseDTO status; // 👈 Changed: Now it's a single DTO, not a Set
 }

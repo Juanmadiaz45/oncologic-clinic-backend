@@ -20,7 +20,8 @@ INSERT INTO USERS (id, username, password)
 VALUES (9, 'administrative1', '$2a$12$Ne0e0Y2V7CPWEVOJ6Y3fIOkPsmWj56AQtx/vO1JBcPVCDqQaomwGO');
 
 INSERT INTO USERS (id, username, password)
-VALUES (10, 'patient3', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi'); -- password: patient123
+VALUES (10, 'patient3', '$2a$12$kJbCtGPdd1SBYQVcuafQseS3HEuQPWyh1MjXBqRKjd0csmUfydeXi');
+-- password: patient123
 -- password: administrative123
 
 
@@ -159,7 +160,8 @@ VALUES (2, 5, 'Roberto Fernández', TIMESTAMP '1978-08-15 00:00:00', 'M', 'Aveni
         'roberto.fernandez@email.com');
 
 INSERT INTO PATIENTS (id, user_id, name, birthdate, gender, address, phone_number, email)
-VALUES (3, 10, 'Nuevo Paciente', TIMESTAMP '1990-01-01 00:00:00', 'M', 'Nueva Dirección 123', '555-1111', 'nuevo.paciente@email.com');
+VALUES (3, 10, 'Nuevo Paciente', TIMESTAMP '1990-01-01 00:00:00', 'M', 'Nueva Dirección 123', '555-1111',
+        'nuevo.paciente@email.com');
 
 -- Inicialización de MEDICAL_HISTORIES
 INSERT INTO MEDICAL_HISTORIES (id, patient_id, creation_date, current_health_status)
@@ -167,13 +169,21 @@ VALUES (1, 1, TIMESTAMP '2023-01-01 00:00:00', 'Saludable');
 INSERT INTO MEDICAL_HISTORIES (id, patient_id, creation_date, current_health_status)
 VALUES (2, 2, TIMESTAMP '2023-01-02 00:00:00', 'Tratamiento en curso');
 
+-- Inicialización de STATUSES
+INSERT INTO STATUSES (id, name)
+VALUES (1, 'Disponible');
+INSERT INTO STATUSES (id, name)
+VALUES (2, 'Ocupado');
+INSERT INTO STATUSES (id, name)
+VALUES (3, 'Reservado');
+
 -- Inicialización de AVAILABILITIES
-INSERT INTO AVAILABILITIES (id, start_time, end_time)
-VALUES (1, TIMESTAMP '2023-03-01 08:00:00', TIMESTAMP '2023-03-01 16:00:00');
-INSERT INTO AVAILABILITIES (id, start_time, end_time)
-VALUES (2, TIMESTAMP '2023-03-02 08:00:00', TIMESTAMP '2023-03-02 16:00:00');
-INSERT INTO AVAILABILITIES (id, start_time, end_time)
-VALUES (3, TIMESTAMP '2023-03-03 08:00:00', TIMESTAMP '2023-03-03 16:00:00');
+INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id)
+VALUES (1, TIMESTAMP '2023-03-01 08:00:00', TIMESTAMP '2023-03-01 16:00:00', 1);
+INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id)
+VALUES (2, TIMESTAMP '2023-03-02 08:00:00', TIMESTAMP '2023-03-02 16:00:00', 2);
+INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id)
+VALUES (3, TIMESTAMP '2023-03-03 08:00:00', TIMESTAMP '2023-03-03 16:00:00', 3);
 
 -- Inicialización de PERSONAL_AVAILABILITIES
 INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
@@ -182,14 +192,6 @@ INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
 VALUES (2, 2);
 INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
 VALUES (5, 3);
-
--- Inicialización de STATUSES
-INSERT INTO STATUSES (id, name, availability_id)
-VALUES (1, 'Disponible', 1);
-INSERT INTO STATUSES (id, name, availability_id)
-VALUES (2, 'Ocupado', 2);
-INSERT INTO STATUSES (id, name, availability_id)
-VALUES (3, 'Disponible', 3);
 
 -- Inicialización de TYPE_OF_MEDICAL_APPOINTMENTS
 INSERT INTO TYPE_OF_MEDICAL_APPOINTMENTS (id, name)

@@ -2,15 +2,11 @@ package com.oncologic.clinic.service.availability.impl;
 
 import com.oncologic.clinic.dto.availability.StatusDTO;
 import com.oncologic.clinic.dto.availability.response.StatusResponseDTO;
-import com.oncologic.clinic.entity.availability.Availability;
 import com.oncologic.clinic.entity.availability.Status;
-import com.oncologic.clinic.exception.runtime.availability.AvailabilityNotFoundException;
 import com.oncologic.clinic.exception.runtime.availability.StatusNotFoundException;
 import com.oncologic.clinic.mapper.availability.StatusMapper;
-import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.availability.StatusRepository;
 import com.oncologic.clinic.service.availability.StatusService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +19,6 @@ import java.util.stream.Collectors;
 public class StatusServiceImpl implements StatusService {
 
     private final StatusRepository statusRepository;
-    private final AvailabilityRepository availabilityRepository;
     private final StatusMapper mapper;
 
     @Override
@@ -46,13 +41,6 @@ public class StatusServiceImpl implements StatusService {
     @Transactional
     public StatusResponseDTO createStatus(StatusDTO requestDTO) {
         Status status = mapper.toEntity(requestDTO);
-
-        if (requestDTO.getAvailabilityId() != null) {
-            Availability availability = availabilityRepository.findById(requestDTO.getAvailabilityId())
-                    .orElseThrow(() -> new AvailabilityNotFoundException("Availability not found"));
-            status.setAvailability(availability);
-        }
-
         Status savedStatus = statusRepository.save(status);
         return mapper.toDto(savedStatus);
     }
@@ -61,16 +49,9 @@ public class StatusServiceImpl implements StatusService {
     @Transactional
     public StatusResponseDTO updateStatus(Long id, StatusDTO updateDTO) {
         Status status = statusRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Status not found"));
+                .orElseThrow(() -> new StatusNotFoundException("Status not found with ID " + id));
 
         mapper.updateEntityFromDto(updateDTO, status);
-
-        if (updateDTO.getAvailabilityId() != null) {
-            Availability availability = availabilityRepository.findById(updateDTO.getAvailabilityId())
-                    .orElseThrow(() -> new AvailabilityNotFoundException("Availability not found"));
-            status.setAvailability(availability);
-        }
-
         Status updatedStatus = statusRepository.save(status);
         return mapper.toDto(updatedStatus);
     }

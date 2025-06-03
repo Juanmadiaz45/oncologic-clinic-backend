@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -31,7 +30,8 @@ public class Availability {
     @ManyToMany(mappedBy = "availabilities")
     private Set<Personal> personals = new HashSet<>();
 
-    @OneToMany(mappedBy = "availability")
-    private List<Status> statuses;
+    @ManyToOne // Many availabilities can have the same status
+    @JoinColumn(name = "status_id") // FK column in the AVAILABILITIES table
+    private Status status;
 }
 

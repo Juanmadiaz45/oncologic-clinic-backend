@@ -2,10 +2,13 @@ package com.oncologic.clinic.service.availability;
 
 import com.oncologic.clinic.dto.availability.AvailabilityDTO;
 import com.oncologic.clinic.dto.availability.response.AvailabilityResponseDTO;
+import com.oncologic.clinic.dto.availability.response.StatusResponseDTO;
 import com.oncologic.clinic.entity.availability.Availability;
+import com.oncologic.clinic.entity.availability.Status;
 import com.oncologic.clinic.exception.runtime.availability.AvailabilityNotFoundException;
 import com.oncologic.clinic.mapper.availability.AvailabilityMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
+import com.oncologic.clinic.repository.availability.StatusRepository;
 import com.oncologic.clinic.service.availability.impl.AvailabilityServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +35,9 @@ class AvailabilityServiceTest {
     @Mock
     private AvailabilityMapper availabilityMapper;
 
+    @Mock
+    private StatusRepository statusRepository;
+
     @InjectMocks
     private AvailabilityServiceImpl availabilityService;
 
@@ -40,19 +47,26 @@ class AvailabilityServiceTest {
 
     @BeforeEach
     void setUp() {
+        Status status = new Status();
+        status.setId(1L);
+        status.setName("Disponible");
+
         availability = new Availability();
         availability.setId(1L);
         availability.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
         availability.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
+        availability.setStatus(status); // Added status relationship
 
         availabilityResponseDTO = new AvailabilityResponseDTO();
         availabilityResponseDTO.setId(1L);
         availabilityResponseDTO.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
         availabilityResponseDTO.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
+        availabilityResponseDTO.setStatus(new StatusResponseDTO(1L, "Disponible", new HashSet<>())); // Added status
 
         availabilityDTO = new AvailabilityDTO();
         availabilityDTO.setStartTime(LocalDateTime.of(2025, 4, 20, 9, 0));
         availabilityDTO.setEndTime(LocalDateTime.of(2025, 4, 20, 17, 0));
+        availabilityDTO.setStatusId(1L); // Added statusId
     }
 
     @Test
@@ -77,9 +91,7 @@ class AvailabilityServiceTest {
         when(availabilityRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(AvailabilityNotFoundException.class, () -> {
-            availabilityService.getAvailabilityById(1L);
-        });
+        assertThrows(AvailabilityNotFoundException.class, () -> availabilityService.getAvailabilityById(1L));
 
         verify(availabilityRepository, times(1)).findById(1L);
     }
@@ -111,10 +123,16 @@ class AvailabilityServiceTest {
         verify(availabilityMapper, times(1)).toDto(anotherAvailability);
     }
 
+
     @Test
     void createAvailability_ShouldSaveAndReturnAvailabilityDTO() {
         // Arrange
+        Status mockStatus = new Status();
+        mockStatus.setId(1L);
+        mockStatus.setName("Disponible");
+
         when(availabilityMapper.toEntity(availabilityDTO)).thenReturn(availability);
+        when(statusRepository.findById(1L)).thenReturn(Optional.of(mockStatus));
         when(availabilityRepository.save(availability)).thenReturn(availability);
         when(availabilityMapper.toDto(availability)).thenReturn(availabilityResponseDTO);
 
@@ -162,9 +180,7 @@ class AvailabilityServiceTest {
         when(availabilityRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(AvailabilityNotFoundException.class, () -> {
-            availabilityService.updateAvailability(99L, availabilityDTO);
-        });
+        assertThrows(AvailabilityNotFoundException.class, () -> availabilityService.updateAvailability(99L, availabilityDTO));
 
         verify(availabilityRepository, times(1)).findById(99L);
         verify(availabilityRepository, never()).save(any());
@@ -190,9 +206,7 @@ class AvailabilityServiceTest {
         when(availabilityRepository.existsById(1L)).thenReturn(false);
 
         // Act & Assert
-        assertThrows(AvailabilityNotFoundException.class, () -> {
-            availabilityService.deleteAvailability(1L);
-        });
+        assertThrows(AvailabilityNotFoundException.class, () -> availabilityService.deleteAvailability(1L));
 
         verify(availabilityRepository, times(1)).existsById(1L);
         verify(availabilityRepository, never()).deleteById(any());

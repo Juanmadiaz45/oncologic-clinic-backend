@@ -11,5 +11,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StatusDTO {
     private String name;
-    private Long availabilityId;
 }

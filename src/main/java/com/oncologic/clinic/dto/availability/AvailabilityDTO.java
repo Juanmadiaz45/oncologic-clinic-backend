@@ -15,5 +15,6 @@ import java.util.Set;
 public class AvailabilityDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Set<Long> personalIds;
+    private Set<Long> personalIds; // Associated staff IDs
+    private Long statusId; // 👈 Changed: Now only requires the state ID
 }

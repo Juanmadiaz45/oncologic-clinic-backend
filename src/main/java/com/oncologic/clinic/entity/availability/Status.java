@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "STATUSES")
 @Data
@@ -19,8 +21,7 @@ public class Status {
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "availability_id")
-    private Availability availability;
+    @OneToMany(mappedBy = "status") // A state can have many availabilities
+    private List<Availability> availabilities;
 }
 
