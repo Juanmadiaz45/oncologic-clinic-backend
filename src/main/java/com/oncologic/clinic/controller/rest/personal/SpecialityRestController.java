@@ -1,8 +1,7 @@
 package com.oncologic.clinic.controller.rest.personal;
 
-import com.oncologic.clinic.dto.personal.request.SpecialityRequestDTO;
+import com.oncologic.clinic.dto.personal.SpecialityDTO;
 import com.oncologic.clinic.dto.personal.response.SpecialityResponseDTO;
-import com.oncologic.clinic.dto.personal.update.SpecialityUpdateDTO;
 import com.oncologic.clinic.service.personal.SpecialityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +30,7 @@ public class SpecialityRestController {
     })
     @PostMapping
     public ResponseEntity<SpecialityResponseDTO> createSpeciality(
-            @Valid @RequestBody SpecialityRequestDTO specialityDTO) {
+            @Valid @RequestBody SpecialityDTO specialityDTO) {
         SpecialityResponseDTO createdSpeciality = specialityService.createSpeciality(specialityDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSpeciality);
     }
@@ -64,7 +63,7 @@ public class SpecialityRestController {
     @PutMapping("/{id}")
     public ResponseEntity<SpecialityResponseDTO> updateSpeciality(
             @PathVariable Long id,
-            @Valid @RequestBody SpecialityUpdateDTO specialityDTO) {
+            @Valid @RequestBody SpecialityDTO specialityDTO) {
         return ResponseEntity.ok(specialityService.updateSpeciality(id, specialityDTO));
     }
 

@@ -1,6 +1,6 @@
 package com.oncologic.clinic.controller;
 
-import com.oncologic.clinic.dto.personal.request.SpecialityRequestDTO;
+import com.oncologic.clinic.dto.personal.SpecialityDTO;
 import com.oncologic.clinic.service.personal.SpecialityService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -21,14 +21,14 @@ public class SpecialityController {
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         if (!model.containsAttribute("speciality")) {
-            model.addAttribute("speciality", new SpecialityRequestDTO());
+            model.addAttribute("speciality", new SpecialityDTO());
         }
         return "register-speciality";
     }
 
     @PostMapping("/register")
     public String registerSpeciality(
-            @ModelAttribute("speciality") @Valid SpecialityRequestDTO specialityDTO,
+            @ModelAttribute("speciality") @Valid SpecialityDTO specialityDTO,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
 
