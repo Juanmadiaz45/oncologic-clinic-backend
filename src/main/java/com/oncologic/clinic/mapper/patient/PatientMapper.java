@@ -21,6 +21,5 @@ public interface PatientMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "medicalHistory", ignore = true)
-    @Mapping(target = "birthdate", ignore = true)
     void updateEntityFromDto(PatientUpdateDTO dto, @MappingTarget Patient entity);
 }
