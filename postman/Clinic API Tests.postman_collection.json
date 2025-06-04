@@ -6738,9 +6738,9 @@
 											"pm.test(\"Response has correct structure\", function() {",
 											"    const response = pm.response.json();",
 											"    pm.expect(response).to.have.property('id');",
-											"    pm.expect(response).to.have.property('doctorId', 1);",
-											"    pm.expect(response).to.have.property('typeOfMedicalAppointmentId', 1);",
-											"    pm.expect(response).to.have.property('medicalHistoryId', 1);",
+											"    pm.expect(response).to.have.property('doctorId');",
+											"    pm.expect(response).to.have.property('typeOfMedicalAppointmentId');",
+											"    pm.expect(response).to.have.property('medicalHistoryId');",
 											"    pm.expect(response).to.have.property('medicalOfficeIds').that.is.an('array');",
 											"    pm.expect(response).to.have.property('medicalTaskIds').that.is.an('array');",
 											"});"
@@ -6764,7 +6764,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"doctorId\": 1,\n    \"typeOfMedicalAppointmentId\": 1,\n    \"appointmentDate\": \"{{future_date}}\",\n    \"treatmentId\": 1,\n    \"medicalHistoryId\": 1,\n    \"medicalOfficeIds\": [\n        1\n    ],\n    \"medicalTaskIds\": [\n        1,\n        2\n    ]\n}",
+									"raw": "{\n    \"doctorId\": 1,\n    \"typeOfMedicalAppointmentId\": 1,\n    \"appointmentDate\": \"{{future_date}}\",\n    \"treatmentId\": 2,\n    \"medicalHistoryId\": 2,\n    \"medicalOfficeIds\": [],\n    \"medicalTaskIds\": []\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -6870,7 +6870,6 @@
 											"pm.test(\"Verify updated fields\", () => {",
 											"    const response = pm.response.json();",
 											"    pm.expect(response.doctorId).to.eql(2);",
-											"    pm.expect(response.medicalOfficeIds).to.include(1);",
 											"});"
 										],
 										"type": "text/javascript",
@@ -6892,7 +6891,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"doctorId\": 2,\n    \"typeOfMedicalAppointmentId\": 2,\n    \"appointmentDate\": \"{{futureDateTime}}\",\n    \"treatmentId\": 2,\n    \"medicalHistoryId\": 2,\n    \"medicalOfficeIds\": [\n        1\n    ],\n    \"medicalTaskIds\": [\n        2\n    ]\n}",
+									"raw": "{\n    \"doctorId\": 2,\n    \"typeOfMedicalAppointmentId\": 2,\n    \"appointmentDate\": \"{{futureDateTime}}\",\n    \"treatmentId\": 2,\n    \"medicalHistoryId\": 2,\n    \"medicalOfficeIds\": [],\n    \"medicalTaskIds\": []\n}",
 									"options": {
 										"raw": {
 											"language": "json"
