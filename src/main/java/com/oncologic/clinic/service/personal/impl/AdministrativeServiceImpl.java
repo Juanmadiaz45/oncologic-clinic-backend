@@ -53,28 +53,25 @@ public class AdministrativeServiceImpl extends BasePersonalService<Administrativ
     @Override
     @Transactional
     public Administrative registerAdministrative(RegisterAdministrativeDTO administrativeDTO) {
-        try {
-            // Create user first
-            User user = userService.createUser(administrativeDTO);
 
-            // Create administrative with default values
-            Administrative administrative = new Administrative();
-            administrative.setUser(user);
-            administrative.setIdNumber(administrativeDTO.getIdNumber());
-            administrative.setName(administrativeDTO.getName());
-            administrative.setLastName(administrativeDTO.getLastname());
-            administrative.setEmail(administrativeDTO.getEmail());
-            administrative.setPhoneNumber(administrativeDTO.getPhoneNumber());
-            administrative.setPosition(administrativeDTO.getPosition());
-            administrative.setDepartment(administrativeDTO.getDepartment());
-            administrative.setDateOfHiring(LocalDateTime.now());
-            administrative.setStatus('A'); // Active by default
+        // Create user first
+        User user = userService.createUser(administrativeDTO);
 
-            return administrativeRepository.save(administrative);
+        // Create administrative with default values
+        Administrative administrative = new Administrative();
+        administrative.setUser(user);
+        administrative.setIdNumber(administrativeDTO.getIdNumber());
+        administrative.setName(administrativeDTO.getName());
+        administrative.setLastName(administrativeDTO.getLastname());
+        administrative.setEmail(administrativeDTO.getEmail());
+        administrative.setPhoneNumber(administrativeDTO.getPhoneNumber());
+        administrative.setPosition(administrativeDTO.getPosition());
+        administrative.setDepartment(administrativeDTO.getDepartment());
+        administrative.setDateOfHiring(LocalDateTime.now());
+        administrative.setStatus('A'); // Active by default
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error registering administrative staff: " + e.getMessage(), e);
-        }
+        return administrativeRepository.save(administrative);
+
     }
 
     @Override

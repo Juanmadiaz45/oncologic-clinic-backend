@@ -3,13 +3,12 @@ package com.oncologic.clinic.service.appointment.impl;
 import com.oncologic.clinic.dto.appointment.MedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseDTO;
 import com.oncologic.clinic.entity.appointment.MedicalAppointment;
-import com.oncologic.clinic.entity.appointment.MedicalOffice;
-import com.oncologic.clinic.entity.appointment.MedicalTask;
 import com.oncologic.clinic.entity.appointment.TypeOfMedicalAppointment;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
+import com.oncologic.clinic.exception.runtime.appointment.MedicalTaskNotFoundException;
 import com.oncologic.clinic.exception.runtime.appointment.TypeOfMedicalAppointmentNotFoundException;
 import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.exception.runtime.patient.TreatmentNotFoundException;
@@ -28,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,18 +64,13 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional
     public MedicalAppointmentResponseDTO createMedicalAppointment(MedicalAppointmentDTO dto) {
-        try {
-            MedicalAppointment appointment = mapper.toEntity(dto);
+        MedicalAppointment appointment = mapper.toEntity(dto);
 
-            validateReferences(dto);
+        validateReferences(dto);
 
-            MedicalAppointment savedAppointment = repository.save(appointment);
+        MedicalAppointment savedAppointment = repository.save(appointment);
 
-            return buildResponseDTO(savedAppointment, dto);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create medical appointment", e);
-        }
+        return buildResponseDTO(savedAppointment, dto);
     }
 
     private void validateReferences(MedicalAppointmentDTO dto) {
@@ -111,87 +104,131 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional
     public MedicalAppointmentResponseDTO updateMedicalAppointment(Long id, MedicalAppointmentDTO dto) {
-        try {
-            log.info("Updating medical appointment with ID: {}", id);
+        log.info("Updating medical appointment with ID: {}", id);
 
-            MedicalAppointment existing = repository.findById(id)
-                    .orElseThrow(() -> new MedicalAppointmentNotFoundException(id));
+        MedicalAppointment existing = repository.findById(id)
+                .orElseThrow(() -> new MedicalAppointmentNotFoundException(id));
 
-            if (dto.getAppointmentDate() != null) {
-                existing.setAppointmentDate(dto.getAppointmentDate());
+        // Update basic fields
+        if (dto.getAppointmentDate() != null) {
+            existing.setAppointmentDate(dto.getAppointmentDate());
+        }
+
+        // Validate and update doctor
+        if (dto.getDoctorId() != null) {
+            if (!doctorRepository.existsById(dto.getDoctorId())) {
+                throw new DoctorNotFoundException(dto.getDoctorId());
             }
+            Doctor doctor = new Doctor();
+            doctor.setId(dto.getDoctorId());
+            existing.setDoctor(doctor);
+        }
 
-            if (dto.getDoctorId() != null) {
-                if (!doctorRepository.existsById(dto.getDoctorId())) {
-                    throw new DoctorNotFoundException(dto.getDoctorId());
-                }
-                Doctor doctor = new Doctor();
-                doctor.setId(dto.getDoctorId());
-                existing.setDoctor(doctor);
+        // Validate and update a type of medical appointment
+        if (dto.getTypeOfMedicalAppointmentId() != null) {
+            if (!typeRepository.existsById(dto.getTypeOfMedicalAppointmentId())) {
+                throw new TypeOfMedicalAppointmentNotFoundException(dto.getTypeOfMedicalAppointmentId());
             }
+            TypeOfMedicalAppointment type = new TypeOfMedicalAppointment();
+            type.setId(dto.getTypeOfMedicalAppointmentId());
+            existing.setTypeOfMedicalAppointment(type);
+        }
 
-            if (dto.getTypeOfMedicalAppointmentId() != null) {
-                if (!typeRepository.existsById(dto.getTypeOfMedicalAppointmentId())) {
-                    throw new TypeOfMedicalAppointmentNotFoundException(dto.getTypeOfMedicalAppointmentId());
-                }
-                TypeOfMedicalAppointment type = new TypeOfMedicalAppointment();
-                type.setId(dto.getTypeOfMedicalAppointmentId());
-                existing.setTypeOfMedicalAppointment(type);
+        // Validate and update treatment
+        if (dto.getTreatmentId() != null) {
+            if (!treatmentRepository.existsById(dto.getTreatmentId())) {
+                throw new TreatmentNotFoundException(dto.getTreatmentId());
             }
+            Treatment treatment = new Treatment();
+            treatment.setId(dto.getTreatmentId());
+            existing.setTreatment(treatment);
+        }
 
-            if (dto.getTreatmentId() != null) {
-                if (!treatmentRepository.existsById(dto.getTreatmentId())) {
-                    throw new TreatmentNotFoundException(dto.getTreatmentId());
-                }
-                Treatment treatment = new Treatment();
-                treatment.setId(dto.getTreatmentId());
-                existing.setTreatment(treatment);
+        // Validate and update medical history
+        if (dto.getMedicalHistoryId() != null) {
+            if (!medicalHistoryRepository.existsById(dto.getMedicalHistoryId())) {
+                throw new MedicalHistoryNotFoundException(dto.getMedicalHistoryId());
             }
+            MedicalHistory medicalHistory = new MedicalHistory();
+            medicalHistory.setId(dto.getMedicalHistoryId());
+            existing.setMedicalHistory(medicalHistory);
+        }
 
-            if (dto.getMedicalHistoryId() != null) {
-                if (!medicalHistoryRepository.existsById(dto.getMedicalHistoryId())) {
-                    throw new MedicalHistoryNotFoundException(dto.getMedicalHistoryId());
-                }
-                MedicalHistory medicalHistory = new MedicalHistory();
-                medicalHistory.setId(dto.getMedicalHistoryId());
-                existing.setMedicalHistory(medicalHistory);
+        // Validate medical tasks BEFORE saving the appointment
+        if (dto.getMedicalTaskIds() != null) {
+            validateMedicalTasks(dto.getMedicalTaskIds());
+        }
+
+        // Validate medical offices BEFORE saving the appointment
+        if (dto.getMedicalOfficeIds() != null) {
+            validateMedicalOffices(dto.getMedicalOfficeIds());
+        }
+
+        // Save the appointment after all validations pass
+        MedicalAppointment savedAppointment = repository.save(existing);
+
+        // Handle office relationships
+        List<Long> finalOfficeIds = dto.getMedicalOfficeIds();
+        if (dto.getMedicalOfficeIds() != null) {
+            updateMedicalOffices(savedAppointment.getId(), dto.getMedicalOfficeIds());
+        } else {
+            finalOfficeIds = getCurrentOfficeIds(savedAppointment.getId());
+        }
+
+        // Handle task relationships
+        Set<Long> finalTaskIds = dto.getMedicalTaskIds();
+        if (finalTaskIds == null) {
+            finalTaskIds = getCurrentTaskIds(savedAppointment.getId());
+        }
+
+        return MedicalAppointmentResponseDTO.builder()
+                .id(savedAppointment.getId())
+                .doctorId(dto.getDoctorId() != null ? dto.getDoctorId() : existing.getDoctor().getId())
+                .typeOfMedicalAppointmentId(dto.getTypeOfMedicalAppointmentId() != null ?
+                        dto.getTypeOfMedicalAppointmentId() : existing.getTypeOfMedicalAppointment().getId())
+                .appointmentDate(savedAppointment.getAppointmentDate())
+                .treatmentId(dto.getTreatmentId() != null ? dto.getTreatmentId() :
+                        (existing.getTreatment() != null ? existing.getTreatment().getId() : null))
+                .medicalHistoryId(dto.getMedicalHistoryId() != null ?
+                        dto.getMedicalHistoryId() : existing.getMedicalHistory().getId())
+                .medicalOfficeIds(finalOfficeIds)
+                .medicalTaskIds(finalTaskIds)
+                .build();
+    }
+
+    /**
+     * Validates that all medical task IDs exist in the database
+     *
+     * @param taskIds Set of medical task IDs to validate
+     * @throws IllegalArgumentException if any task ID doesn't exist
+     */
+    private void validateMedicalTasks(Set<Long> taskIds) {
+        if (taskIds == null || taskIds.isEmpty()) {
+            return;
+        }
+
+        for (Long taskId : taskIds) {
+            if (!medicalTaskRepository.existsById(taskId)) {
+                throw new MedicalTaskNotFoundException(taskId);
             }
+        }
+    }
 
-            MedicalAppointment savedAppointment = repository.save(existing);
+    /**
+     * Validates that all medical office IDs exist in the database
+     *
+     * @param officeIds List of medical office IDs to validate
+     * @throws IllegalArgumentException if any office ID doesn't exist
+     */
+    private void validateMedicalOffices(List<Long> officeIds) {
+        if (officeIds == null || officeIds.isEmpty()) {
+            return;
+        }
 
-            List<Long> finalOfficeIds = dto.getMedicalOfficeIds();
-            if (dto.getMedicalOfficeIds() != null) {
-                updateMedicalOffices(savedAppointment.getId(), dto.getMedicalOfficeIds());
-            } else {
-                finalOfficeIds = getCurrentOfficeIds(savedAppointment.getId());
+        for (Long officeId : officeIds) {
+            if (!medicalOfficeRepository.existsById(officeId)) {
+                throw new IllegalArgumentException("Medical office with ID " + officeId + " does not exist");
             }
-
-            Set<Long> finalTaskIds = dto.getMedicalTaskIds();
-            if (dto.getMedicalTaskIds() != null) {
-                validateMedicalTasks(dto.getMedicalTaskIds());
-            } else {
-                finalTaskIds = getCurrentTaskIds(savedAppointment.getId());
-            }
-
-            return MedicalAppointmentResponseDTO.builder()
-                    .id(savedAppointment.getId())
-                    .doctorId(dto.getDoctorId() != null ? dto.getDoctorId() : existing.getDoctor().getId())
-                    .typeOfMedicalAppointmentId(dto.getTypeOfMedicalAppointmentId() != null ?
-                            dto.getTypeOfMedicalAppointmentId() : existing.getTypeOfMedicalAppointment().getId())
-                    .appointmentDate(savedAppointment.getAppointmentDate())
-                    .treatmentId(dto.getTreatmentId() != null ? dto.getTreatmentId() :
-                            (existing.getTreatment() != null ? existing.getTreatment().getId() : null))
-                    .medicalHistoryId(dto.getMedicalHistoryId() != null ?
-                            dto.getMedicalHistoryId() : existing.getMedicalHistory().getId())
-                    .medicalOfficeIds(finalOfficeIds)
-                    .medicalTaskIds(finalTaskIds)
-                    .build();
-
-        } catch (MedicalAppointmentNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Error updating medical appointment with ID {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to update medical appointment", e);
         }
     }
 
@@ -199,13 +236,6 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
         medicalOfficeRepository.updateAppointmentForOffices(appointmentId, officeIds);
     }
 
-    private void validateMedicalTasks(Set<Long> taskIds) {
-        for (Long taskId : taskIds) {
-            if (!medicalTaskRepository.existsById(taskId)) {
-                throw new IllegalArgumentException("Medical task with ID " + taskId + " does not exist");
-            }
-        }
-    }
 
     private List<Long> getCurrentOfficeIds(Long appointmentId) {
         return medicalOfficeRepository.findOfficeIdsByAppointmentId(appointmentId);

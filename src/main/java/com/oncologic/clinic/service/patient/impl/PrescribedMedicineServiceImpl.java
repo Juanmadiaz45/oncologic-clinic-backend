@@ -107,9 +107,6 @@ public class PrescribedMedicineServiceImpl implements PrescribedMedicineService 
             logger.info("Prescribed medicine updated with ID: {}", id);
             return prescribedMedicineMapper.toDto(updated);
 
-        } catch (PrescribedMedicineNotFoundException e) {
-            logger.error("Prescribed medicine not found: {}", e.getMessage());
-            throw e;
         } catch (DataIntegrityViolationException e) {
             logger.error("Data integrity violation when updating prescribed medicine: {}", e.getMessage());
             throw new RuntimeException("Data integrity error when updating prescribed medicine", e);
@@ -130,9 +127,6 @@ public class PrescribedMedicineServiceImpl implements PrescribedMedicineService 
             prescribedMedicineRepository.delete(medicine);
             logger.info("Prescribed medicine deleted with ID: {}", id);
 
-        } catch (PrescribedMedicineNotFoundException e) {
-            logger.error("Prescribed medicine not found: {}", e.getMessage());
-            throw e;
         } catch (Exception e) {
             logger.error("Unexpected error when deleting prescribed medicine: {}", e.getMessage());
             throw new RuntimeException("Error deleting prescribed medicine", e);

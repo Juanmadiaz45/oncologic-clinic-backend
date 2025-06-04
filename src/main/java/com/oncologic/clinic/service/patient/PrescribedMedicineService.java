@@ -3,7 +3,6 @@ package com.oncologic.clinic.service.patient;
 import com.oncologic.clinic.dto.patient.request.PrescribedMedicineRequestDTO;
 import com.oncologic.clinic.dto.patient.response.PrescribedMedicineResponseDTO;
 import com.oncologic.clinic.dto.patient.update.PrescribedMedicineUpdateDTO;
-import com.oncologic.clinic.entity.patient.PrescribedMedicine;
 
 import java.util.List;
 

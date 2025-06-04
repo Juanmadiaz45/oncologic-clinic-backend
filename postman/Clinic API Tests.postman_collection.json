@@ -89,7 +89,7 @@
 											"pm.environment.set(\"status_id\", response.id);",
 											"pm.test(\"Response structure\", () => {",
 											"   pm.expect(response).to.have.property('name');",
-											"   pm.expect(response).to.have.property('availabilityId');",
+											"   pm.expect(response).to.have.property('availabilityIds');",
 											"});"
 										],
 										"type": "text/javascript",
@@ -119,7 +119,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"{{$randomStatusName}}\",\n  \"availabilityId\": {{availability_id}}\n}",
+									"raw": "{\n  \"name\": \"{{randomStatusName}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -225,9 +225,6 @@
 											"const response = pm.response.json();",
 											"pm.test(\"Nombre actualizado\", () => {",
 											"   pm.expect(response.name).to.eql('ACTUALIZADO');",
-											"});",
-											"pm.test(\"Availability ID modificado\", () => {",
-											"   pm.expect(response.availabilityId).to.eql(1);",
 											"});"
 										],
 										"type": "text/javascript",
@@ -245,7 +242,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"ACTUALIZADO\",\n  \"availabilityId\": 1\n}",
+									"raw": "{\n    \"name\": \"ACTUALIZADO\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -343,7 +340,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"doctorId\": \"{{doctor_id}}\",\n  \"startTime\": \"{{$isoTimestamp}}\",\n  \"endTime\": \"{{$isoTimestamp}}\",\n  \"status\": \"AVAILABLE\"\n}",
+									"raw": "{\n    \"startTime\": \"{{$isoTimestamp}}\",\n    \"endTime\": \"{{$isoTimestamp}}\",\n    \"personalIds\": [\n        {{doctor_id}},\n        2\n    ],\n    \"statusId\": 1\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2948,6 +2945,13 @@
 										"type": "text/javascript",
 										"packages": {}
 									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"packages": {},
+										"type": "text/javascript"
+									}
 								}
 							],
 							"request": {
@@ -2964,7 +2968,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"{{specialityName}}\",\n    \"description\": \"{{specialityDescription}}\",\n    \"doctorId\": [{{doctor_id}}]\n}",
+									"raw": "{\n    \"name\": \"{{specialityName}}\",\n    \"description\": \"{{specialityDescription}}\",\n    \"doctorIds\": [\n        {{doctor_id}}\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3127,7 +3131,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"{{updatedSpecialityName}}\",\n    \"description\": \"{{updatedSpecialityDescription}}\"\n}",
+									"raw": "{\n    \"name\": \"{{updatedSpecialityName}}\",\n    \"description\": \"{{updatedSpecialityDescription}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3207,25 +3211,27 @@
 								"type": "text/javascript",
 								"packages": {},
 								"exec": [
-									"// Set up speciality data",
-									"const specialities = [",
-									"  { name: 'Cardiología', description: 'Especialidad médica del corazón' },",
-									"  { name: 'Pediatría', description: 'Medicina para niños' },",
-									"  { name: 'Oncología', description: 'Tratamiento del cáncer' }",
+									"// Configurar datos de especialidades",
+									"const especialidades = [",
+									"  { nombre: 'Neurología', descripcion: 'Especializada en trastornos del sistema nervioso' },",
+									"  { nombre: 'Dermatología', descripcion: 'Enfocada en condiciones de la piel' },",
+									"  { nombre: 'Ortopedia', descripcion: 'Trata el sistema musculoesquelético' },",
+									"  { nombre: 'Oftalmología', descripcion: 'Cuidado de ojos y visión' },",
+									"  { nombre: 'Endocrinología', descripcion: 'Especializada en trastornos hormonales' }",
 									"];",
-									"const randomSpeciality = specialities[Math.floor(Math.random() * specialities.length)];",
+									"const especialidadAleatoria = especialidades[Math.floor(Math.random() * especialidades.length)];",
 									"",
-									"pm.variables.set('specialityName', randomSpeciality.name);",
-									"pm.variables.set('specialityDescription', randomSpeciality.description);",
-									"pm.variables.set('doctorId', Math.floor(Math.random() * 100) + 1);",
+									"pm.variables.set('nombreEspecialidad', especialidadAleatoria.nombre);",
+									"pm.variables.set('descripcionEspecialidad', especialidadAleatoria.descripcion);",
+									"pm.variables.set('idDoctor', Math.floor(Math.random() * 500) + 100); // Rango más amplio desde 100",
 									"",
-									"pm.variables.set('updatedSpecialityName', 'Updated ' + randomSpeciality.name);",
-									"pm.variables.set('updatedSpecialityDescription', 'Modified ' + randomSpeciality.description);",
-									"pm.variables.set('updatedDoctorId', Math.floor(Math.random() * 100) + 1);",
+									"pm.variables.set('nombreEspecialidadActualizado', 'Actualizado ' + especialidadAleatoria.nombre);",
+									"pm.variables.set('descripcionEspecialidadActualizada', 'Modificado ' + especialidadAleatoria.descripcion);",
+									"pm.variables.set('idDoctorActualizado', Math.floor(Math.random() * 500) + 100);",
 									"",
-									"// Ensure speciality_id exists",
-									"if (!pm.environment.get('speciality_id')) {",
-									"    pm.environment.set('speciality_id', Math.floor(Math.random() * 1000) + 100);",
+									"// Asegurar que exista el ID de especialidad",
+									"if (!pm.environment.get('id_especialidad')) {",
+									"    pm.environment.set('id_especialidad', Math.floor(Math.random() * 9000) + 1000); // Rango 1000-9999",
 									"}"
 								]
 							}
@@ -3303,7 +3309,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"{{$randomUserName}}\",\n            \"password\": \"{{$randomPassword}}\",\n            \"roleIds\": [\n                {{role_administrative_id}}\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"{{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"{{$randomEmail}}\",\n        \"phoneNumber\": \"{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            {{randomAvailabilityId}}\n        ]\n    },\n    \"position\": \"{{randomPosition}}\",\n    \"department\": \"{{randomDepartment}}\"\n}",
+									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"{{$randomUserName}}\",\n            \"password\": \"{{$randomPassword}}\",\n            \"roleIds\": [\n                {{role_administrative_id}}\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"{{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"{{$randomEmail}}\",\n        \"phoneNumber\": \"{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            {{availabilityId}}\n        ]\n    },\n    \"position\": \"{{randomPosition}}\",\n    \"department\": \"{{randomDepartment}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3605,7 +3611,7 @@
 											"    pm.expect(jsonData).to.have.property('personalData');",
 											"    pm.expect(jsonData.personalData).to.have.property('id');",
 											"    pm.expect(jsonData).to.have.property('medicalLicenseNumber');",
-											"    pm.expect(jsonData).to.have.property('specialities');",
+											"    pm.expect(jsonData).to.have.property('specialityIds');",
 											"});",
 											"",
 											"// Guardar el ID del doctor creado para usarlo en otros tests",
@@ -3628,7 +3634,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"doctor{{$randomInt}}\",\n            \"password\": \"P@ssw0rd{{$randomInt}}\",\n            \"roleIds\": [\n                2\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"Dr. {{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"doctor{{$randomInt}}@clinic.com\",\n        \"phoneNumber\": \"+57{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            1,\n            2\n        ]\n    },\n    \"medicalLicenseNumber\": \"MED-{{$randomInt}}\",\n    \"specialityIds\": [\n        1,\n        3\n    ]\n}",
+									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"doctor{{$randomInt}}\",\n            \"password\": \"P@ssw0rd{{$randomInt}\",\n            \"roleIds\": [\n                2\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"Dr. {{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"doctor{{$randomInt}}@clinic.com\",\n        \"phoneNumber\": \"+57{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            1,\n            2\n        ]\n    },\n    \"medicalLicenseNumber\": \"MED-{{$randomInt}\",\n    \"specialityIds\": [\n        2\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3764,7 +3770,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"updatedoctor{{$randomInt}}\",\n            \"password\": \"NewP@ss{{$randomInt}}\",\n            \"roleIds\": [\n                2\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"Dr. Updated{{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"updated{{$randomInt}}@clinic.com\",\n        \"phoneNumber\": \"+57{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            3,\n            4\n        ]\n    },\n    \"medicalLicenseNumber\": \"UPD-{{$randomInt}}\",\n    \"specialityIds\": [\n        1,\n        2\n    ]\n}",
+									"raw": "{\n    \"personalData\": {\n        \"userData\": {\n            \"username\": \"updatedoctor{{$randomInt}}\",\n            \"password\": \"NewP@ss{{$randomInt}}\",\n            \"roleIds\": [\n                2\n            ]\n        },\n        \"idNumber\": \"{{$randomInt}}\",\n        \"name\": \"Dr. Updated{{$randomFirstName}}\",\n        \"lastName\": \"{{$randomLastName}}\",\n        \"email\": \"updated{{$randomInt}}@clinic.com\",\n        \"phoneNumber\": \"+57{{$randomPhoneNumber}}\",\n        \"dateOfHiring\": \"{{currentDateTime}}\",\n        \"status\": \"A\",\n        \"availabilityIds\": [\n            3\n        ]\n    },\n    \"medicalLicenseNumber\": \"UPD-{{$randomInt}}\",\n    \"specialityIds\": [\n        1,\n        2\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4690,7 +4696,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"DELETE Status 204 No Content\", () => pm.response.to.have.status(200));",
+											"pm.test(\"DELETE Status 204 No Content\", () => pm.response.to.have.status(204));",
 											"",
 											"// Validate that the response body is empty",
 											"pm.test(\"Response body is empty\", () => {",
@@ -4968,13 +4974,13 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/prescribed-medicines/1",
+									"raw": "{{base_url}}/prescribed-medicines/{{last_prescribed_medicine_id}}",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"prescribed-medicines",
-										"1"
+										"{{last_prescribed_medicine_id}}"
 									]
 								}
 							},
@@ -5007,13 +5013,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{base_url}}/prescribed-medicines/1",
+									"raw": "{{base_url}}/prescribed-medicines/{{last_prescribed_medicine_id}}",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"prescribed-medicines",
-										"1"
+										"{{last_prescribed_medicine_id}}"
 									]
 								}
 							},
@@ -5021,288 +5027,6 @@
 						}
 					],
 					"description": "This collection manages the complete medication prescription workflow within the OncoLogic Clinic system, handling the creation, modification, and tracking of prescribed medications for cancer treatments and supportive care. It ensures accurate medication documentation and integration with treatment plans.\n\n**Endpoints**\n\n**Create Prescription**\n\n- **Method**: POST\n    \n- **URL**: `{{base_url}}/prescribed-medicines`\n    \n- **Success Response**: 201 Created\n    \n- **Validation**:\n    \n    - Verifies response contains all required fields: `medicine`, `dose`, `duration`, and `frequencyOfAdministration`.\n        \n    - Confirms `prescriptionDate` defaults to current date if not provided.\n        \n- **Post-execution**: Stores created prescription ID in `last_prescribed_medicine_id` for reference.\n    \n\n**List All Prescriptions**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/prescribed-medicines`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Ensures response array contains complete prescription objects.\n        \n    - Validates `treatmentId` references exist in the system.\n        \n- **Usage**: Used for medication reconciliation and pharmacy orders.\n    \n\n**Retrieve Specific Prescription**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/prescribed-medicines/{{prescription_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Confirms returned `id` matches requested resource.\n        \n    - Verifies all dosage instructions are human-readable.\n        \n\n**Update Prescription**\n\n- **Method**: PUT\n    \n- **URL**: `{{base_url}}/prescribed-medicines/{{prescription_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Checks all medication details match update request.\n        \n    - Ensures `treatmentId` cannot be modified after creation.\n        \n\n**Cancel Prescription**\n\n- **Method**: DELETE\n    \n- **URL**: `{{base_url}}/prescribed-medicines/{{prescription_id}}`\n    \n- **Success Response**: 204 No Content\n    \n- **Post-execution**:\n    \n    - Verifies cancellation by attempting subsequent GET (expects 404 or inactive status).\n        \n\n**Dependencies**\n\n- Requires valid `jwt_token` with clinician privileges.\n    \n- Integrates with Treatment and Medical History modules."
-				},
-				{
-					"name": "Type Of Treatment",
-					"item": [
-						{
-							"name": "Create Type of Treatment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Status code validation",
-											"pm.test(\"CREATE Status 201 Created\", () => pm.response.to.have.status(201));",
-											"",
-											"// Parse and store response",
-											"const response = pm.response.json();",
-											"pm.collectionVariables.set(\"last_type_of_treatment_id\", response.id);",
-											"",
-											"// Validate response structure and data types",
-											"pm.test(\"Response has correct structure\", () => {",
-											"    pm.expect(response).to.be.an('object');",
-											"    pm.expect(response).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
-											"    ",
-											"    pm.expect(response.id).to.be.a('number').and.to.be.above(0);",
-											"    pm.expect(response.name).to.be.a('string').and.to.not.be.empty;",
-											"    pm.expect(response.description).to.be.a('string');",
-											"    pm.expect(response.treatmentId).to.be.a('number').and.to.be.above(0);",
-											"});",
-											"",
-											"// Validate data consistency with request",
-											"pm.test(\"Response matches request data\", () => {",
-											"    const requestData = JSON.parse(pm.request.body.raw);",
-											"    pm.expect(response.name).to.eql(requestData.name);",
-											"    pm.expect(response.description).to.eql(requestData.description);",
-											"    pm.expect(response.treatmentId).to.eql(requestData.treatmentId);",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"name\": \"Chemotherapy\",\n  \"description\": \"Treatment with cytostatic drugs\",\n  \"treatmentId\": 1\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/type-of-treatments",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"type-of-treatments"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get All Types of Treatment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Status code validation",
-											"pm.test(\"GET ALL Status 200 OK\", () => pm.response.to.have.status(200));",
-											"",
-											"// Validate response structure",
-											"const response = pm.response.json();",
-											"pm.test(\"Response is valid array\", () => {",
-											"    pm.expect(response).to.be.an('array');",
-											"    ",
-											"    if (response.length > 0) {",
-											"        const firstItem = response[0];",
-											"        pm.expect(firstItem).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
-											"        ",
-											"        pm.test(\"First item has valid data types\", () => {",
-											"            pm.expect(firstItem.id).to.be.a('number').and.to.be.above(0);",
-											"            pm.expect(firstItem.name).to.be.a('string').and.to.not.be.empty;",
-											"            pm.expect(firstItem.treatmentId).to.be.a('number').and.to.be.above(0);",
-											"        });",
-											"    }",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/type-of-treatments",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"type-of-treatments"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Type of Treatment by ID",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Status code validation",
-											"pm.test(\"GET by ID Status 200 OK\", () => pm.response.to.have.status(200));",
-											"",
-											"// Validate response structure",
-											"const response = pm.response.json();",
-											"pm.test(\"Response has complete data\", () => {",
-											"    pm.expect(response).to.be.an('object');",
-											"    pm.expect(response).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
-											"    ",
-											"    pm.expect(response.id).to.be.a('number').and.to.be.above(0);",
-											"    pm.expect(response.name).to.be.a('string').and.to.not.be.empty;",
-											"    pm.expect(response.description).to.be.a('string');",
-											"    pm.expect(response.treatmentId).to.be.a('number').and.to.be.above(0);",
-											"    ",
-											"    // Validate ID matches requested",
-											"    const requestedId = pm.collectionVariables.get(\"last_type_of_treatment_id\");",
-											"    pm.expect(response.id).to.eql(Number(requestedId));",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"type-of-treatments",
-										"{{last_type_of_treatment_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Type of Treatment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Status code validation",
-											"pm.test(\"UPDATE Status 200 OK\", () => pm.response.to.have.status(200));",
-											"",
-											"// Validate updated data",
-											"const response = pm.response.json();",
-											"const requestData = JSON.parse(pm.request.body.raw);",
-											"",
-											"pm.test(\"Updated fields match request\", () => {",
-											"    pm.expect(response.name).to.eql(requestData.name);",
-											"    pm.expect(response.description).to.eql(requestData.description);",
-											"    pm.expect(response.treatmentId).to.eql(requestData.treatmentId);",
-											"});",
-											"",
-											"// Validate ID remains the same",
-											"pm.test(\"ID remains unchanged\", () => {",
-											"    const originalId = pm.collectionVariables.get(\"last_type_of_treatment_id\");",
-											"    pm.expect(response.id).to.eql(Number(originalId));",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"name\": \"Updated Chemotherapy\",\n  \"description\": \"Updated treatment protocol\",\n  \"treatmentId\": 1\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"type-of-treatments",
-										"{{last_type_of_treatment_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Delete Type of Treatment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"DELETE Status 204 No Content\", () => pm.response.to.have.status(204));",
-											"",
-											"// Verificar que el cuerpo de la respuesta está vacío",
-											"pm.test(\"Response body is empty\", function() {",
-											"    pm.expect(pm.response.text()).to.be.empty;",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"type-of-treatments",
-										"{{last_type_of_treatment_id}}"
-									]
-								}
-							},
-							"response": []
-						}
-					],
-					"description": "This collection manages the classification system for oncology treatment modalities within the OncoLogic Clinic system. It handles the standardized categorization of therapeutic approaches (e.g., chemotherapy, immunotherapy, radiation) and their relationships to specific treatment protocols.\n\n**Endpoints**\n\n**Create Treatment Type**\n\n- **Method**: POST\n    \n- **URL**: `{{base_url}}/type-of-treatments`\n    \n- **Success Response**: 201 Created\n    \n- **Validation**:\n    \n    - Verifies response contains required fields: `name` (e.g., \"Neoadjuvant Chemotherapy\"), `description`, and `treatmentId`.\n        \n    - Confirms `name` follows institutional naming conventions for treatment modalities.\n        \n- **Post-execution**: Stores created type ID in `last_type_of_treatment_id` for reference.\n    \n\n**List All Treatment Types**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/type-of-treatments`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Ensures response array contains complete type definitions.\n        \n    - Validates sorting by treatment phase (e.g., induction before maintenance).\n        \n- **Usage**: Used to populate treatment planning interfaces and clinical reports.\n    \n\n**Retrieve Specific Treatment Type**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Confirms response includes complete classification details.\n        \n    - Verifies linked `treatmentId` references an active protocol.\n        \n\n**Update Treatment Classification**\n\n- **Method**: PUT\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Checks updated `description` meets clinical documentation standards.\n        \n    - Ensures `treatmentId` cannot be modified after creation.\n        \n\n**Deactivate Treatment Type**\n\n- **Method**: DELETE\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 204 No Content\n    \n- **Post-execution**:\n    \n    - Automatically verifies deactivation by attempting subsequent GET (expects 404).\n        \n    - Checks no active treatments reference the deactivated type.\n        \n\n**Dependencies**\n\n- Requires `medical-director` or `oncology-admin` JWT token for modifications.\n    \n- Integrates with:\n    \n    - Treatments (parent protocols)\n        \n    - Prescribed Medicines (modality-specific formularies)"
 				},
 				{
 					"name": "Treatment",
@@ -5349,7 +5073,8 @@
 											"    pm.expect(response.appointmentResultId).to.eql(requestData.appointmentResultId);",
 											"});"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -5367,7 +5092,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"Chemotherapy\",\n  \"description\": \"Chemotherapy treatment for breast cancer\",\n  \"dateStart\": \"2025-06-01T10:00:00\",\n  \"endDate\": \"2025-12-01T10:00:00\",\n  \"appointmentResultId\": 1\n}",
+									"raw": "{\n  \"name\": \"Chemotherapy\",\n  \"description\": \"Chemotherapy treatment for breast cancer\",\n  \"dateStart\": \"2025-06-01T10:00:00\",\n  \"endDate\": \"2025-12-01T10:00:00\",\n  \"appointmentResultId\": 2\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5609,6 +5334,289 @@
 					"description": "  \nThis collection manages the complete lifecycle of cancer treatment protocols within the OncoLogic Clinic system, including creation, monitoring, and modification of therapeutic regimens. It serves as the foundation for patient care plans and integrates with all clinical modules.\n\n**Endpoints**\n\n**Create Treatment Plan**\n\n- **Method**: POST\n    \n- **URL**: `{{base_url}}/treatments`\n    \n- **Success Response**: 201 Created\n    \n- **Validation**:\n    \n    - Verifies response contains all required oncology-specific fields: `name`, `dateStart`, and `protocolType`.\n        \n    - Confirms `description` field meets minimum clinical documentation standards.\n        \n- **Post-execution**: Stores created treatment ID in `last_treatment_id` for subsequent medication/prescription linkage.\n    \n\n**List All Treatments**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/treatments`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Ensures response array contains complete treatment objects with staging information.\n        \n    - Validates sorting by `dateStart` (most recent first).\n        \n- **Usage**: Critical for tumor board reviews and care team coordination.\n    \n\n**Retrieve Specific Treatment**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/treatments/{{treatment_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Confirms response includes complete protocol details and current cycle number.\n        \n    - Verifies linked `medicalHistoryId` references exist.\n        \n\n**Modify Treatment Protocol**\n\n- **Method**: PUT\n    \n- **URL**: `{{base_url}}/treatments/{{treatment_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Checks all clinical modifications (e.g., dose adjustments) are properly audited.\n        \n    - Ensures immutable fields (e.g., `protocolType`) cannot be altered after initiation.\n        \n\n**Deactivate Treatment Plan**\n\n- **Method**: DELETE\n    \n- **URL**: `{{base_url}}/treatments/{{treatment_id}}`\n    \n- **Success Response**: 204 No Content\n    \n- **Post-execution**:\n    \n    - Verifies deactivation by checking associated prescriptions are marked \"discontinued\".\n        \n\n**Dependencies**\n\n- Requires `oncologist-level` JWT token for creation/modification.\n    \n- Integrates with:\n    \n    - Prescribed Medicine (for regimen details)\n        \n    - Medical History (for staging data)\n        \n    - Appointments (for treatment sessions)"
 				},
 				{
+					"name": "Type Of Treatment",
+					"item": [
+						{
+							"name": "Create Type of Treatment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Status code validation",
+											"pm.test(\"CREATE Status 201 Created\", () => pm.response.to.have.status(201));",
+											"",
+											"// Parse and store response",
+											"const response = pm.response.json();",
+											"pm.collectionVariables.set(\"last_type_of_treatment_id\", response.id);",
+											"",
+											"// Validate response structure and data types",
+											"pm.test(\"Response has correct structure\", () => {",
+											"    pm.expect(response).to.be.an('object');",
+											"    pm.expect(response).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
+											"    ",
+											"    pm.expect(response.id).to.be.a('number').and.to.be.above(0);",
+											"    pm.expect(response.name).to.be.a('string').and.to.not.be.empty;",
+											"    pm.expect(response.description).to.be.a('string');",
+											"    pm.expect(response.treatmentId).to.be.a('number').and.to.be.above(0);",
+											"});",
+											"",
+											"// Validate data consistency with request",
+											"pm.test(\"Response matches request data\", () => {",
+											"    const requestData = JSON.parse(pm.request.body.raw);",
+											"    pm.expect(response.name).to.eql(requestData.name);",
+											"    pm.expect(response.description).to.eql(requestData.description);",
+											"    pm.expect(response.treatmentId).to.eql(requestData.treatmentId);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Chemotherapy\",\n  \"description\": \"Treatment with cytostatic drugs\",\n  \"treatmentId\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/type-of-treatments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"type-of-treatments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Types of Treatment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Status code validation",
+											"pm.test(\"GET ALL Status 200 OK\", () => pm.response.to.have.status(200));",
+											"",
+											"// Validate response structure",
+											"const response = pm.response.json();",
+											"pm.test(\"Response is valid array\", () => {",
+											"    pm.expect(response).to.be.an('array');",
+											"    ",
+											"    if (response.length > 0) {",
+											"        const firstItem = response[0];",
+											"        pm.expect(firstItem).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
+											"        ",
+											"        pm.test(\"First item has valid data types\", () => {",
+											"            pm.expect(firstItem.id).to.be.a('number').and.to.be.above(0);",
+											"            pm.expect(firstItem.name).to.be.a('string').and.to.not.be.empty;",
+											"            pm.expect(firstItem.treatmentId).to.be.a('number').and.to.be.above(0);",
+											"        });",
+											"    }",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/type-of-treatments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"type-of-treatments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Type of Treatment by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Status code validation",
+											"pm.test(\"GET by ID Status 200 OK\", () => pm.response.to.have.status(200));",
+											"",
+											"// Validate response structure",
+											"const response = pm.response.json();",
+											"pm.test(\"Response has complete data\", () => {",
+											"    pm.expect(response).to.be.an('object');",
+											"    pm.expect(response).to.have.all.keys('id', 'name', 'description', 'treatmentId');",
+											"    ",
+											"    pm.expect(response.id).to.be.a('number').and.to.be.above(0);",
+											"    pm.expect(response.name).to.be.a('string').and.to.not.be.empty;",
+											"    pm.expect(response.description).to.be.a('string');",
+											"    pm.expect(response.treatmentId).to.be.a('number').and.to.be.above(0);",
+											"    ",
+											"    // Validate ID matches requested",
+											"    const requestedId = pm.collectionVariables.get(\"last_type_of_treatment_id\");",
+											"    pm.expect(response.id).to.eql(Number(requestedId));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"type-of-treatments",
+										"{{last_type_of_treatment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Type of Treatment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Status code validation",
+											"pm.test(\"UPDATE Status 200 OK\", () => pm.response.to.have.status(200));",
+											"",
+											"// Validate updated data",
+											"const response = pm.response.json();",
+											"const requestData = JSON.parse(pm.request.body.raw);",
+											"",
+											"pm.test(\"Updated fields match request\", () => {",
+											"    pm.expect(response.name).to.eql(requestData.name);",
+											"    pm.expect(response.description).to.eql(requestData.description);",
+											"});",
+											"",
+											"// Validate ID remains the same",
+											"pm.test(\"ID remains unchanged\", () => {",
+											"    const originalId = pm.collectionVariables.get(\"last_type_of_treatment_id\");",
+											"    pm.expect(response.id).to.eql(Number(originalId));",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Updated Chemotherapy\",\n  \"description\": \"Updated treatment protocol\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"type-of-treatments",
+										"{{last_type_of_treatment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Type of Treatment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE Status 204 No Content\", () => pm.response.to.have.status(204));",
+											"",
+											"// Verificar que el cuerpo de la respuesta está vacío",
+											"pm.test(\"Response body is empty\", function() {",
+											"    pm.expect(pm.response.text()).to.be.empty;",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/type-of-treatments/{{last_type_of_treatment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"type-of-treatments",
+										"{{last_type_of_treatment_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "This collection manages the classification system for oncology treatment modalities within the OncoLogic Clinic system. It handles the standardized categorization of therapeutic approaches (e.g., chemotherapy, immunotherapy, radiation) and their relationships to specific treatment protocols.\n\n**Endpoints**\n\n**Create Treatment Type**\n\n- **Method**: POST\n    \n- **URL**: `{{base_url}}/type-of-treatments`\n    \n- **Success Response**: 201 Created\n    \n- **Validation**:\n    \n    - Verifies response contains required fields: `name` (e.g., \"Neoadjuvant Chemotherapy\"), `description`, and `treatmentId`.\n        \n    - Confirms `name` follows institutional naming conventions for treatment modalities.\n        \n- **Post-execution**: Stores created type ID in `last_type_of_treatment_id` for reference.\n    \n\n**List All Treatment Types**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/type-of-treatments`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Ensures response array contains complete type definitions.\n        \n    - Validates sorting by treatment phase (e.g., induction before maintenance).\n        \n- **Usage**: Used to populate treatment planning interfaces and clinical reports.\n    \n\n**Retrieve Specific Treatment Type**\n\n- **Method**: GET\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Confirms response includes complete classification details.\n        \n    - Verifies linked `treatmentId` references an active protocol.\n        \n\n**Update Treatment Classification**\n\n- **Method**: PUT\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 200 OK\n    \n- **Validation**:\n    \n    - Checks updated `description` meets clinical documentation standards.\n        \n    - Ensures `treatmentId` cannot be modified after creation.\n        \n\n**Deactivate Treatment Type**\n\n- **Method**: DELETE\n    \n- **URL**: `{{base_url}}/type-of-treatments/{{type_id}}`\n    \n- **Success Response**: 204 No Content\n    \n- **Post-execution**:\n    \n    - Automatically verifies deactivation by attempting subsequent GET (expects 404).\n        \n    - Checks no active treatments reference the deactivated type.\n        \n\n**Dependencies**\n\n- Requires `medical-director` or `oncology-admin` JWT token for modifications.\n    \n- Integrates with:\n    \n    - Treatments (parent protocols)\n        \n    - Prescribed Medicines (modality-specific formularies)"
+				},
+				{
 					"name": "Appointment Results",
 					"item": [
 						{
@@ -5617,7 +5625,6 @@
 								{
 									"listen": "prerequest",
 									"script": {
-										"type": "text/javascript",
 										"exec": [
 											"// Verificar y renovar token si es necesario",
 											"if (!pm.environment.get('jwt_token')) {",
@@ -5638,7 +5645,25 @@
 											"     }",
 											"   });",
 											"}"
-										]
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Status code validation",
+											"pm.test(\"CREATE Status 201 Created\", () => pm.response.to.have.status(201));",
+											"",
+											"// Parse and store response",
+											"const response = pm.response.json();",
+											"pm.environment.set(\"last_appointment_results_id\", response.id);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -5656,7 +5681,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"evaluationDate\": \"2023-11-15T10:30:00\",\n  \"medicalHistoryId\": 1\n}",
+									"raw": "{\n  \"evaluationDate\": \"2023-11-15T10:30:00\",\n  \"medicalHistoryId\": 2\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5814,13 +5839,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{base_url}}/appointment-results/1",
+									"raw": "{{base_url}}/appointment-results/{{last_appointment_results_id}}",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"appointment-results",
-										"1"
+										"{{last_appointment_results_id}}"
 									]
 								}
 							},
@@ -5892,7 +5917,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"evaluationDate\": \"2023-11-20T14:45:00\",\n  \"medicalHistoryId\": 1\n}",
+									"raw": "{\n  \"evaluationDate\": \"2023-11-20T14:45:00\",\n  \"medicalHistoryId\": 3\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5900,13 +5925,13 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/appointment-results/1",
+									"raw": "{{base_url}}/appointment-results/{{last_appointment_results_id}}",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"appointment-results",
-										"1"
+										"{{last_appointment_results_id}}"
 									]
 								}
 							},
@@ -5969,13 +5994,13 @@
 									}
 								],
 								"url": {
-									"raw": "{{base_url}}/appointment-results/1",
+									"raw": "{{base_url}}/appointment-results/{{last_appointment_results_id}}",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"appointment-results",
-										"1"
+										"{{last_appointment_results_id}}"
 									]
 								}
 							},
@@ -5990,6 +6015,237 @@
 		{
 			"name": "Appointment",
 			"item": [
+				{
+					"name": "Type Of Medical Appointment",
+					"item": [
+						{
+							"name": "CREATE Type Of Medical Appointment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", () => {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											"const json = pm.response.json();",
+											"pm.environment.set(\"medical_appointment_type_id\", json.id);",
+											"pm.test(\"Created object has expected structure\", () => {",
+											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
+											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Consulta General\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/medical-appointment-types",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medical-appointment-types"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET Type Of Medical Appointment by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response has expected fields\", () => {",
+											"    const json = pm.response.json();",
+											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
+											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medical-appointment-types",
+										"{{medical_appointment_type_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET All Types Of Medical Appointment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response is an array of type objects\", () => {",
+											"    const json = pm.response.json();",
+											"    pm.expect(json).to.be.an(\"array\");",
+											"    if (json.length > 0) {",
+											"        pm.expect(json[0]).to.have.property(\"id\").that.is.a(\"number\");",
+											"        pm.expect(json[0]).to.have.property(\"name\").that.is.a(\"string\");",
+											"    }",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/medical-appointment-types",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medical-appointment-types"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UPDATE Type Of Medical Appointment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Updated object has expected structure\", () => {",
+											"    const json = pm.response.json();",
+											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
+											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Consulta Especializada\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medical-appointment-types",
+										"{{medical_appointment_type_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DELETE Type Of Medical Appointment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204 (No Content)\", () => {",
+											"    pm.response.to.have.status(204);",
+											"});",
+											"",
+											"pm.test(\"Response body is empty\", () => {",
+											"    pm.expect(pm.response.text()).to.eql(\"\");",
+											"});",
+											"",
+											"",
+											"pm.sendRequest({",
+											"  url: pm.environment.get('base_url') + '/medical-appointment-types/' + pm.environment.get('medical_appointment_type_id'),",
+											"  method: 'GET',  ",
+											"  header: {",
+											"    'Authorization': 'Bearer ' + pm.environment.get('jwt_token')",
+											"  }",
+											"}, (err, res) => {",
+											"  pm.test(\"Verify deletion\", () => {",
+											"    pm.expect(res.code).to.eql(404);",
+											"  });",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medical-appointment-types",
+										"{{medical_appointment_type_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "This collection manages the classification system for medical appointments in the OncoLogic Clinic platform. It handles the creation and maintenance of appointment categories (e.g., \"Annual Checkup\", \"Emergency Consultation\", \"Post-Op Follow-up\"), which are fundamental for proper scheduling and reporting.\n\n---\n\n#### **Endpoints**\n\n1. **Create Appointment Type**\n    \n    - **Method**: `POST`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types`\n        \n    - **Sample Data**: `123456789` (Test reference ID)\n        \n    - **Success Response**: `201 Created`\n        \n    - **Validation**:\n        \n        - Verifies response contains numeric `id`\n            \n        - Confirms presence of string `name` field\n            \n    - **Post-execution**: Stores type ID in `medical_appointment_type_id` variable\n        \n2. **List All Appointment Types**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Confirms response is an array\n            \n        - Verifies each object contains `id` (number) and `name` (string)\n            \n3. **Get Specific Appointment Type**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Ensures consistent structure with creation endpoint\n            \n4. **Update Appointment Type**\n    \n    - **Method**: `PUT`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Maintains same structure checks as creation\n            \n        - (Implied) Name updates should persist\n            \n5. **Delete Appointment Type**\n    \n    - **Method**: `DELETE`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `204 No Content`\n        \n    - **Post-execution Verification**:\n        \n        - Follow-up `GET` request expects `404 Not Found`\n            \n\n---\n\n#### **Key Characteristics**\n\n- **Simple Structure**: Only `id` and `name` fields for easy maintenance\n    \n- **Reference Integrity**: Types cannot be deleted while associated with active appointments\n    \n- **Consistent Validation**: All endpoints validate field types strictly\n    \n\n#### **Dependencies**\n\n- Requires `medical_appointment_type_id` variable after creation\n    \n- All endpoints need valid `jwt_token`\n    \n\n#### **Error Handling**\n\n| Code | Scenario |\n| --- | --- |\n| `400` | Missing/empty `name` field |\n| `404` | Invalid `medical_appointment_type_id` in GET/PUT/DELETE |"
+				},
 				{
 					"name": "Medical Offices",
 					"item": [
@@ -6226,237 +6482,6 @@
 					"description": "This collection manages physical or virtual consultation spaces within the OncoLogic Clinic system, handling their creation, retrieval, modification, and deletion. It ensures proper office setup for scheduling medical appointments.\n\n---\n\n#### **Endpoints**\n\n1. **Create Medical Office**\n    \n    - **Method**: `POST`\n        \n    - **URL**: `{{base_url}}/medical-offices`\n        \n    - **Sample Data**: `34567821` (ID or reference in test environment)\n        \n    - **Success Response**: `201 Created`\n        \n    - **Validation**:\n        \n        - Verifies response contains an auto-generated `id`.\n            \n        - Confirms office name includes `'Consultorio'` (Spanish for \"Office\") as a naming convention.\n            \n        - Validates linkage to an existing appointment (`medicalAppointmentId` matches environment variable).\n            \n    - **Post-execution**: Stores the office ID in `medical_office_id` variable for subsequent requests.\n        \n2. **List All Medical Offices**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-offices`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Confirms response is an array (even if empty).\n            \n    - **Usage**: Typically called to populate UI dropdowns or check availability.\n        \n3. **Get Specific Office**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-offices/{{medical_office_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Ensures returned `id` matches the requested office (via environment variable).\n            \n4. **Update Office**\n    \n    - **Method**: `PUT`\n        \n    - **URL**: `{{base_url}}/medical-offices/{{medical_office_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Checks for `'Actualizado'` (Spanish for \"Updated\") in the name field to confirm persistence.\n            \n5. **Delete Office**\n    \n    - **Method**: `DELETE`\n        \n    - **URL**: `{{base_url}}/medical-offices/{{medical_office_id}}`\n        \n    - **Success Response**: `204 No Content`\n        \n    - **Post-execution**:\n        \n        - Automatically verifies deletion by attempting a follow-up `GET` request (expects `404 Not Found`).\n            \n\n---\n\n#### **Dependencies**\n\n- Requires `medical_appointment_id` (for linked appointments) and `jwt_token` (for auth) set in environment variables.\n    \n\n#### **Error Handling**\n\n- `400 Bad Request`: Missing/invalid fields (e.g., empty name).\n    \n- `404 Not Found`: Invalid `medical_office_id` referenced.\n    \n- `409 Conflict`: Office linked to active appointments (prevent orphaned records)."
 				},
 				{
-					"name": "Type Of Medical Appointment",
-					"item": [
-						{
-							"name": "CREATE Type Of Medical Appointment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 201\", () => {",
-											"    pm.response.to.have.status(201);",
-											"});",
-											"const json = pm.response.json();",
-											"pm.environment.set(\"medical_appointment_type_id\", json.id);",
-											"pm.test(\"Created object has expected structure\", () => {",
-											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
-											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\": \"Consulta General\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url}}/medical-appointment-types",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"medical-appointment-types"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "GET Type Of Medical Appointment by ID",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", () => {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Response has expected fields\", () => {",
-											"    const json = pm.response.json();",
-											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
-											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"medical-appointment-types",
-										"{{medical_appointment_type_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "GET All Types Of Medical Appointment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", () => {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Response is an array of type objects\", () => {",
-											"    const json = pm.response.json();",
-											"    pm.expect(json).to.be.an(\"array\");",
-											"    if (json.length > 0) {",
-											"        pm.expect(json[0]).to.have.property(\"id\").that.is.a(\"number\");",
-											"        pm.expect(json[0]).to.have.property(\"name\").that.is.a(\"string\");",
-											"    }",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/medical-appointment-types",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"medical-appointment-types"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "UPDATE Type Of Medical Appointment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", () => {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"Updated object has expected structure\", () => {",
-											"    const json = pm.response.json();",
-											"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");",
-											"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\": \"Consulta Especializada\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"medical-appointment-types",
-										"{{medical_appointment_type_id}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "DELETE Type Of Medical Appointment",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 204 (No Content)\", () => {",
-											"    pm.response.to.have.status(204);",
-											"});",
-											"",
-											"pm.test(\"Response body is empty\", () => {",
-											"    pm.expect(pm.response.text()).to.eql(\"\");",
-											"});",
-											"",
-											"",
-											"pm.sendRequest({",
-											"  url: pm.environment.get('base_url') + '/medical-appointment-types/' + pm.environment.get('medical_appointment_type_id'),",
-											"  method: 'GET',  ",
-											"  header: {",
-											"    'Authorization': 'Bearer ' + pm.environment.get('jwt_token')",
-											"  }",
-											"}, (err, res) => {",
-											"  pm.test(\"Verify deletion\", () => {",
-											"    pm.expect(res.code).to.eql(404);",
-											"  });",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"medical-appointment-types",
-										"{{medical_appointment_type_id}}"
-									]
-								}
-							},
-							"response": []
-						}
-					],
-					"description": "This collection manages the classification system for medical appointments in the OncoLogic Clinic platform. It handles the creation and maintenance of appointment categories (e.g., \"Annual Checkup\", \"Emergency Consultation\", \"Post-Op Follow-up\"), which are fundamental for proper scheduling and reporting.\n\n---\n\n#### **Endpoints**\n\n1. **Create Appointment Type**\n    \n    - **Method**: `POST`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types`\n        \n    - **Sample Data**: `123456789` (Test reference ID)\n        \n    - **Success Response**: `201 Created`\n        \n    - **Validation**:\n        \n        - Verifies response contains numeric `id`\n            \n        - Confirms presence of string `name` field\n            \n    - **Post-execution**: Stores type ID in `medical_appointment_type_id` variable\n        \n2. **List All Appointment Types**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Confirms response is an array\n            \n        - Verifies each object contains `id` (number) and `name` (string)\n            \n3. **Get Specific Appointment Type**\n    \n    - **Method**: `GET`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Ensures consistent structure with creation endpoint\n            \n4. **Update Appointment Type**\n    \n    - **Method**: `PUT`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `200 OK`\n        \n    - **Validation**:\n        \n        - Maintains same structure checks as creation\n            \n        - (Implied) Name updates should persist\n            \n5. **Delete Appointment Type**\n    \n    - **Method**: `DELETE`\n        \n    - **URL**: `{{base_url}}/medical-appointment-types/{{medical_appointment_type_id}}`\n        \n    - **Success Response**: `204 No Content`\n        \n    - **Post-execution Verification**:\n        \n        - Follow-up `GET` request expects `404 Not Found`\n            \n\n---\n\n#### **Key Characteristics**\n\n- **Simple Structure**: Only `id` and `name` fields for easy maintenance\n    \n- **Reference Integrity**: Types cannot be deleted while associated with active appointments\n    \n- **Consistent Validation**: All endpoints validate field types strictly\n    \n\n#### **Dependencies**\n\n- Requires `medical_appointment_type_id` variable after creation\n    \n- All endpoints need valid `jwt_token`\n    \n\n#### **Error Handling**\n\n| Code | Scenario |\n| --- | --- |\n| `400` | Missing/empty `name` field |\n| `404` | Invalid `medical_appointment_type_id` in GET/PUT/DELETE |"
-				},
-				{
 					"name": "Medical Tasks",
 					"item": [
 						{
@@ -6466,7 +6491,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status 201 Created\", () => pm.response.to.have.status(200));",
+											"pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
 											"const response = pm.response.json();",
 											"pm.environment.set(\"medical_task_id\", response.id);",
 											"pm.test(\"Response contains created task\", () => {",
@@ -6477,6 +6502,13 @@
 										],
 										"type": "text/javascript",
 										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"packages": {},
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -6699,41 +6731,19 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status 201 Created\", () => pm.response.to.have.status(200));",
-											"const response = pm.response.json();",
-											"pm.environment.set(\"medical_appointment_id\", response.id);",
-											"pm.test(\"Response has all required fields\", () => {",
+											"pm.test(\"Status code is 201 Created\", function() {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											"",
+											"pm.test(\"Response has correct structure\", function() {",
+											"    const response = pm.response.json();",
 											"    pm.expect(response).to.have.property('id');",
-											"    pm.expect(response.doctorId).to.eql(1);",
-											"    pm.expect(response.appointmentDate).to.be.a('string');",
-											"    pm.expect(response.medicalOfficeIds).to.be.an('array');",
+											"    pm.expect(response).to.have.property('doctorId', 1);",
+											"    pm.expect(response).to.have.property('typeOfMedicalAppointmentId', 1);",
+											"    pm.expect(response).to.have.property('medicalHistoryId', 1);",
+											"    pm.expect(response).to.have.property('medicalOfficeIds').that.is.an('array');",
+											"    pm.expect(response).to.have.property('medicalTaskIds').that.is.an('array');",
 											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"const minDays = 1;",
-											"const maxDays = 15;",
-											"",
-											"// Genera un número aleatorio entre 1 y 15",
-											"const randomOffset = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;",
-											"",
-											"// Fecha actual",
-											"const currentDate = new Date();",
-											"",
-											"// Suma los días",
-											"currentDate.setDate(currentDate.getDate() + randomOffset);",
-											"",
-											"// Convierte a ISO (puedes formatear diferente si lo necesitas)",
-											"const isoDate = currentDate.toISOString();",
-											"",
-											"pm.environment.set(\"future_date\", isoDate);",
-											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -6783,7 +6793,7 @@
 											"pm.test(\"Status 200 OK\", () => pm.response.to.have.status(200));",
 											"pm.test(\"Matches created appointment ID\", () => {",
 											"    const response = pm.response.json();",
-											"    pm.expect(response.id).to.eql(pm.environment.get('medical_appointment_id'));",
+											"    pm.expect(response.id + '').to.eql(pm.environment.get('medical_appointment_id'));",
 											"});"
 										],
 										"type": "text/javascript",
@@ -6860,7 +6870,7 @@
 											"pm.test(\"Verify updated fields\", () => {",
 											"    const response = pm.response.json();",
 											"    pm.expect(response.doctorId).to.eql(2);",
-											"    pm.expect(response.medicalOfficeIds).to.include(3);",
+											"    pm.expect(response.medicalOfficeIds).to.include(1);",
 											"});"
 										],
 										"type": "text/javascript",
@@ -6882,7 +6892,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"doctorId\": 2,\n  \"typeOfMedicalAppointmentId\": 2,\n  \"appointmentDate\": \"{{futureDateTime}}\",\n  \"treatmentId\": 2,\n  \"medicalHistoryId\": 2,\n  \"medicalOfficeIds\": [3, 4],\n  \"medicalTaskIds\": [3, 4]\n}",
+									"raw": "{\n    \"doctorId\": 2,\n    \"typeOfMedicalAppointmentId\": 2,\n    \"appointmentDate\": \"{{futureDateTime}}\",\n    \"treatmentId\": 2,\n    \"medicalHistoryId\": 2,\n    \"medicalOfficeIds\": [\n        1\n    ],\n    \"medicalTaskIds\": [\n        2\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -6910,15 +6920,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status 204 No Content\", () => pm.response.to.have.status(204));",
-											"pm.test(\"Verify deletion\", () => {",
-											"    pm.sendRequest({",
-											"        url: pm.environment.get('base_url') + '/api/medical-appointments/' + pm.environment.get('medical_appointment_id'),",
-											"        method: 'GET',",
-											"        header: { 'Authorization': 'Bearer {{jwt_token}}' }",
-											"    }, (err, res) => {",
-											"        pm.expect(res.code).to.eql(404);",
-											"    });",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}

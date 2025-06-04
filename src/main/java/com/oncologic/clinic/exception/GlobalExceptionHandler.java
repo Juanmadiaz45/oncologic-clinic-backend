@@ -5,12 +5,14 @@ import com.oncologic.clinic.exception.runtime.patient.AppointmentResultUpdateExc
 import com.oncologic.clinic.exception.runtime.patient.DuplicateMedicalHistoryException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -20,6 +22,8 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    // ===== AUTHENTICATION AND AUTHORIZATION ERRORS =====
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentialsException(BadCredentialsException ex) {
@@ -52,6 +56,75 @@ public class GlobalExceptionHandler {
                 : ex.getMessage();
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, message);
     }
+
+    // ===== VALIDATION ERRORS (400 BAD REQUEST) =====
+
+    /**
+     * Handles Bean Validation errors (@Valid, @NotBlank, etc.)
+     * Returns 400 Bad Request with field-specific error details
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        // Extract specific field errors
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            if (error instanceof FieldError fieldError) {
+                fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            } else {
+                fieldErrors.put("global", error.getDefaultMessage());
+            }
+        });
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Validation Failed");
+        response.put("message", "Invalid input data provided");
+        response.put("fieldErrors", fieldErrors);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // ===== DATA INTEGRITY ERRORS =====
+
+    /**
+     * Handles data integrity violations (FK constraints, unique constraints, etc.)
+     * Returns 409 Conflict for constraints or 400 for other data issues
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, Object> response = new HashMap<>();
+
+        String message = ex.getMessage();
+        HttpStatus status;
+
+        // Determine an error type based on message content
+        if (message != null && (message.contains("foreign key constraint") ||
+                message.contains("violates foreign key") ||
+                message.contains("constraint"))) {
+            status = HttpStatus.CONFLICT;
+            response.put("error", "Data Conflict");
+            response.put("message", "Cannot perform this operation because it violates data integrity constraints. " +
+                    "This record may be referenced by other records.");
+        } else if (message != null && (message.contains("unique constraint") ||
+                message.contains("duplicate key"))) {
+            status = HttpStatus.CONFLICT;
+            response.put("error", "Duplicate Data");
+            response.put("message", "A record with this information already exists.");
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+            response.put("error", "Data Integrity Error");
+            response.put("message", "The operation could not be completed due to data integrity issues.");
+        }
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+
+        return new ResponseEntity<>(response, status);
+    }
+
+    // ===== EXISTING DOMAIN ERRORS =====
 
     @ExceptionHandler(DomainNotFoundException.class)
     public ResponseEntity<?> handleNotFound(DomainNotFoundException ex) {
@@ -92,11 +165,23 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.TEXT_EVENT_STREAM)
-                .body("Error: " + ex.getMessage());
-    }
+    // ===== GENERIC HANDLER (LAST RESORT) =====
 
+    /**
+     * Generic handler - should only catch unexpected server errors
+     * Returns 500 Internal Server Error
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("error", "Internal Server Error");
+        response.put("message", "An unexpected error occurred. Please try again later.");
+
+        // In development, you can include more details:
+        // response.put("details", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
 }

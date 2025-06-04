@@ -198,10 +198,6 @@ public class PatientServiceImpl implements PatientService {
                     return new PatientNotFoundException(id);
                 });
 
-        if (patient.getMedicalHistory() != null) {
-            medicalHistoryService.deleteMedicalHistory(patient.getMedicalHistory().getId());
-        }
-
         patientRepository.delete(patient);
         logger.info("Patient record deleted with ID: {}", id);
     }

@@ -35,16 +35,18 @@ public class MedicalHistory {
     @Column(name = "current_health_status", nullable = false, length = 200)
     private String currentHealthStatus;
 
-    @OneToMany(mappedBy = "medicalHistory")
-    private List<MedicalAppointment> medicalAppointments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "medicalHistory")
-    private List<MedicalExamination> medicalExaminations = new ArrayList<>();
-
-    @OneToMany(mappedBy = "medicalHistory")
+    @OneToMany(mappedBy = "medicalHistory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentResult> appointmentResults = new ArrayList<>();
 
-    @OneToMany(mappedBy = "medicalHistory")
+    @OneToMany(mappedBy = "medicalHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicalExamination> medicalExaminations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "medicalHistory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExaminationResult> examinationResults = new ArrayList<>();
+
+    @OneToMany(mappedBy = "medicalHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicalAppointment> medicalAppointments = new ArrayList<>();
+
+
 }
 
