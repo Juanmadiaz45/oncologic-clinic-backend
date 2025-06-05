@@ -42,16 +42,25 @@ public class PatientRestController {
         }
     }
 
-    @Operation(summary = "Get all patients")
+    @Operation(summary = "Get all patients or search by ID number")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of all patients"),
+            @ApiResponse(responseCode = "200", description = "List of all patients or filtered patients"),
             @ApiResponse(responseCode = "204", description = "No content")
     })
     @GetMapping
-    public ResponseEntity<List<PatientResponseDTO>> getAllPatients() {
-        List<PatientResponseDTO> patients = patientService.getAllPatients();
+    public ResponseEntity<List<PatientResponseDTO>> getAllPatients(
+            @RequestParam(required = false, name = "id_number") String idNumber) {
+
+        List<PatientResponseDTO> patients;
+
+        if (idNumber != null && !idNumber.trim().isEmpty()) {
+            patients = patientService.searchPatientsByIdNumber(idNumber);
+        } else {
+            patients = patientService.getAllPatients();
+        }
+
         if (patients.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 No Content si no hay pacientes
+            return ResponseEntity.noContent().build(); // 204 No Content
         }
         return ResponseEntity.ok(patients); // 200 OK
     }

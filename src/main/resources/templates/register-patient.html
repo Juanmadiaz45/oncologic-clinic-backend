@@ -8,174 +8,198 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/common-styles.css}">
 </head>
-    <body class="register-body">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
-            <div class="container">
-                <div class="d-flex align-items-center">
-                    <a th:href="@{/dashboard}" class="btn btn-outline-primary-clinic me-2">
-                        <i class="bi bi-arrow-left"></i> Volver
-                    </a>
-                </div>
-                <a class="navbar-brand" href="#">
-                    <img th:src="@{/images/oncologic-logo-without-background.png}" alt="Clínica OncoLogic" class="logo-navbar">
-                </a>
-            </div>
-        </nav>
+<body class="register-body">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a th:href="@{/dashboard}" class="btn btn-outline-primary-clinic me-2">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+        <a class="navbar-brand" href="#">
+            <img th:src="@{/images/oncologic-logo-without-background.png}" alt="Clínica OncoLogic" class="logo-navbar">
+        </a>
+    </div>
+</nav>
 
-        <div class="container mt-5 mb-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card registration-card shadow-sm">
-                        <div class="card-header bg-primary-clinic text-white">
-                            <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Registrar Nuevo Paciente</h4>
-                        </div>
-                        <div class="card-body">
-                            <form th:action="@{/users/register/patient}" th:object="${patient}" method="post" class="needs-validation" novalidate>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card registration-card shadow-sm">
+                <div class="card-header bg-primary-clinic text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Registrar Nuevo Paciente</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/users/register/patient}" th:object="${patient}" method="post"
+                          class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <!-- Información Básica -->
+                            <div class="col-md-6">
+                                <h5 class="section-title"><i class="bi bi-person-fill me-2"></i>Información Personal
+                                </h5>
+
+                                <div class="mb-3">
+                                    <label for="identificationNumber" class="form-label">Número de Cédula</label>
+                                    <input type="text" class="form-control" id="identificationNumber"
+                                           th:field="*{idNumber}" required>
+                                    <div class="invalid-feedback">Por favor ingrese el número de cédula.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nombre Completo</label>
+                                    <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                                    <div class="invalid-feedback">Por favor ingrese el nombre del paciente.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="birthDate" th:field="*{birthDate}"
+                                           required>
+                                    <div class="invalid-feedback">Por favor ingrese la fecha de nacimiento.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label">Género</label>
+                                    <select class="form-select" id="gender" th:field="*{gender}" required>
+                                        <option value="" selected disabled>Seleccione...</option>
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Femenino</option>
+                                        <option value="O">Otro</option>
+                                    </select>
+                                    <div class="invalid-feedback">Por favor seleccione el género.</div>
+                                </div>
+                            </div>
+
+                            <!-- Información de Contacto -->
+                            <div class="col-md-6">
+                                <h5 class="section-title"><i class="bi bi-telephone-fill me-2"></i>Contacto</h5>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Correo Electrónico</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    <div class="invalid-feedback">Por favor ingrese un email válido.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phoneNumber" class="form-label">Teléfono</label>
+                                    <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}"
+                                           required>
+                                    <div class="invalid-feedback">Por favor ingrese un número de teléfono.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Dirección</label>
+                                    <textarea class="form-control" id="address" th:field="*{address}" rows="2"
+                                              required></textarea>
+                                    <div class="invalid-feedback">Por favor ingrese la dirección.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="currentHealthStatus" class="form-label">Estado de Salud Actual</label>
+                                <textarea class="form-control" id="currentHealthStatus"
+                                          th:field="*{currentHealthStatus}" rows="2"
+                                          placeholder="Ej. Saludable, Tratamiento en curso..."></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <h5 class="section-title"><i class="bi bi-person-badge me-2"></i>Roles del Usuario</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Seleccionar Roles</label>
+                                    <div th:each="role : ${roles}" class="form-check">
+                                        <label>
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   th:field="*{userData.roleIds}"
+                                                   th:value="${role.id}"
+                                                   th:id="'role-' + ${role.id}">
+                                        </label>
+                                        <label class="form-check-label"
+                                               th:for="'role-' + ${role.id}"
+                                               th:text="${role.name}"></label>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('userData.roleIds')}"
+                                         class="text-danger small mt-1"
+                                         th:errors="*{userData.roleIds}"></div>
+                                </div>
+                            </div>
+
+
+                            <!-- Credenciales de Acceso -->
+                            <div class="col-12">
+                                <h5 class="section-title"><i class="bi bi-shield-lock me-2"></i>Credenciales de Acceso
+                                </h5>
                                 <div class="row g-3">
-                                    <!-- Información Básica -->
                                     <div class="col-md-6">
-                                        <h5 class="section-title"><i class="bi bi-person-fill me-2"></i>Información Personal</h5>
                                         <div class="mb-3">
-                                            <label for="name" class="form-label">Nombre Completo</label>
-                                            <input type="text" class="form-control" id="name" th:field="*{name}" required>
-                                            <div class="invalid-feedback">Por favor ingrese el nombre del paciente.</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
-                                            <input type="date" class="form-control" id="birthDate" th:field="*{birthDate}" required>
-                                            <div class="invalid-feedback">Por favor ingrese la fecha de nacimiento.</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="gender" class="form-label">Género</label>
-                                            <select class="form-select" id="gender" th:field="*{gender}" required>
-                                                <option value="" selected disabled>Seleccione...</option>
-                                                <option value="M">Masculino</option>
-                                                <option value="F">Femenino</option>
-                                                <option value="O">Otro</option>
-                                            </select>
-                                            <div class="invalid-feedback">Por favor seleccione el género.</div>
+                                            <label for="username" class="form-label">Nombre de Usuario</label>
+                                            <input type="text" class="form-control" id="username"
+                                                   th:field="*{userData.username}"
+                                                   th:classappend="${#fields.hasErrors('userData.username')} ? 'is-invalid' : ''"
+                                                   required>
+                                            <div class="invalid-feedback"
+                                                 th:if="${#fields.hasErrors('userData.username')}"
+                                                 th:errors="*{userData.username}"></div>
                                         </div>
                                     </div>
-
-                                    <!-- Información de Contacto -->
                                     <div class="col-md-6">
-                                        <h5 class="section-title"><i class="bi bi-telephone-fill me-2"></i>Contacto</h5>
                                         <div class="mb-3">
-                                            <label for="email" class="form-label">Correo Electrónico</label>
-                                            <input type="email" class="form-control" id="email" th:field="*{email}" required>
-                                            <div class="invalid-feedback">Por favor ingrese un email válido.</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="phoneNumber" class="form-label">Teléfono</label>
-                                            <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}" required>
-                                            <div class="invalid-feedback">Por favor ingrese un número de teléfono.</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="address" class="form-label">Dirección</label>
-                                            <textarea class="form-control" id="address" th:field="*{address}" rows="2" required></textarea>
-                                            <div class="invalid-feedback">Por favor ingrese la dirección.</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="currentHealthStatus" class="form-label">Estado de Salud Actual</label>
-                                        <textarea class="form-control" id="currentHealthStatus" th:field="*{currentHealthStatus}" rows="2" placeholder="Ej. Saludable, Tratamiento en curso..."></textarea>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <h5 class="section-title"><i class="bi bi-person-badge me-2"></i>Roles del Usuario</h5>
-                                        <div class="mb-3">
-                                            <label class="form-label">Seleccionar Roles</label>
-                                            <div th:each="role : ${roles}" class="form-check">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       th:field="*{userData.roleIds}"
-                                                       th:value="${role.id}"
-                                                       th:id="'role-' + ${role.id}">
-                                                <label class="form-check-label"
-                                                       th:for="'role-' + ${role.id}"
-                                                       th:text="${role.name}"></label>
-                                            </div>
-                                            <div th:if="${#fields.hasErrors('userData.roleIds')}"
-                                                 class="text-danger small mt-1"
-                                                 th:errors="*{userData.roleIds}"></div>
-                                        </div>
-                                    </div>
-
-
-                                    <!-- Credenciales de Acceso -->
-                                    <div class="col-12">
-                                        <h5 class="section-title"><i class="bi bi-shield-lock me-2"></i>Credenciales de Acceso</h5>
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label for="username" class="form-label">Nombre de Usuario</label>
-                                                    <input type="text" class="form-control" id="username"
-                                                           th:field="*{userData.username}"
-                                                           th:classappend="${#fields.hasErrors('userData.username')} ? 'is-invalid' : ''"
-                                                           required>
-                                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('userData.username')}"
-                                                         th:errors="*{userData.username}"></div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label for="password" class="form-label">Contraseña</label>
-                                                    <input type="password" class="form-control" id="password"
-                                                           th:field="*{userData.password}" required>
-                                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('userData.password')}"
-                                                         th:errors="*{userData.password}"></div>
-                                                </div>
-                                            </div>
+                                            <label for="password" class="form-label">Contraseña</label>
+                                            <input type="password" class="form-control" id="password"
+                                                   th:field="*{userData.password}" required>
+                                            <div class="invalid-feedback"
+                                                 th:if="${#fields.hasErrors('userData.password')}"
+                                                 th:errors="*{userData.password}"></div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <a th:href="@{/dashboard}" class="btn btn-outline-secondary me-md-2">
-                                        <i class="bi bi-x-circle me-1"></i> Cancelar
-                                    </a>
-                                    <button type="submit" class="btn btn-primary-clinic">
-                                        <i class="bi bi-check-circle me-1"></i> Registrar Paciente
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a th:href="@{/dashboard}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary-clinic">
+                                <i class="bi bi-check-circle me-1"></i> Registrar Paciente
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header" th:classappend="${param.error} ? 'bg-danger text-white' : 'bg-success text-white'">
-                        <h5 class="modal-title" id="resultModalLabel">
-                            <i th:class="${param.error} ? 'bi bi-exclamation-triangle-fill me-2' : 'bi bi-check-circle-fill me-2'"></i>
-                            <span th:text="${param.error} ? 'Error en el registro' : 'Registro Exitoso'"></span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="redirectToDashboard()"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p th:if="${param.successMessage}" th:text="${param.successMessage}">Paciente registrado exitosamente.</p>
-                        <p th:if="${param.error}" th:text="${param.error}">Ocurrió un error durante el registro.</p>
-                        <p th:if="${errorMessage}" th:text="${errorMessage}">Ocurrió un error durante el registro.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="redirectToDashboard()">Aceptar</button>
-                    </div>
-                </div>
+<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"
+                 th:classappend="${param.error} ? 'bg-danger text-white' : 'bg-success text-white'">
+                <h5 class="modal-title" id="resultModalLabel">
+                    <i th:class="${param.error} ? 'bi bi-exclamation-triangle-fill me-2' : 'bi bi-check-circle-fill me-2'"></i>
+                    <span th:text="${param.error} ? 'Error en el registro' : 'Registro Exitoso'"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        onclick="redirectToDashboard()"></button>
+            </div>
+            <div class="modal-body">
+                <p th:if="${param.successMessage}" th:text="${param.successMessage}">Paciente registrado
+                    exitosamente.</p>
+                <p th:if="${param.error}" th:text="${param.error}">Ocurrió un error durante el registro.</p>
+                <p th:if="${errorMessage}" th:text="${errorMessage}">Ocurrió un error durante el registro.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="redirectToDashboard()">
+                    Aceptar
+                </button>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Footer -->
-        <footer class="footer mt-auto text-center py-3">
-            <p class="text-muted small mb-0">© 2025 Clínica OncoLogic. Todos los derechos reservados.</p>
-        </footer>
+<!-- Footer -->
+<footer class="footer mt-auto text-center py-3">
+    <p class="text-muted small mb-0">© 2025 Clínica OncoLogic. Todos los derechos reservados.</p>
+</footer>
 
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script th:src="@{/js/register-patient.js}"></script>
-    </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/register-patient.js}"></script>
+</body>
 </html>

@@ -1,7 +1,5 @@
 package com.oncologic.clinic.controller;
 
-import com.oncologic.clinic.dto.personal.AdministrativeDTO;
-import com.oncologic.clinic.dto.personal.DoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterAdministrativeDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.dto.registration.RegisterPatientDTO;
@@ -12,7 +10,6 @@ import com.oncologic.clinic.service.personal.AdministrativeService;
 import com.oncologic.clinic.service.personal.DoctorService;
 import com.oncologic.clinic.service.user.RoleService;
 import com.oncologic.clinic.service.user.UserService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

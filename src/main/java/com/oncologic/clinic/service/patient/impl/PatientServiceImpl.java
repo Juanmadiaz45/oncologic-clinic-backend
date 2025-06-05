@@ -27,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -83,9 +85,9 @@ public class PatientServiceImpl implements PatientService {
         User user = userRepository.findById(userResponseDTO.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ID: " + userResponseDTO.getId()));
 
-
         Patient patient = new Patient();
         patient.setUser(user);
+        patient.setIdNumber(patientDTO.getIdNumber());
         patient.setName(patientDTO.getName());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate date = LocalDate.parse(patientDTO.getBirthDate(), formatter);
@@ -200,5 +202,17 @@ public class PatientServiceImpl implements PatientService {
 
         patientRepository.delete(patient);
         logger.info("Patient record deleted with ID: {}", id);
+    }
+
+    @Override
+    public List<PatientResponseDTO> searchPatientsByIdNumber(String idNumber) {
+        if (idNumber == null || idNumber.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Patient> patients = patientRepository.findByIdNumberContaining(idNumber.trim());
+        return patients.stream()
+                .map(patientMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

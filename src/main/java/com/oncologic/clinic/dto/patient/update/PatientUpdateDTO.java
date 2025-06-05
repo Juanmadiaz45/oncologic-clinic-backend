@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PatientUpdateDTO {
+    private String idNumber;
     private String name;
     private String birthDate;
     private Character gender;
