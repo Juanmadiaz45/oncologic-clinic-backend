@@ -48,6 +48,9 @@ public class WebSecurityConfig {
                         // Allow authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // Dashboard module - solo doctores y admin
+                        .requestMatchers(HttpMethod.GET, "/api/doctor-dashboard/**").hasAnyRole("DOCTOR", "ADMIN")
+
                         // ADMIN has full access to ALL endpoints
                         .requestMatchers("/api/**").hasRole("ADMIN")
 

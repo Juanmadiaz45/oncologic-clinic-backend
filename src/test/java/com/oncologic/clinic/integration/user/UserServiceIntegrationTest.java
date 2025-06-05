@@ -1,6 +1,23 @@
 package com.oncologic.clinic.integration.user;
 
-/*
+import com.oncologic.clinic.dto.registration.RegisterUserDTO;
+import com.oncologic.clinic.dto.user.UserDTO;
+import com.oncologic.clinic.dto.user.response.UserResponseDTO;
+import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.service.user.UserService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -13,13 +30,13 @@ public class UserServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        defaultRoleId = 1L; // ID de un rol existente en tu BD de prueba
+        defaultRoleId = 1L;
     }
 
     @Test
     void createUser_WithValidDataAndRole_ShouldCreateUser() {
         // Arrange
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("testuser");
         userDTO.setPassword("password123");
         Set<Long> roleIds = new HashSet<>();
@@ -32,7 +49,6 @@ public class UserServiceIntegrationTest {
         // Assert
         assertNotNull(createdUser.getId());
         assertEquals("testuser", createdUser.getUsername());
-        // La contraseña ahora está encriptada
         assertNotNull(createdUser.getPassword());
         assertFalse(createdUser.getUserRoles().isEmpty());
     }
@@ -40,7 +56,7 @@ public class UserServiceIntegrationTest {
     @Test
     void getUserById_WhenUserExists_ShouldReturnUser() {
         // Arrange
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("testuser");
         userDTO.setPassword("password123");
         Set<Long> roleIds = new HashSet<>();
@@ -49,20 +65,19 @@ public class UserServiceIntegrationTest {
         User createdUser = userService.createUser(userDTO);
 
         // Act
-        User foundUser = userService.getUserById(createdUser.getId());
+        UserResponseDTO foundUser = userService.getUserById(createdUser.getId());
 
         // Assert
         assertNotNull(foundUser);
         assertEquals(createdUser.getId(), foundUser.getId());
         assertEquals("testuser", foundUser.getUsername());
-        assertFalse(foundUser.getUserRoles().isEmpty());
+        assertFalse(foundUser.getRoles().isEmpty());
     }
 
     @Test
     void updateUser_WithValidData_ShouldUpdateUser() {
         // Arrange
-        // Primero creamos el usuario
-        UserRequestDTO createDTO = new UserRequestDTO();
+        RegisterUserDTO createDTO = new RegisterUserDTO();
         createDTO.setUsername("originaluser");
         createDTO.setPassword("originalpass");
         Set<Long> roleIds = new HashSet<>();
@@ -70,27 +85,25 @@ public class UserServiceIntegrationTest {
         createDTO.setRoleIds(roleIds);
         User createdUser = userService.createUser(createDTO);
 
-        // Preparamos datos de actualización
-        User updateData = new User();
-        updateData.setId(createdUser.getId());
-        updateData.setUsername("updateduser");
-        updateData.setPassword("updatedpass");
+        UserDTO updateDTO = new UserDTO();
+        updateDTO.setUsername("updateduser");
+        updateDTO.setPassword("updatedpass");
+        updateDTO.setRoleIds(roleIds);
 
         // Act
-        User updatedUser = userService.updateUser(updateData, roleIds);
+        UserResponseDTO updatedUser = userService.updateUser(createdUser.getId(), updateDTO);
 
         // Assert
         assertNotNull(updatedUser);
         assertEquals(createdUser.getId(), updatedUser.getId());
         assertEquals("updateduser", updatedUser.getUsername());
-        assertEquals("updatedpass", updatedUser.getPassword());
-        assertFalse(updatedUser.getUserRoles().isEmpty());
+        assertFalse(updatedUser.getRoles().isEmpty());
     }
 
     @Test
     void deleteUser_WhenUserExists_ShouldRemoveUser() {
         // Arrange
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("todelete");
         userDTO.setPassword("password");
         Set<Long> roleIds = new HashSet<>();
@@ -108,7 +121,7 @@ public class UserServiceIntegrationTest {
     @Test
     void getAllUsers_WhenUsersExist_ShouldReturnUserList() {
         // Arrange
-        UserRequestDTO userDTO1 = new UserRequestDTO();
+        RegisterUserDTO userDTO1 = new RegisterUserDTO();
         userDTO1.setUsername("user1");
         userDTO1.setPassword("pass1");
         Set<Long> roleIds1 = new HashSet<>();
@@ -116,7 +129,7 @@ public class UserServiceIntegrationTest {
         userDTO1.setRoleIds(roleIds1);
         userService.createUser(userDTO1);
 
-        UserRequestDTO userDTO2 = new UserRequestDTO();
+        RegisterUserDTO userDTO2 = new RegisterUserDTO();
         userDTO2.setUsername("user2");
         userDTO2.setPassword("pass2");
         Set<Long> roleIds2 = new HashSet<>();
@@ -125,7 +138,7 @@ public class UserServiceIntegrationTest {
         userService.createUser(userDTO2);
 
         // Act
-        List<User> users = userService.getAllUsers();
+        List<UserResponseDTO> users = userService.getAllUsers();
 
         // Assert
         assertTrue(users.size() >= 2);
@@ -134,10 +147,9 @@ public class UserServiceIntegrationTest {
     @Test
     void addRolesToUser_WithValidRoleIds_ShouldAddRoles() {
         // Arrange
-        // Asumimos que existe otro rol con ID 2 en la BD
         Long additionalRoleId = 2L;
 
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("roleuser");
         userDTO.setPassword("password");
         Set<Long> initialRoleIds = new HashSet<>();
@@ -149,44 +161,42 @@ public class UserServiceIntegrationTest {
         roleIdsToAdd.add(additionalRoleId);
 
         // Act
-        User updatedUser = userService.addRolesToUser(createdUser.getId(), roleIdsToAdd);
+        UserResponseDTO updatedUser = userService.addRolesToUser(createdUser.getId(), roleIdsToAdd);
 
         // Assert
         assertNotNull(updatedUser);
-        assertEquals(2, updatedUser.getUserRoles().size());
+        assertEquals(2, updatedUser.getRoles().size());
     }
 
     @Test
     void removeRolesFromUser_WithValidRoleIds_ShouldRemoveRolesButKeepAtLeastOne() {
         // Arrange
-        // Creamos usuario con dos roles
         Long secondRoleId = 2L;
         Set<Long> initialRoleIds = new HashSet<>();
         initialRoleIds.add(defaultRoleId);
         initialRoleIds.add(secondRoleId);
 
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("removeroles");
         userDTO.setPassword("password");
         userDTO.setRoleIds(initialRoleIds);
         User createdUser = userService.createUser(userDTO);
 
-        // Preparamos roles a remover (solo uno de los dos)
         Set<Long> rolesToRemove = new HashSet<>();
         rolesToRemove.add(secondRoleId);
 
         // Act
-        User updatedUser = userService.removeRolesFromUser(createdUser.getId(), rolesToRemove);
+        UserResponseDTO updatedUser = userService.removeRolesFromUser(createdUser.getId(), rolesToRemove);
 
         // Assert
         assertNotNull(updatedUser);
-        assertEquals(1, updatedUser.getUserRoles().size());
+        assertEquals(1, updatedUser.getRoles().size());
     }
 
     @Test
     void createUser_WithoutRoles_ShouldThrowException() {
         // Arrange
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("invaliduser");
         userDTO.setPassword("password");
         userDTO.setRoleIds(new HashSet<>());
@@ -198,20 +208,17 @@ public class UserServiceIntegrationTest {
     @Test
     void createUser_WithExistingUsername_ShouldThrowException() {
         // Arrange
-        UserRequestDTO userDTO = new UserRequestDTO();
+        RegisterUserDTO userDTO = new RegisterUserDTO();
         userDTO.setUsername("existinguser");
         userDTO.setPassword("password");
         Set<Long> roleIds = new HashSet<>();
         roleIds.add(defaultRoleId);
         userDTO.setRoleIds(roleIds);
 
-        // Crear usuario por primera vez
         userService.createUser(userDTO);
 
-        // Intentar crear el mismo usuario otra vez
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> userService.createUser(userDTO));
     }
 }
 
- */
