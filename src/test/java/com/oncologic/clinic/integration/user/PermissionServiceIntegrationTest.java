@@ -1,6 +1,7 @@
-/*package com.oncologic.clinic.integration.user;
+package com.oncologic.clinic.integration.user;
 
-import com.oncologic.clinic.entity.user.Permission;
+import com.oncologic.clinic.dto.user.PermissionDTO;
+import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
 import com.oncologic.clinic.service.user.PermissionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,10 @@ public class PermissionServiceIntegrationTest {
 
     @Test
     void getPermissionById_WhenPermissionExists_ShouldReturnPermission() {
-        // Arrange - Los datos iniciales ya están en la base de datos de prueba
+        // Arrange
 
         // Act
-        Permission permission = permissionService.getPermissionById(1L);
+        PermissionResponseDTO permission = permissionService.getPermissionById(1L);
 
         // Assert
         assertNotNull(permission);
@@ -33,7 +34,7 @@ public class PermissionServiceIntegrationTest {
     @Test
     void getAllPermissions_ShouldReturnAllPermissions() {
         // Act
-        List<Permission> permissions = permissionService.getAllPermissions();
+        List<PermissionResponseDTO> permissions = permissionService.getAllPermissions();
 
         // Assert
         assertEquals(3, permissions.size());
@@ -45,62 +46,59 @@ public class PermissionServiceIntegrationTest {
     @Test
     void createPermission_WithValidData_ShouldCreateNewPermission() {
         // Arrange
-        Permission newPermission = new Permission();
+        PermissionDTO newPermission = new PermissionDTO();
         newPermission.setName("DELETE");
 
         // Act
-        Permission createdPermission = permissionService.createPermission(newPermission);
+        PermissionResponseDTO createdPermission = permissionService.createPermission(newPermission);
 
         // Assert
         assertNotNull(createdPermission.getId());
         assertEquals("DELETE", createdPermission.getName());
 
-        // Verificar que se persistió
-        Permission retrievedPermission = permissionService.getPermissionById(createdPermission.getId());
+        PermissionResponseDTO retrievedPermission = permissionService.getPermissionById(createdPermission.getId());
         assertEquals("DELETE", retrievedPermission.getName());
     }
 
     @Test
     void updatePermission_WithValidData_ShouldUpdatePermission() {
         // Arrange
-        Permission permissionToUpdate = permissionService.getPermissionById(1L);
-        permissionToUpdate.setName("READ_ONLY");
+        PermissionDTO updatedData = new PermissionDTO();
+        updatedData.setName("READ_ONLY");
 
         // Act
-        Permission updatedPermission = permissionService.updatePermission(permissionToUpdate);
+        PermissionResponseDTO updatedPermission = permissionService.updatePermission(1L, updatedData);
 
         // Assert
         assertEquals("READ_ONLY", updatedPermission.getName());
 
-        // Verificar que se actualizó en la base de datos
-        Permission retrievedPermission = permissionService.getPermissionById(1L);
+        PermissionResponseDTO retrievedPermission = permissionService.getPermissionById(1L);
         assertEquals("READ_ONLY", retrievedPermission.getName());
     }
 
     @Test
     void deletePermission_WhenPermissionExists_ShouldDeletePermission() {
-        // Crear un nuevo permiso sin relaciones
-        Permission newPermission = new Permission();
+        // Arrange
+        PermissionDTO newPermission = new PermissionDTO();
         newPermission.setName("TEMPORARY");
-        Permission createdPermission = permissionService.createPermission(newPermission);
+        PermissionResponseDTO createdPermission = permissionService.createPermission(newPermission);
         Long permissionId = createdPermission.getId();
 
         // Act
-        permissionService.deletePermission(createdPermission.getId());
-        // Assert - Verificar que al buscar el permiso eliminado se lanza la excepción esperada
+        permissionService.deletePermission(permissionId);
+
+        // Assert
         Exception exception = assertThrows(RuntimeException.class, () -> permissionService.getPermissionById(permissionId));
-
-        assertEquals("Permiso no encontrado", exception.getMessage());
-
+        assertEquals("Permission not found with ID: " + permissionId, exception.getMessage());
     }
 
     @Test
     void createPermission_WithExistingName_ShouldThrowException() {
         // Arrange
-        Permission duplicatePermission = new Permission();
-        duplicatePermission.setName("READ"); // Este nombre ya existe en los datos iniciales
+        PermissionDTO duplicatePermission = new PermissionDTO();
+        duplicatePermission.setName("READ");
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> permissionService.createPermission(duplicatePermission));
+        assertThrows(IllegalArgumentException.class, () -> permissionService.createPermission(duplicatePermission));
     }
-}*/
+}

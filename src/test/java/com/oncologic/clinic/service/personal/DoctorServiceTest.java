@@ -1,10 +1,10 @@
-/*package com.oncologic.clinic.service.personal;
+package com.oncologic.clinic.service.personal;
 
-import com.oncologic.clinic.dto.SpecialityDTO;
 import com.oncologic.clinic.dto.registration.RegisterDoctorDTO;
 import com.oncologic.clinic.entity.personal.Doctor;
 import com.oncologic.clinic.entity.personal.Speciality;
 import com.oncologic.clinic.entity.user.User;
+import com.oncologic.clinic.mapper.personal.DoctorMapper;
 import com.oncologic.clinic.repository.personal.DoctorRepository;
 import com.oncologic.clinic.repository.personal.SpecialityRepository;
 import com.oncologic.clinic.service.personal.impl.DoctorServiceImpl;
@@ -15,11 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -32,10 +32,10 @@ public class DoctorServiceTest {
     private UserService userService;
 
     @Mock
-    private SpecialityService specialityService;
+    private SpecialityRepository specialityRepository;
 
     @Mock
-    private SpecialityRepository specialityRepository;
+    private DoctorMapper doctorMapper;
 
     @InjectMocks
     private DoctorServiceImpl doctorService;
@@ -64,22 +64,31 @@ public class DoctorServiceTest {
         Doctor doctor = new Doctor();
         doctor.setUser(user);
         doctor.setName("Carlos");
+        doctor.setSpecialities(new HashSet<>());
         return doctor;
     }
 
     @Test
-    void registerDoctor_WhenSpecialityIdProvided_ShouldAssignSpeciality() {
+    void registerDoctor_WhenSpecialitiesProvided_ShouldAssignSpecialities() {
         // Arrange
         RegisterDoctorDTO dto = getBaseDTO();
-        dto.setSelectedSpecialityId(10L);
+        dto.setSpecialityIds(Set.of(10L, 20L));
 
         User user = getMockUser();
-        Doctor doctor = getMockDoctor(user);
-        Speciality speciality = new Speciality();
+        Doctor savedDoctor = getMockDoctor(user);
+
+        Speciality spec1 = new Speciality();
+        spec1.setId(10L);
+        spec1.setDoctors(new HashSet<>());
+
+        Speciality spec2 = new Speciality();
+        spec2.setId(20L);
+        spec2.setDoctors(new HashSet<>());
 
         when(userService.createUser(dto)).thenReturn(user);
-        when(doctorRepository.save(any())).thenReturn(doctor);
-        when(specialityService.getSpecialityById(10L)).thenReturn(Optional.of(speciality));
+        when(doctorRepository.save(any())).thenReturn(savedDoctor);
+        when(specialityRepository.findAllById(dto.getSpecialityIds()))
+                .thenReturn(List.of(spec1, spec2));
 
         // Act
         Doctor result = doctorService.registerDoctor(dto);
@@ -88,72 +97,29 @@ public class DoctorServiceTest {
         assertNotNull(result);
         assertEquals("Carlos", result.getName());
         assertEquals(user, result.getUser());
+        assertEquals(2, result.getSpecialities().size());
 
-        verify(specialityRepository).save(speciality);
-        assertEquals(doctor, speciality.getDoctor());
+        assertTrue(spec1.getDoctors().contains(result));
+        assertTrue(spec2.getDoctors().contains(result));
     }
 
     @Test
-    void registerDoctor_WhenNewSpecialityProvided_ShouldRegisterNewSpeciality() {
+    void registerDoctor_WhenNoSpecialitiesProvided_ShouldNotAssignAny() {
         // Arrange
-        RegisterDoctorDTO dto = getBaseDTO();
-        dto.setNewSpecialityName("Cardiología");
-        dto.setNewSpecialityDescription("Corazón y sistema cardiovascular");
-
+        RegisterDoctorDTO dto = getBaseDTO(); // no specialityIds set
         User user = getMockUser();
-        Doctor doctor = getMockDoctor(user);
+        Doctor savedDoctor = getMockDoctor(user);
 
         when(userService.createUser(dto)).thenReturn(user);
-        when(doctorRepository.save(any())).thenReturn(doctor);
+        when(doctorRepository.save(any())).thenReturn(savedDoctor);
 
         // Act
         Doctor result = doctorService.registerDoctor(dto);
 
         // Assert
         assertNotNull(result);
-        verify(specialityService).registerSpeciality(any(SpecialityDTO.class), eq(doctor));
-        verify(specialityRepository, never()).save(any());
+        assertEquals("Carlos", result.getName());
+        assertTrue(result.getSpecialities().isEmpty());
+        verify(specialityRepository, never()).findAllById(any());
     }
-
-    @Test
-    void registerDoctor_WhenNoSpecialityProvided_ShouldNotRegisterOrAssignSpeciality() {
-        // Arrange
-        RegisterDoctorDTO dto = getBaseDTO();
-
-        User user = getMockUser();
-        Doctor doctor = getMockDoctor(user);
-
-        when(userService.createUser(dto)).thenReturn(user);
-        when(doctorRepository.save(any())).thenReturn(doctor);
-
-        // Act
-        Doctor result = doctorService.registerDoctor(dto);
-
-        // Assert
-        assertNotNull(result);
-        verify(specialityService, never()).registerSpeciality(any(), any());
-        verify(specialityRepository, never()).save(any());
-    }
-
-    @Test
-    void registerDoctor_WhenSpecialityIdNotFound_ShouldNotFail() {
-        // Arrange
-        RegisterDoctorDTO dto = getBaseDTO();
-        dto.setSelectedSpecialityId(999L);
-
-        User user = getMockUser();
-        Doctor doctor = getMockDoctor(user);
-
-        when(userService.createUser(dto)).thenReturn(user);
-        when(doctorRepository.save(any())).thenReturn(doctor);
-        when(specialityService.getSpecialityById(999L)).thenReturn(Optional.empty());
-
-        // Act
-        Doctor result = doctorService.registerDoctor(dto);
-
-        // Assert
-        assertNotNull(result);
-        verify(specialityRepository, never()).save(any());
-        verify(specialityService).getSpecialityById(999L);
-    }
-}*/
+}

@@ -140,9 +140,9 @@ VALUES (7, 'ADM002', 'Elena', 'Morales', 'elena.morales@hospital.com', '555-9012
 
 -- Inicialización de DOCTORS
 INSERT INTO DOCTORS (id, medical_license_number)
-VALUES (1, 'MED12345');
+VALUES (2, 'MED12345');
 INSERT INTO DOCTORS (id, medical_license_number)
-VALUES (2, 'MED54321');
+VALUES (5, 'MED54321');
 
 -- Inicialización de ADMINISTRATIVE
 INSERT INTO ADMINISTRATIVE (id, position, department)
@@ -222,18 +222,22 @@ VALUES (2, 'Control de hipertensión', 'Seguimiento de presión arterial', TIMES
         TIMESTAMP '2023-04-02 23:59:59', 2);
 
 -- Inicialización de MEDICAL_APPOINTMENTS
-INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id,
-                                  medical_history_id)
-VALUES (1, 1, 1, TIMESTAMP '2023-03-01 09:00:00', 1, 1);
-INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id,
-                                  medical_history_id)
-VALUES (2, 2, 2, TIMESTAMP '2023-03-02 10:00:00', 2, 2);
+INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id, medical_history_id)
+VALUES
+    (3, 2, 1, TIMESTAMP '2025-06-04 09:00:00', 1, 1),
+    (4, 2, 2, TIMESTAMP '2025-06-04 21:30:00', 2, 2),
+    (5, 2, 3, TIMESTAMP '2025-06-04 20:00:00', 1, 1),
+    (6, 2, 1, TIMESTAMP '2025-06-05 10:00:00', 1, 1),
+    (7, 2, 2, TIMESTAMP '2025-06-06 20:30:00', 2, 2);
 
 -- Inicialización de MEDICAL_OFFICES
 INSERT INTO MEDICAL_OFFICES (id, medical_appointment_id, name)
-VALUES (1, 1, 'Consultorio 101');
-INSERT INTO MEDICAL_OFFICES (id, medical_appointment_id, name)
-VALUES (2, 2, 'Consultorio 202');
+VALUES
+    (3, 3, 'Consultorio 103'),
+    (4, 4, 'Consultorio 104'),
+    (5, 5, 'Consultorio 105'),
+    (6, 6, 'Consultorio 106'),
+    (7, 7, 'Consultorio 107');
 
 -- Inicialización de LABORATORIES
 INSERT INTO LABORATORIES (id, name, location, telephone)
@@ -280,9 +284,9 @@ INSERT INTO SPECIALITIES (id, name, description)
 VALUES (2, 'Cardiología', 'Especialista en el sistema cardiovascular');
 
 INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
-VALUES (1, 1);
+VALUES (2, 1);
 INSERT INTO DOCTOR_SPECIALITY (doctor_id, speciality_id)
-VALUES (2, 2);
+VALUES (5, 2);
 
 -- Inicialización de MEDICAL_TASKS
 INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible)
@@ -294,13 +298,13 @@ VALUES (3, 'Administración de medicamento', 5, 'Programada', 'Enfermero');
 
 -- Inicialización de APPOINTMENT_TASKS
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
-VALUES (1, 1);
+VALUES (3, 1);
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
-VALUES (1, 2);
+VALUES (4, 2);
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
-VALUES (2, 1);
+VALUES (5, 1);
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
-VALUES (2, 3);
+VALUES (7, 3);
 
 -- Sincronizar secuencias con el valor máximo actual
 
@@ -316,8 +320,8 @@ SELECT setval('type_of_medical_appointments_id_seq', (SELECT MAX(id) FROM type_o
 SELECT setval('appointment_results_id_seq', (SELECT MAX(id) FROM appointment_results));
 SELECT setval('observations_id_seq', (SELECT MAX(id) FROM observations));
 SELECT setval('treatments_id_seq', (SELECT MAX(id) FROM treatments));
-SELECT setval('medical_appointments_id_seq', (SELECT MAX(id) FROM medical_appointments));
-SELECT setval('medical_offices_id_seq', (SELECT MAX(id) FROM medical_offices));
+SELECT setval('medical_appointments_id_seq', 7);
+SELECT setval('medical_offices_id_seq', 7);
 SELECT setval('laboratories_id_seq', (SELECT MAX(id) FROM laboratories));
 SELECT setval('type_of_exams_id_seq', (SELECT MAX(id) FROM type_of_exams));
 SELECT setval('examination_results_id_seq', (SELECT MAX(id) FROM examination_results));

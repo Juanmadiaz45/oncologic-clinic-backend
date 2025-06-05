@@ -1,6 +1,15 @@
-/*package com.oncologic.clinic.service.user;
+package com.oncologic.clinic.service.user;
 
-import com.oncologic.clinic.entity.user.*;
+import com.oncologic.clinic.dto.user.RoleDTO;
+import com.oncologic.clinic.dto.user.response.PermissionResponseDTO;
+import com.oncologic.clinic.dto.user.response.RoleResponseDTO;
+import com.oncologic.clinic.entity.user.Permission;
+import com.oncologic.clinic.entity.user.Role;
+import com.oncologic.clinic.entity.user.RolePermission;
+import com.oncologic.clinic.exception.runtime.user.PermissionNotFoundException;
+import com.oncologic.clinic.exception.runtime.user.RoleNotFoundException;
+import com.oncologic.clinic.mapper.user.PermissionMapper;
+import com.oncologic.clinic.mapper.user.RoleMapper;
 import com.oncologic.clinic.repository.user.PermissionRepository;
 import com.oncologic.clinic.repository.user.RolePermissionRepository;
 import com.oncologic.clinic.repository.user.RoleRepository;
@@ -33,258 +42,342 @@ public class RoleServiceTest {
     @Mock
     private UserRoleRepository userRoleRepository;
 
+    @Mock
+    private RoleMapper roleMapper;
+
+    @Mock
+    private PermissionMapper permissionMapper;
+
     @InjectMocks
     private RoleServiceImpl roleServiceImpl;
 
     @Test
     void createRole_WhenPermissionsExist_ReturnsSavedRole() {
         // Arrange
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("ADMIN");
+        roleDTO.setPermissionIds(Set.of(1L, 2L));
+
         Role role = new Role();
         role.setId(1L);
         role.setName("ADMIN");
+        role.setRolePermissions(new HashSet<>());
 
-        Permission permission1 = new Permission(1L, "READ_PRIVILEGES", new HashSet<>());
-        Permission permission2 = new Permission(2L, "WRITE_PRIVILEGES", new HashSet<>());
+        Permission permission1 = new Permission();
+        permission1.setId(1L);
+        permission1.setName("READ_PRIVILEGES");
 
-        Set<Long> permissionIds = new HashSet<>(Arrays.asList(1L, 2L));
+        Permission permission2 = new Permission();
+        permission2.setId(2L);
+        permission2.setName("WRITE_PRIVILEGES");
+
         List<Permission> permissions = Arrays.asList(permission1, permission2);
 
-        when(permissionRepository.findAllById(permissionIds)).thenReturn(permissions);
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(1L);
+        roleResponseDTO.setName("ADMIN");
+
+        when(roleMapper.roleDtoToRole(roleDTO)).thenReturn(role);
+        when(permissionRepository.findAllById(roleDTO.getPermissionIds())).thenReturn(permissions);
         when(roleRepository.save(any(Role.class))).thenReturn(role);
+        when(roleMapper.roleToRoleResponseDto(role)).thenReturn(roleResponseDTO);
 
         // Act
-        Role result = roleServiceImpl.createRole(role, permissionIds);
+        RoleResponseDTO result = roleServiceImpl.createRole(roleDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals("ADMIN", result.getName());
 
-        verify(permissionRepository, times(1)).findAllById(permissionIds);
-        verify(roleRepository, times(1)).save(role);
+        verify(roleMapper).roleDtoToRole(roleDTO);
+        verify(permissionRepository).findAllById(roleDTO.getPermissionIds());
+        verify(roleRepository, times(2)).save(role);
+        verify(roleMapper).roleToRoleResponseDto(role);
     }
 
     @Test
     void createRole_WhenPermissionIdsIsEmpty_ThrowsIllegalArgumentException() {
         // Arrange
-        Role role = new Role();
-        role.setId(1L);
-        role.setName("ADMIN");
-
-        Set<Long> permissionIds = new HashSet<>();
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("ADMIN");
+        roleDTO.setPermissionIds(new HashSet<>());
 
         // Act & Assert
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> roleServiceImpl.createRole(role, permissionIds));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.createRole(roleDTO));
 
-        assertEquals("Un rol debe tener al menos un permiso", exception.getMessage());
+        assertEquals("A role must have at least one permission", exception.getMessage());
         verify(permissionRepository, never()).findAllById(any());
         verify(roleRepository, never()).save(any());
-        verify(rolePermissionRepository, never()).save(any());
     }
 
     @Test
     void createRole_WhenNonExistentPermissionIdsProvided_ThrowsIllegalArgumentException() {
         // Arrange
-        Role inputRole = new Role();
-        inputRole.setName("GUEST");
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("GUEST");
+        roleDTO.setPermissionIds(Set.of(99L, 100L));
 
-        Set<Long> nonExistentPermissionIds = Set.of(99L, 100L);
-
-        when(permissionRepository.findAllById(nonExistentPermissionIds)).thenReturn(Collections.emptyList());
+        when(permissionRepository.findAllById(roleDTO.getPermissionIds())).thenReturn(Collections.emptyList());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> roleServiceImpl.createRole(inputRole, nonExistentPermissionIds));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.createRole(roleDTO));
 
-        assertEquals("Los permisos proporcionados no existen", exception.getMessage());
+        assertEquals("One or more provided permissions do not exist", exception.getMessage());
 
-        verify(permissionRepository).findAllById(nonExistentPermissionIds);
+        verify(permissionRepository).findAllById(roleDTO.getPermissionIds());
         verify(roleRepository, never()).save(any());
-        verify(rolePermissionRepository, never()).save(any());
     }
 
     @Test
     public void updateRole_WhenPermissionIdsIsNull_ShouldThrowIllegalArgumentException() {
         // Arrange
-        Role role = new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>());
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setPermissionIds(null);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> roleServiceImpl.updateRole(role, null));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.updateRole(1L, roleDTO));
 
-        assertEquals("Un rol debe tener al menos un permiso", exception.getMessage());
+        assertEquals("A role must have at least one permission", exception.getMessage());
+        verify(roleRepository, never()).findById(anyLong());
     }
 
     @Test
     public void updateRole_WhenPermissionIdsIsEmpty_ShouldThrowIllegalArgumentException() {
         // Arrange
-        Role role = new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>());
-        Set<Long> permissionIds = new HashSet<>();
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setPermissionIds(new HashSet<>());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> roleServiceImpl.updateRole(role, permissionIds));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.updateRole(1L, roleDTO));
 
-        assertEquals("Un rol debe tener al menos un permiso", exception.getMessage());
+        assertEquals("A role must have at least one permission", exception.getMessage());
+        verify(roleRepository, never()).findById(anyLong());
     }
 
     @Test
-    public void updateRole_WhenRoleDoesNotExist_ShouldThrowRuntimeException() {
+    public void updateRole_WhenRoleDoesNotExist_ShouldThrowRoleNotFoundException() {
         // Arrange
-        Role role = new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>());
-        Set<Long> permissionIds = Set.of(1L, 2L);
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("ADMIN");
+        roleDTO.setPermissionIds(Set.of(1L, 2L));
 
-        when(roleRepository.findById(role.getId())).thenReturn(Optional.empty());
+        when(roleRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.updateRole(role, permissionIds));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.updateRole(1L, roleDTO));
 
-        assertEquals("Rol no encontrado", exception.getMessage());
+        assertEquals("Role not found with id: 1", exception.getMessage());
+        verify(roleRepository).findById(1L);
     }
 
     @Test
     public void updateRole_WhenPermissionsDoNotExist_ShouldThrowIllegalArgumentException() {
         // Arrange
-        Role role = new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>());
-        Set<Long> permissionIds = Set.of(1L, 2L);
-        Role existingRole = new Role(1L, "OLD_ADMIN", new HashSet<>(), new HashSet<>());
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("ADMIN");
+        roleDTO.setPermissionIds(Set.of(1L, 2L));
 
-        when(roleRepository.findById(role.getId())).thenReturn(Optional.of(existingRole));
-        when(permissionRepository.findAllById(permissionIds)).thenReturn(new ArrayList<>());
+        Role existingRole = new Role();
+        existingRole.setId(1L);
+        existingRole.setName("OLD_ADMIN");
+        existingRole.setRolePermissions(new HashSet<>());
+
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(existingRole));
+        when(permissionRepository.findAllById(roleDTO.getPermissionIds())).thenReturn(new ArrayList<>());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> roleServiceImpl.updateRole(role, permissionIds));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.updateRole(1L, roleDTO));
 
-        assertEquals("Los permisos proporcionados no existen", exception.getMessage());
+        assertEquals("One or more provided permissions do not exist", exception.getMessage());
+        verify(rolePermissionRepository, never()).deleteByRole(any());
     }
 
     @Test
     public void updateRole_WhenValidInput_ShouldUpdateRoleAndPermissions() {
         // Arrange
-        Role role = new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>());
-        Set<Long> permissionIds = Set.of(1L, 2L);
+        RoleDTO roleDTO = new RoleDTO();
+        roleDTO.setName("ADMIN");
+        roleDTO.setPermissionIds(Set.of(1L, 2L));
 
-        Role existingRole = new Role(1L, "OLD_ADMIN", new HashSet<>(), new HashSet<>());
-        Permission permission1 = new Permission(1L, "CREATE", new HashSet<>());
-        Permission permission2 = new Permission(2L, "UPDATE", new HashSet<>());
-        Set<Permission> permissions = Set.of(permission1, permission2);
+        Role existingRole = new Role();
+        existingRole.setId(1L);
+        existingRole.setName("OLD_ADMIN");
+        existingRole.setRolePermissions(new HashSet<>());
 
-        when(roleRepository.findById(role.getId())).thenReturn(Optional.of(existingRole));
-        when(permissionRepository.findAllById(permissionIds)).thenReturn(new ArrayList<>(permissions));
+        Permission permission1 = new Permission();
+        permission1.setId(1L);
+        permission1.setName("CREATE");
+
+        Permission permission2 = new Permission();
+        permission2.setId(2L);
+        permission2.setName("UPDATE");
+
+        List<Permission> permissions = Arrays.asList(permission1, permission2);
+
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(1L);
+        roleResponseDTO.setName("ADMIN");
+
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(existingRole));
+        when(permissionRepository.findAllById(roleDTO.getPermissionIds())).thenReturn(permissions);
         when(roleRepository.save(existingRole)).thenReturn(existingRole);
+        when(roleMapper.roleToRoleResponseDto(existingRole)).thenReturn(roleResponseDTO);
 
         // Act
-        Role result = roleServiceImpl.updateRole(role, permissionIds);
+        RoleResponseDTO result = roleServiceImpl.updateRole(1L, roleDTO);
 
         // Assert
         assertNotNull(result);
         assertEquals("ADMIN", result.getName());
 
-        verify(rolePermissionRepository, times(1)).deleteByRole(existingRole);
+        verify(roleMapper).updateRoleFromDto(roleDTO, existingRole);
+        verify(rolePermissionRepository).deleteByRole(existingRole);
+        verify(roleRepository, times(2)).save(existingRole);
+        verify(roleMapper).roleToRoleResponseDto(existingRole);
     }
 
     @Test
-    public void deleteRole_WhenRoleDoesNotExist_ShouldThrowRuntimeException() {
+    public void deleteRole_WhenRoleDoesNotExist_ShouldThrowRoleNotFoundException() {
         // Arrange
         Long roleId = 1L;
         when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.deleteRole(roleId));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.deleteRole(roleId));
 
-        assertEquals("Rol no encontrado", exception.getMessage());
+        assertEquals("Role not found with id: " + roleId, exception.getMessage());
 
         verify(rolePermissionRepository, never()).deleteByRole(any());
         verify(roleRepository, never()).delete(any());
     }
 
     @Test
-    public void deleteRole_WhenRoleHasAssignedUsers_ShouldThrowRuntimeException() {
+    public void deleteRole_WhenRoleHasAssignedUsers_ShouldThrowIllegalStateException() {
         // Arrange
         Long roleId = 1L;
-
-        // Crear un UserRole que represente la relación con un usuario
-        User user = new User();
-        user.setId(1L);
-
-        UserRole userRole = new UserRole();
-        userRole.setUser(user);
-        userRole.setRole(new Role(roleId, "ADMIN", new HashSet<>(), new HashSet<>()));
-
-        // Crear el rol con un UserRole asignado (que indica que tiene usuarios)
-        Role role = new Role(roleId, "ADMIN", new HashSet<>(), // Set vacío de RolePermission
-                new HashSet<>(Set.of(userRole)) // Set con un UserRole
-        );
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName("ADMIN");
+        role.setRolePermissions(new HashSet<>());
+        role.setUserRoles(new HashSet<>());
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-        when(userRoleRepository.existsByRoleId(roleId)).thenReturn(true); // Mock para simular que hay usuarios
+        when(userRoleRepository.existsByRoleId(roleId)).thenReturn(true);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.deleteRole(roleId));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> roleServiceImpl.deleteRole(roleId));
 
-        assertEquals("No se puede eliminar el rol porque tiene usuarios asignados", exception.getMessage());
-        verify(roleRepository, times(1)).findById(roleId);
-        verify(userRoleRepository, times(1)).existsByRoleId(roleId); // Verificar que se chequeó
-        verifyNoMoreInteractions(rolePermissionRepository);
+        assertEquals("The role cannot be deleted because it has users assigned to it.", exception.getMessage());
+        verify(roleRepository).findById(roleId);
+        verify(userRoleRepository).existsByRoleId(roleId);
+        verify(rolePermissionRepository, never()).deleteByRole(any());
+        verify(roleRepository, never()).delete(any());
     }
 
     @Test
     public void deleteRole_WhenValidRoleWithoutUsers_ShouldDeleteRoleAndPermissions() {
         // Arrange
         Long roleId = 1L;
-        Role role = new Role(roleId, "ADMIN", new HashSet<>(), new HashSet<>());
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName("ADMIN");
+        role.setRolePermissions(new HashSet<>());
+
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-        doNothing().when(rolePermissionRepository).deleteByRole(role);
-        doNothing().when(roleRepository).delete(role);
+        when(userRoleRepository.existsByRoleId(roleId)).thenReturn(false);
 
         // Act
         roleServiceImpl.deleteRole(roleId);
 
         // Assert
-        verify(roleRepository, times(1)).findById(roleId);
-        verify(rolePermissionRepository, times(1)).deleteByRole(role);
-        verify(roleRepository, times(1)).delete(role);
+        verify(roleRepository).findById(roleId);
+        verify(userRoleRepository).existsByRoleId(roleId);
+        verify(rolePermissionRepository).deleteByRole(role);
+        verify(roleRepository).delete(role);
     }
 
     @Test
     public void getRoleById_WhenRoleExists_ShouldReturnRole() {
         // Arrange
         Long roleId = 1L;
-        Role expectedRole = new Role(roleId, "ADMIN", new HashSet<>(), new HashSet<>());
-        when(roleRepository.findById(roleId)).thenReturn(Optional.of(expectedRole));
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName("ADMIN");
+
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(roleId);
+        roleResponseDTO.setName("ADMIN");
+
+        when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
+        when(roleMapper.roleToRoleResponseDto(role)).thenReturn(roleResponseDTO);
 
         // Act
-        Role result = roleServiceImpl.getRoleById(roleId);
+        RoleResponseDTO result = roleServiceImpl.getRoleById(roleId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(expectedRole, result);
-        verify(roleRepository, times(1)).findById(roleId);
+        assertEquals("ADMIN", result.getName());
+        verify(roleRepository).findById(roleId);
+        verify(roleMapper).roleToRoleResponseDto(role);
     }
 
     @Test
-    public void getRoleById_WhenRoleDoesNotExist_ShouldThrowRuntimeException() {
+    public void getRoleById_WhenRoleDoesNotExist_ShouldThrowRoleNotFoundException() {
         // Arrange
         Long roleId = 1L;
         when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.getRoleById(roleId));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.getRoleById(roleId));
 
-        assertEquals("Rol no encontrado", exception.getMessage());
-        verify(roleRepository, times(1)).findById(roleId);
+        assertEquals("Role not found with id: " + roleId, exception.getMessage());
+        verify(roleRepository).findById(roleId);
     }
 
     @Test
     public void getAllRoles_WhenRolesExist_ShouldReturnRoleList() {
         // Arrange
-        List<Role> expectedRoles = Arrays.asList(new Role(1L, "ADMIN", new HashSet<>(), new HashSet<>()), new Role(2L, "USER", new HashSet<>(), new HashSet<>()));
-        when(roleRepository.findAll()).thenReturn(expectedRoles);
+        Role role1 = new Role();
+        role1.setId(1L);
+        role1.setName("ADMIN");
+
+        Role role2 = new Role();
+        role2.setId(2L);
+        role2.setName("USER");
+
+        List<Role> roles = Arrays.asList(role1, role2);
+
+        RoleResponseDTO roleResponseDTO1 = new RoleResponseDTO();
+        roleResponseDTO1.setId(1L);
+        roleResponseDTO1.setName("ADMIN");
+
+        RoleResponseDTO roleResponseDTO2 = new RoleResponseDTO();
+        roleResponseDTO2.setId(2L);
+        roleResponseDTO2.setName("USER");
+
+        when(roleRepository.findAll()).thenReturn(roles);
+        when(roleMapper.roleToRoleResponseDto(role1)).thenReturn(roleResponseDTO1);
+        when(roleMapper.roleToRoleResponseDto(role2)).thenReturn(roleResponseDTO2);
 
         // Act
-        List<Role> result = roleServiceImpl.getAllRoles();
+        List<RoleResponseDTO> result = roleServiceImpl.getAllRoles();
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(expectedRoles, result);
-        verify(roleRepository, times(1)).findAll();
+        assertEquals("ADMIN", result.get(0).getName());
+        assertEquals("USER", result.get(1).getName());
+        verify(roleRepository).findAll();
+        verify(roleMapper, times(2)).roleToRoleResponseDto(any(Role.class));
     }
 
     @Test
@@ -293,58 +386,75 @@ public class RoleServiceTest {
         when(roleRepository.findAll()).thenReturn(Collections.emptyList());
 
         // Act
-        List<Role> result = roleServiceImpl.getAllRoles();
+        List<RoleResponseDTO> result = roleServiceImpl.getAllRoles();
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(roleRepository, times(1)).findAll();
+        verify(roleRepository).findAll();
     }
 
     @Test
     void addPermissionsToRole_WhenRoleExists_ShouldAddPermissionsAndReturnUpdatedRole() {
         // Arrange
         Long roleId = 1L;
-        Set<Long> permissionIds = new HashSet<>(Arrays.asList(10L, 20L));
+        Set<Long> permissionIds = Set.of(10L, 20L);
 
         Role role = new Role();
         role.setId(roleId);
         role.setName("ADMIN");
+        role.setRolePermissions(new HashSet<>());
 
-        Permission permission1 = new Permission(10L, "READ", new HashSet<>());
-        Permission permission2 = new Permission(20L, "WRITE", new HashSet<>());
-        Set<Permission> permissions = new HashSet<>(Arrays.asList(permission1, permission2));
+        Permission permission1 = new Permission();
+        permission1.setId(10L);
+        permission1.setName("READ");
+
+        Permission permission2 = new Permission();
+        permission2.setId(20L);
+        permission2.setName("WRITE");
+
+        List<Permission> permissions = Arrays.asList(permission1, permission2);
+
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(roleId);
+        roleResponseDTO.setName("ADMIN");
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-        when(permissionRepository.findAllById(permissionIds)).thenReturn(new ArrayList<>(permissions));
-        when(roleRepository.save(any(Role.class))).thenReturn(role);
+        when(permissionRepository.findAllById(permissionIds)).thenReturn(permissions);
+        when(rolePermissionRepository.existsById(any())).thenReturn(false);
+        when(roleRepository.save(role)).thenReturn(role);
+        when(roleMapper.roleToRoleResponseDto(role)).thenReturn(roleResponseDTO);
 
         // Act
-        Role updatedRole = roleServiceImpl.addPermissionsToRole(roleId, permissionIds);
+        RoleResponseDTO updatedRole = roleServiceImpl.addPermissionsToRole(roleId, permissionIds);
 
         // Assert
         assertNotNull(updatedRole);
+        assertEquals("ADMIN", updatedRole.getName());
         verify(roleRepository).findById(roleId);
         verify(permissionRepository).findAllById(permissionIds);
+        verify(roleRepository).save(role);
+        verify(roleMapper).roleToRoleResponseDto(role);
     }
 
     @Test
-    public void addPermissionsToRole_WhenRoleNotFound_ShouldThrowRuntimeException() {
+    public void addPermissionsToRole_WhenRoleNotFound_ShouldThrowRoleNotFoundException() {
         // Arrange
         Long roleId = 1L;
         Set<Long> permissionIds = Set.of(1L, 2L);
         when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.addPermissionsToRole(roleId, permissionIds));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.addPermissionsToRole(roleId, permissionIds));
 
-        assertEquals("Rol no encontrado", exception.getMessage());
-        verify(roleRepository, times(1)).findById(roleId);
+        assertEquals("Role not found with id: " + roleId, exception.getMessage());
+        verify(roleRepository).findById(roleId);
         verifyNoInteractions(permissionRepository, rolePermissionRepository);
     }
 
     @Test
-    void addPermissionsToRole_WhenNoPermissionsAreProvided_ShouldNotSaveAnyRolePermission() {
+    void addPermissionsToRole_WhenNoPermissionsAreProvided_ShouldThrowIllegalArgumentException() {
         // Arrange
         Long roleId = 1L;
         Set<Long> permissionIds = new HashSet<>();
@@ -354,126 +464,238 @@ public class RoleServiceTest {
         role.setName("USER");
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-        when(roleRepository.save(any(Role.class))).thenReturn(role);
 
-        // Act
-        Role updatedRole = roleServiceImpl.addPermissionsToRole(roleId, permissionIds);
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> roleServiceImpl.addPermissionsToRole(roleId, permissionIds));
 
-        // Assert
-        assertNotNull(updatedRole);
+        assertEquals("You must provide at least one permit", exception.getMessage());
         verify(roleRepository).findById(roleId);
-        verify(permissionRepository).findAllById(permissionIds);
-        verify(rolePermissionRepository, never()).save(any(RolePermission.class));
-        verify(roleRepository).save(role);
+        verifyNoInteractions(permissionRepository, rolePermissionRepository);
     }
 
     @Test
     void removePermissionsFromRole_WhenRoleExistsAndHasRemainingPermissions_ShouldRemovePermissions() {
         // Arrange
         Long roleId = 1L;
-        Set<Long> permissionIds = new HashSet<>(Arrays.asList(10L, 20L));
+        Set<Long> permissionIds = Set.of(10L, 20L);
 
-        Role role = getMockRole(1L);
+        Role role = getMockRole(roleId);
+        RoleResponseDTO roleResponseDTO = new RoleResponseDTO();
+        roleResponseDTO.setId(roleId);
+        roleResponseDTO.setName("ADMIN");
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-
-        // Mockear la existencia de los permisos
         when(roleRepository.save(role)).thenReturn(role);
+        when(roleMapper.roleToRoleResponseDto(role)).thenReturn(roleResponseDTO);
 
         // Act
-        Role updatedRole = roleServiceImpl.removePermissionsFromRole(roleId, permissionIds);
+        RoleResponseDTO updatedRole = roleServiceImpl.removePermissionsFromRole(roleId, permissionIds);
 
         // Assert
         assertNotNull(updatedRole);
+        assertEquals("ADMIN", updatedRole.getName());
         verify(roleRepository).findById(roleId);
+        verify(rolePermissionRepository).deleteAll(any());
         verify(roleRepository).save(role);
+        verify(roleMapper).roleToRoleResponseDto(role);
     }
 
     @Test
-    public void removePermissionsFromRole_WhenRoleDoesNotExist_ShouldThrowRuntimeException() {
+    public void removePermissionsFromRole_WhenRoleDoesNotExist_ShouldThrowRoleNotFoundException() {
         // Arrange
         Long roleId = 99L;
-        Set<Long> permissionIds = new HashSet<>(Arrays.asList(1L, 2L));
+        Set<Long> permissionIds = Set.of(1L, 2L);
 
         when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
 
-        assertEquals("Rol no encontrado", exception.getMessage());
-        verify(roleRepository, times(1)).findById(roleId);
-        verify(rolePermissionRepository, never()).countByRole(any());
-        verify(rolePermissionRepository, never()).deleteById(any());
-        verify(roleRepository, never()).save(any());
+        assertEquals("Role not found with id: " + roleId, exception.getMessage());
+        verify(roleRepository).findById(roleId);
+        verifyNoInteractions(rolePermissionRepository);
     }
 
     @Test
     void removePermissionsFromRole_WhenRemovalWouldLeaveRoleWithoutPermissions_ShouldThrowIllegalStateException() {
         // Arrange
         Long roleId = 1L;
-        Set<Long> permissionIds = new HashSet<>(Arrays.asList(10L, 20L, 30L));
+        Set<Long> permissionIds = Set.of(10L, 20L, 30L);
 
-        Role mockRole = getMockRole(roleId);
+        Role role = getMockRole(roleId);
 
-        when(roleRepository.findById(roleId)).thenReturn(Optional.of(mockRole));
+        when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
 
-        assertEquals("Un rol debe tener al menos un permiso", exception.getMessage());
-
-        // Verificaciones
-        verify(roleRepository, times(1)).findById(roleId);
-        // Ya no verificamos existsById porque la nueva implementación no lo usa
+        assertEquals("A role must have at least one permission", exception.getMessage());
+        verify(roleRepository).findById(roleId);
+        verify(rolePermissionRepository, never()).deleteAll(any());
         verify(roleRepository, never()).save(any());
     }
 
-    private static Role getMockRole(Long roleId) {
-        Role mockRole = new Role();
-        mockRole.setId(roleId);
-        mockRole.setName("ADMIN");
+    @Test
+    public void removePermissionsFromRole_WhenPermissionToRemoveDoesNotExist_ShouldThrowPermissionNotFoundException() {
+        // Arrange
+        Long roleId = 1L;
+        Set<Long> permissionIds = Set.of(99L);
 
-        // Crear permisos y asociaciones
-        Permission perm1 = new Permission();
-        perm1.setId(10L);
-        Permission perm2 = new Permission();
-        perm2.setId(20L);
-        Permission perm3 = new Permission();
-        perm3.setId(30L);
+        Role role = getMockRole(roleId);
 
-        RolePermission rp1 = new RolePermission();
-        rp1.setRole(mockRole);
-        rp1.setPermission(perm1);
+        when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
 
-        RolePermission rp2 = new RolePermission();
-        rp2.setRole(mockRole);
-        rp2.setPermission(perm2);
+        // Act & Assert
+        PermissionNotFoundException exception = assertThrows(PermissionNotFoundException.class,
+                () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
 
-        RolePermission rp3 = new RolePermission();
-        rp3.setRole(mockRole);
-        rp3.setPermission(perm3);
-
-        mockRole.setRolePermissions(new HashSet<>(Arrays.asList(rp1, rp2, rp3)));
-        return mockRole;
+        assertEquals("One or more permissions are not associated with the role", exception.getMessage());
+        verify(roleRepository).findById(roleId);
+        verify(rolePermissionRepository, never()).deleteAll(any());
     }
 
     @Test
-    public void removePermissionsFromRole_WhenPermissionToRemoveDoesNotExist_ShouldThrowException() {
+    public void getPermissionsByRoleId_WhenPermissionsExist_ShouldReturnPermissionList() {
         // Arrange
         Long roleId = 1L;
-        Long nonExistentPermissionId = 99L;
-        Set<Long> permissionIds = Set.of(nonExistentPermissionId);
+        Permission permission1 = new Permission();
+        permission1.setId(1L);
+        permission1.setName("READ");
 
-        Role mockRole = getMockRole(roleId);
+        Permission permission2 = new Permission();
+        permission2.setId(2L);
+        permission2.setName("WRITE");
 
-        when(roleRepository.findById(roleId)).thenReturn(Optional.of(mockRole));
+        RolePermission rp1 = new RolePermission();
+        rp1.setPermission(permission1);
+
+        RolePermission rp2 = new RolePermission();
+        rp2.setPermission(permission2);
+
+        List<RolePermission> rolePermissions = Arrays.asList(rp1, rp2);
+
+        PermissionResponseDTO permissionResponseDTO1 = new PermissionResponseDTO();
+        permissionResponseDTO1.setId(1L);
+        permissionResponseDTO1.setName("READ");
+
+        PermissionResponseDTO permissionResponseDTO2 = new PermissionResponseDTO();
+        permissionResponseDTO2.setId(2L);
+        permissionResponseDTO2.setName("WRITE");
+
+        when(rolePermissionRepository.findPermissionsByRoleId(roleId)).thenReturn(rolePermissions);
+        when(permissionMapper.permissionToPermissionResponseDto(permission1)).thenReturn(permissionResponseDTO1);
+        when(permissionMapper.permissionToPermissionResponseDto(permission2)).thenReturn(permissionResponseDTO2);
+
+        // Act
+        List<PermissionResponseDTO> result = roleServiceImpl.getPermissionsByRoleId(roleId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("READ", result.get(0).getName());
+        assertEquals("WRITE", result.get(1).getName());
+        verify(rolePermissionRepository).findPermissionsByRoleId(roleId);
+        verify(permissionMapper, times(2)).permissionToPermissionResponseDto(any(Permission.class));
+    }
+
+    @Test
+    public void getRoleEntityById_WhenRoleExists_ShouldReturnRole() {
+        // Arrange
+        Long roleId = 1L;
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName("ADMIN");
+
+        when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
+
+        // Act
+        Role result = roleServiceImpl.getRoleEntityById(roleId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("ADMIN", result.getName());
+        verify(roleRepository).findById(roleId);
+    }
+
+    @Test
+    public void getRoleEntityById_WhenRoleDoesNotExist_ShouldThrowRoleNotFoundException() {
+        // Arrange
+        Long roleId = 1L;
+        when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> roleServiceImpl.removePermissionsFromRole(roleId, permissionIds));
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class,
+                () -> roleServiceImpl.getRoleEntityById(roleId));
 
-        assertEquals("Uno o más permisos no están asociados al rol", exception.getMessage());
+        assertEquals("Role not found with id: " + roleId, exception.getMessage());
         verify(roleRepository).findById(roleId);
-        verify(rolePermissionRepository, never()).deleteById(any());
     }
-}*/
+
+    @Test
+    public void getAllRoleEntities_WhenRolesExist_ShouldReturnRoleList() {
+        // Arrange
+        Role role1 = new Role();
+        role1.setId(1L);
+        role1.setName("ADMIN");
+
+        Role role2 = new Role();
+        role2.setId(2L);
+        role2.setName("USER");
+
+        List<Role> roles = Arrays.asList(role1, role2);
+
+        when(roleRepository.findAll()).thenReturn(roles);
+
+        // Act
+        List<Role> result = roleServiceImpl.getAllRoleEntities();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("ADMIN", result.get(0).getName());
+        assertEquals("USER", result.get(1).getName());
+        verify(roleRepository).findAll();
+    }
+
+    @Test
+    public void getAllRoleEntities_WhenNoRolesExist_ShouldReturnEmptyList() {
+        // Arrange
+        when(roleRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Role> result = roleServiceImpl.getAllRoleEntities();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(roleRepository).findAll();
+    }
+
+    private static Role getMockRole(Long roleId) {
+        Role role = new Role();
+        role.setId(roleId);
+        role.setName("ADMIN");
+
+        Permission perm1 = new Permission();
+        perm1.setId(10L);
+        perm1.setName("READ");
+
+        Permission perm2 = new Permission();
+        perm2.setId(20L);
+        perm2.setName("WRITE");
+
+        Permission perm3 = new Permission();
+        perm3.setId(30L);
+        perm3.setName("DELETE");
+
+        RolePermission rp1 = new RolePermission(new RolePermission.RolePermissionId(roleId, 10L), role, perm1);
+        RolePermission rp2 = new RolePermission(new RolePermission.RolePermissionId(roleId, 20L), role, perm2);
+        RolePermission rp3 = new RolePermission(new RolePermission.RolePermissionId(roleId, 30L), role, perm3);
+
+        role.setRolePermissions(new HashSet<>(Arrays.asList(rp1, rp2, rp3)));
+        return role;
+    }
+}
