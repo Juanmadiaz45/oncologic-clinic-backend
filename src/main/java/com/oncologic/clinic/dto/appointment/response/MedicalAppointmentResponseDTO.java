@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -20,6 +19,7 @@ public class MedicalAppointmentResponseDTO {
     private LocalDateTime appointmentDate;
     private Long treatmentId;
     private Long medicalHistoryId;
-    private List<Long> medicalOfficeIds;
+    private Long medicalOfficeId;
     private Set<Long> medicalTaskIds;
 }
+

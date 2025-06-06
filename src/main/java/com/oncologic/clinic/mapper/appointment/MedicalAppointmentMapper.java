@@ -11,7 +11,6 @@ import com.oncologic.clinic.entity.patient.Treatment;
 import com.oncologic.clinic.entity.personal.Doctor;
 import org.mapstruct.*;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +22,7 @@ public interface MedicalAppointmentMapper {
     @Mapping(target = "typeOfMedicalAppointment", source = "typeOfMedicalAppointmentId", qualifiedByName = "mapTypeOfAppointment")
     @Mapping(target = "treatment", source = "treatmentId", qualifiedByName = "mapTreatment")
     @Mapping(target = "medicalHistory", source = "medicalHistoryId", qualifiedByName = "mapMedicalHistory")
-    @Mapping(target = "medicalOffices", ignore = true)
+    @Mapping(target = "medicalOffice", source = "medicalOfficeId", qualifiedByName = "mapMedicalOffice") // CAMBIO
     @Mapping(target = "medicalTasks", ignore = true)
     MedicalAppointment toEntity(MedicalAppointmentDTO dto);
 
@@ -31,18 +30,16 @@ public interface MedicalAppointmentMapper {
     @Mapping(target = "typeOfMedicalAppointmentId", source = "typeOfMedicalAppointment.id")
     @Mapping(target = "treatmentId", source = "treatment.id")
     @Mapping(target = "medicalHistoryId", source = "medicalHistory.id")
-    @Mapping(target = "medicalOfficeIds", source = "medicalOffices", qualifiedByName = "mapMedicalOfficeIds")
+    @Mapping(target = "medicalOfficeId", source = "medicalOffice.id") // CAMBIO
     @Mapping(target = "medicalTaskIds", source = "medicalTasks", qualifiedByName = "mapMedicalTaskIds")
     MedicalAppointmentResponseDTO toDto(MedicalAppointment entity);
 
-    @Named("mapMedicalOfficeIds")
-    default List<Long> mapMedicalOfficeIds(List<MedicalOffice> medicalOffices) {
-        if (medicalOffices == null || medicalOffices.isEmpty()) {
-            return null;
-        }
-        return medicalOffices.stream()
-                .map(MedicalOffice::getId)
-                .collect(Collectors.toList());
+    @Named("mapMedicalOffice")
+    default MedicalOffice mapMedicalOffice(Long officeId) {
+        if (officeId == null) return null;
+        MedicalOffice office = new MedicalOffice();
+        office.setId(officeId);
+        return office;
     }
 
     @Named("mapMedicalTaskIds")
@@ -93,7 +90,7 @@ public interface MedicalAppointmentMapper {
     @Mapping(target = "typeOfMedicalAppointment", ignore = true)
     @Mapping(target = "treatment", ignore = true)
     @Mapping(target = "medicalHistory", ignore = true)
-    @Mapping(target = "medicalOffices", ignore = true)
+    @Mapping(target = "medicalOffice", ignore = true)
     @Mapping(target = "medicalTasks", ignore = true)
     void updateFromDto(MedicalAppointmentDTO dto, @MappingTarget MedicalAppointment entity);
 }

@@ -111,8 +111,8 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     }
 
     private AppointmentSummaryDTO mapToAppointmentSummary(MedicalAppointment appointment) {
-        String officeName = appointment.getMedicalOffices().isEmpty() ?
-                "No asignado" : appointment.getMedicalOffices().get(0).getName();
+        String officeName = appointment.getMedicalOffice() == null ?
+                "No asignado" : appointment.getMedicalOffice().getName();
 
         return AppointmentSummaryDTO.builder()
                 .id(appointment.getId())
@@ -125,8 +125,8 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     }
 
     private NextAppointmentDTO mapToNextAppointment(MedicalAppointment appointment) {
-        String officeName = appointment.getMedicalOffices().isEmpty() ?
-                "No asignado" : appointment.getMedicalOffices().get(0).getName();
+        String officeName = appointment.getMedicalOffice() == null ?
+                "No asignado" : appointment.getMedicalOffice().getName();
 
         return NextAppointmentDTO.builder()
                 .time(appointment.getAppointmentDate().format(DateTimeFormatter.ofPattern("HH:mm")))

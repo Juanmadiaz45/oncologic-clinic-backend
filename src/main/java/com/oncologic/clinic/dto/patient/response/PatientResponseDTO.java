@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PatientResponseDTO {
     private Long id;
+    private String idNumber;
     private UserResponseDTO userData;
     private String name;
     private String birthDate;

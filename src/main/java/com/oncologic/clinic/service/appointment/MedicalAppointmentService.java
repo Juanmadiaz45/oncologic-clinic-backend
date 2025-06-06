@@ -5,6 +5,7 @@ import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseD
 import com.oncologic.clinic.dto.appointment.response.MedicalTaskResponseDTO;
 import com.oncologic.clinic.dto.patient.response.ObservationResponseDTO;
 import com.oncologic.clinic.dto.patient.response.TreatmentResponseDTO;
+import com.oncologic.clinic.entity.appointment.MedicalAppointment;
 
 import java.util.List;
 import java.util.Map;
@@ -22,4 +23,8 @@ public interface MedicalAppointmentService {
     Map<String, Object> getAppointmentDetails(Long appointmentId);
     void startAppointment(Long appointmentId);
     void completeAppointment(Long appointmentId);
+
+    List<MedicalAppointmentResponseDTO> getBaseAppointments();
+
+    MedicalAppointment getMedicalAppointmentEntityById(Long id);
 }
