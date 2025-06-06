@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -12,5 +14,7 @@ import lombok.NoArgsConstructor;
 public class MedicalOfficeResponseDTO {
     private Long id;
     private String name;
-    private Long medicalAppointmentId;
+    private String location;
+    private String equipment;
+    private List<Long> medicalAppointmentIds;
 }

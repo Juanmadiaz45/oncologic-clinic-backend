@@ -2,7 +2,6 @@ package com.oncologic.clinic.service.appointment.impl;
 
 import com.oncologic.clinic.dto.appointment.MedicalTaskDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalTaskResponseDTO;
-import com.oncologic.clinic.entity.appointment.MedicalAppointment;
 import com.oncologic.clinic.entity.appointment.MedicalTask;
 import com.oncologic.clinic.exception.runtime.appointment.MedicalTaskNotFoundException;
 import com.oncologic.clinic.mapper.appointment.MedicalTaskMapper;
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,24 +22,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MedicalTaskServiceImpl implements MedicalTaskService {
 
-    private final MedicalTaskRepository repository;
+    private final MedicalTaskRepository medicalTaskRepository;
     private final MedicalAppointmentRepository appointmentRepository;
     private final MedicalTaskMapper mapper;
 
     @Override
     @Transactional(readOnly = true)
     public MedicalTaskResponseDTO getMedicalTaskById(Long id) {
-        MedicalTask task = repository.findById(id)
-                .orElseThrow(() -> new MedicalTaskNotFoundException(id));
+        MedicalTask task = getMedicalTaskEntityById(id);
         return mapper.toDto(task);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MedicalTaskResponseDTO> getAllMedicalTasks() {
-        return repository.findAll().stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toList());
+        return medicalTaskRepository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -56,13 +51,13 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
                 validateMedicalAppointments(dto.getMedicalAppointmentIds());
             }
 
-            MedicalTask savedTask = repository.save(task);
+            MedicalTask savedTask = medicalTaskRepository.save(task);
 
             if (dto.getMedicalAppointmentIds() != null && !dto.getMedicalAppointmentIds().isEmpty()) {
                 createTaskAppointmentRelations(savedTask.getId(), dto.getMedicalAppointmentIds());
             }
 
-            return buildTaskResponseDTO(savedTask, dto);
+            return buildTaskResponseDTO(savedTask);
 
         } catch (Exception e) {
             log.error("Error creating medical task: {}", e.getMessage(), e);
@@ -82,14 +77,8 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
         log.info("Task {} will be associated with {} appointments", taskId, appointmentIds.size());
     }
 
-    private MedicalTaskResponseDTO buildTaskResponseDTO(MedicalTask savedTask, MedicalTaskDTO originalDto) {
-        return MedicalTaskResponseDTO.builder()
-                .id(savedTask.getId())
-                .description(savedTask.getDescription())
-                .estimatedTime(savedTask.getEstimatedTime())
-                .status(savedTask.getStatus())
-                .responsible(savedTask.getResponsible())
-                .build();
+    private MedicalTaskResponseDTO buildTaskResponseDTO(MedicalTask savedTask) {
+        return MedicalTaskResponseDTO.builder().id(savedTask.getId()).description(savedTask.getDescription()).estimatedTime(savedTask.getEstimatedTime()).status(savedTask.getStatus()).responsible(savedTask.getResponsible()).build();
     }
 
     @Override
@@ -98,8 +87,7 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
         try {
             log.info("Updating medical task with ID: {}", id);
 
-            MedicalTask existing = repository.findById(id)
-                    .orElseThrow(() -> new MedicalTaskNotFoundException(id));
+            MedicalTask existing = getMedicalTaskEntityById(id);
 
             if (dto.getDescription() != null) {
                 existing.setDescription(dto.getDescription());
@@ -114,15 +102,9 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
                 existing.setResponsible(dto.getResponsible());
             }
 
-            MedicalTask savedTask = repository.save(existing);
+            MedicalTask savedTask = medicalTaskRepository.save(existing);
 
-            return MedicalTaskResponseDTO.builder()
-                    .id(savedTask.getId())
-                    .description(savedTask.getDescription())
-                    .estimatedTime(savedTask.getEstimatedTime())
-                    .status(savedTask.getStatus())
-                    .responsible(savedTask.getResponsible())
-                    .build();
+            return MedicalTaskResponseDTO.builder().id(savedTask.getId()).description(savedTask.getDescription()).estimatedTime(savedTask.getEstimatedTime()).status(savedTask.getStatus()).responsible(savedTask.getResponsible()).build();
 
         } catch (MedicalTaskNotFoundException e) {
             throw e;
@@ -135,9 +117,14 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
     @Override
     @Transactional
     public void deleteMedicalTask(Long id) {
-        if (!repository.existsById(id)) {
+        if (!medicalTaskRepository.existsById(id)) {
             throw new MedicalTaskNotFoundException(id);
         }
-        repository.deleteById(id);
+        medicalTaskRepository.deleteById(id);
+    }
+
+    @Override
+    public MedicalTask getMedicalTaskEntityById(Long id) {
+        return medicalTaskRepository.findById(id).orElseThrow(() -> new MedicalTaskNotFoundException(id));
     }
 }

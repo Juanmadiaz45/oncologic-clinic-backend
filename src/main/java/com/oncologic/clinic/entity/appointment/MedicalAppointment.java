@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -22,8 +20,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"medicalOffices", "medicalTasks"})
-@ToString(exclude = {"medicalOffices", "medicalTasks"})
+@EqualsAndHashCode(exclude = {"medicalTasks"})
+@ToString(exclude = {"medicalTasks"})
 public class MedicalAppointment {
 
     @Id
@@ -49,9 +47,9 @@ public class MedicalAppointment {
     @JoinColumn(name = "medical_history_id", nullable = false)
     private MedicalHistory medicalHistory;
 
-    @OneToMany(mappedBy = "medicalAppointment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference("appointment-offices")
-    private List<MedicalOffice> medicalOffices = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medical_office_id")
+    private MedicalOffice medicalOffice;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

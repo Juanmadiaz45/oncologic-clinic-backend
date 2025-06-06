@@ -73,4 +73,12 @@ public class MedicalAppointmentRestController {
         service.deleteMedicalAppointment(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get base medical appointments (templates)")
+    @ApiResponse(responseCode = "200", description = "List of base medical appointments")
+    @GetMapping("/base")
+    public ResponseEntity<List<MedicalAppointmentResponseDTO>> getBaseAppointments() {
+        return ResponseEntity.ok(service.getBaseAppointments());
+    }
+
 }

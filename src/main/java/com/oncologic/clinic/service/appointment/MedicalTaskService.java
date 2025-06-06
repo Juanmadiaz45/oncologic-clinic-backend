@@ -8,8 +8,14 @@ import java.util.List;
 
 public interface MedicalTaskService {
     MedicalTaskResponseDTO getMedicalTaskById(Long id);
+
     List<MedicalTaskResponseDTO> getAllMedicalTasks();
+
     MedicalTaskResponseDTO createMedicalTask(MedicalTaskDTO dto);
+
     MedicalTaskResponseDTO updateMedicalTask(Long id, MedicalTaskDTO dto);
+
     void deleteMedicalTask(Long id);
+
+    MedicalTask getMedicalTaskEntityById(Long id);
 }

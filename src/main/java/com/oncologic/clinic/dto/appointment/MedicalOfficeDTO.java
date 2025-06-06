@@ -11,5 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MedicalOfficeDTO {
     private String name;
-    private Long medicalAppointmentId;
+    private String location;
+    private String equipment;
 }
+

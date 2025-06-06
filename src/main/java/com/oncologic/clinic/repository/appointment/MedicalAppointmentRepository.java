@@ -36,4 +36,11 @@ public interface MedicalAppointmentRepository extends JpaRepository<MedicalAppoi
             Doctor doctor,
             LocalDateTime date
     );
+
+    @Query("SELECT DISTINCT ma FROM MedicalAppointment ma " +
+            "WHERE ma.typeOfMedicalAppointment IS NOT NULL " +
+            "AND YEAR(ma.appointmentDate) = 1990 " +
+            "GROUP BY ma.typeOfMedicalAppointment.id " +
+            "HAVING COUNT(ma.typeOfMedicalAppointment.id) = 1")
+    List<MedicalAppointment> findBaseAppointments();
 }
