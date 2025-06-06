@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Set;
+import java.util.List;
 
 @Repository
 public interface MedicalTaskRepository extends JpaRepository<MedicalTask, Long> {
@@ -15,4 +16,7 @@ public interface MedicalTaskRepository extends JpaRepository<MedicalTask, Long> 
 
     @Query("SELECT COUNT(mt) FROM MedicalTask mt WHERE mt.id IN :taskIds")
     long countByIdIn(@Param("taskIds") Set<Long> taskIds);
+
+    @Query("SELECT mt FROM MedicalTask mt WHERE mt.id IN :ids")
+    List<MedicalTask> findByIds(@Param("ids") List<Long> ids);
 }

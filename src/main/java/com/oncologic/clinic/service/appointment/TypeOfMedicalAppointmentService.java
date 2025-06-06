@@ -7,8 +7,14 @@ import java.util.List;
 
 public interface TypeOfMedicalAppointmentService {
     TypeOfMedicalAppointmentResponseDTO getTypeOfMedicalAppointmentById(Long id);
+
     List<TypeOfMedicalAppointmentResponseDTO> getAllTypesOfMedicalAppointment();
+
     TypeOfMedicalAppointmentResponseDTO createTypeOfMedicalAppointment(TypeOfMedicalAppointmentDTO dto);
+
     TypeOfMedicalAppointmentResponseDTO updateTypeOfMedicalAppointment(Long id, TypeOfMedicalAppointmentDTO dto);
+
     void deleteTypeOfMedicalAppointment(Long id);
+
+    List<TypeOfMedicalAppointmentResponseDTO> getTypesByIds(List<Long> ids);
 }

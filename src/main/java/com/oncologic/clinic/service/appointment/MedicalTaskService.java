@@ -18,4 +18,6 @@ public interface MedicalTaskService {
     void deleteMedicalTask(Long id);
 
     MedicalTask getMedicalTaskEntityById(Long id);
+
+    List<MedicalTaskResponseDTO> getTasksByIds(List<Long> ids);
 }
