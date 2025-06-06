@@ -2,6 +2,9 @@ package com.oncologic.clinic.controller.rest.appointment;
 
 import com.oncologic.clinic.dto.appointment.MedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.MedicalAppointmentResponseDTO;
+import com.oncologic.clinic.dto.appointment.response.MedicalTaskResponseDTO;
+import com.oncologic.clinic.dto.patient.response.ObservationResponseDTO;
+import com.oncologic.clinic.dto.patient.response.TreatmentResponseDTO;
 import com.oncologic.clinic.service.appointment.MedicalAppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Medical Appointments", description = "Operations related to medical appointments")
 @RestController
@@ -72,5 +76,43 @@ public class MedicalAppointmentRestController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteMedicalAppointment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Get appointment tasks")
+    @GetMapping("/{id}/tasks")
+    public ResponseEntity<List<MedicalTaskResponseDTO>> getAppointmentTasks(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAppointmentTasks(id));
+    }
+
+    @Operation(summary = "Get appointment observations")
+    @GetMapping("/{id}/observations")
+    public ResponseEntity<List<ObservationResponseDTO>> getAppointmentObservations(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAppointmentObservations(id));
+    }
+
+    @Operation(summary = "Get appointment treatments")
+    @GetMapping("/{id}/treatments")
+    public ResponseEntity<List<TreatmentResponseDTO>> getAppointmentTreatments(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAppointmentTreatments(id));
+    }
+
+    @Operation(summary = "Get full appointment details")
+    @GetMapping("/{id}/details")
+    public ResponseEntity<Map<String, Object>> getAppointmentDetails(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAppointmentDetails(id));
+    }
+
+    @Operation(summary = "Start appointment")
+    @PatchMapping("/{id}/start")
+    public ResponseEntity<Void> startAppointment(@PathVariable Long id) {
+        service.startAppointment(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Complete appointment")
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<Void> completeAppointment(@PathVariable Long id) {
+        service.completeAppointment(id);
+        return ResponseEntity.ok().build();
     }
 }
