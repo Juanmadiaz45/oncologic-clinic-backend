@@ -23,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -179,7 +181,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional(readOnly = true)
     public List<MedicalTaskResponseDTO> getAppointmentTasks(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         return appointment.getMedicalTasks().stream()
@@ -196,7 +198,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional(readOnly = true)
     public List<ObservationResponseDTO> getAppointmentObservations(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         return appointment.getMedicalHistory().getAppointmentResults().stream()
@@ -213,7 +215,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional(readOnly = true)
     public List<TreatmentResponseDTO> getAppointmentTreatments(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         return appointment.getMedicalHistory().getAppointmentResults().stream()
@@ -241,7 +243,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getAppointmentDetails(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         Map<String, Object> details = new HashMap<>();
@@ -251,8 +253,11 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
         details.put("patientId", appointment.getMedicalHistory().getPatient().getId());
         details.put("doctorName", appointment.getDoctor().getName() + " " + appointment.getDoctor().getLastName());
         details.put("doctorId", appointment.getDoctor().getId());
-        details.put("officeName", appointment.getMedicalOffices().isEmpty() ? "No asignado" :
-                appointment.getMedicalOffices().get(0).getName());
+
+        String officeName = appointment.getMedicalOffice() != null ?
+                appointment.getMedicalOffice().getName() : "No asignado";
+        details.put("officeName", officeName);
+
         details.put("appointmentType", appointment.getTypeOfMedicalAppointment().getName());
         details.put("status", determineAppointmentStatus(appointment));
         details.put("medicalHistoryId", appointment.getMedicalHistory().getId());
@@ -263,7 +268,7 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
     @Override
     @Transactional
     public void startAppointment(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         // Actualizar estado de las tareas a "EN_PROGRESO" si están programadas
@@ -273,13 +278,13 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
             }
         });
 
-        repository.save(appointment);
+        appointmentRepository.save(appointment);
     }
 
     @Override
     @Transactional
     public void completeAppointment(Long appointmentId) {
-        MedicalAppointment appointment = repository.findById(appointmentId)
+        MedicalAppointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new MedicalAppointmentNotFoundException(appointmentId));
 
         // Verificar que todas las tareas estén completadas
