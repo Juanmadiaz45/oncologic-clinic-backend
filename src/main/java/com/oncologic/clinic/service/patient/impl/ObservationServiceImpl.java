@@ -4,11 +4,14 @@ import com.oncologic.clinic.dto.patient.request.ObservationRequestDTO;
 import com.oncologic.clinic.dto.patient.response.ObservationResponseDTO;
 import com.oncologic.clinic.dto.patient.update.ObservationUpdateDTO;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
+import com.oncologic.clinic.entity.patient.MedicalHistory;
 import com.oncologic.clinic.entity.patient.Observation;
 import com.oncologic.clinic.exception.runtime.patient.AppointmentResultNotFoundException;
+import com.oncologic.clinic.exception.runtime.patient.MedicalHistoryNotFoundException;
 import com.oncologic.clinic.exception.runtime.patient.ObservationNotFoundException;
 import com.oncologic.clinic.mapper.patient.ObservationMapper;
 import com.oncologic.clinic.repository.patient.AppointmentResultRepository;
+import com.oncologic.clinic.repository.patient.MedicalHistoryRepository;
 import com.oncologic.clinic.repository.patient.ObservationRepository;
 import com.oncologic.clinic.service.patient.ObservationService;
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,13 +29,16 @@ public class ObservationServiceImpl implements ObservationService {
 
     private final ObservationRepository observationRepository;
     private final AppointmentResultRepository appointmentResultRepository;
+    private final MedicalHistoryRepository medicalHistoryRepository;
     private final ObservationMapper observationMapper;
 
     public ObservationServiceImpl(ObservationRepository observationRepository,
                                   AppointmentResultRepository appointmentResultRepository,
+                                  MedicalHistoryRepository medicalHistoryRepository,
                                   ObservationMapper observationMapper) {
         this.observationRepository = observationRepository;
         this.appointmentResultRepository = appointmentResultRepository;
+        this.medicalHistoryRepository = medicalHistoryRepository;
         this.observationMapper = observationMapper;
     }
 
@@ -83,6 +90,41 @@ public class ObservationServiceImpl implements ObservationService {
         } catch (DataIntegrityViolationException e) {
             logger.error("Data integrity violation while creating observation: {}", e.getMessage());
             throw new DataIntegrityViolationException("Failed to create observation due to data integrity violation", e);
+        }
+    }
+
+    // Nuevo método para crear observación desde cita médica
+    @Transactional
+    public ObservationResponseDTO createObservationFromAppointment(Long medicalHistoryId, String content, String recommendation) {
+        logger.info("Creating observation from medical history ID: {}", medicalHistoryId);
+
+        try {
+            MedicalHistory medicalHistory = medicalHistoryRepository.findById(medicalHistoryId)
+                    .orElseThrow(() -> new MedicalHistoryNotFoundException(medicalHistoryId));
+
+            // Buscar o crear AppointmentResult para esta fecha
+            AppointmentResult appointmentResult = medicalHistory.getAppointmentResults().stream()
+                    .filter(result -> result.getEvaluationDate().toLocalDate().equals(LocalDateTime.now().toLocalDate()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        AppointmentResult newResult = new AppointmentResult();
+                        newResult.setEvaluationDate(LocalDateTime.now());
+                        newResult.setMedicalHistory(medicalHistory);
+                        return appointmentResultRepository.save(newResult);
+                    });
+
+            Observation observation = new Observation();
+            observation.setContent(content);
+            observation.setRecommendation(recommendation);
+            observation.setAppointmentResult(appointmentResult);
+
+            Observation saved = observationRepository.save(observation);
+            logger.info("Successfully created observation with ID: {}", saved.getId());
+            return observationMapper.toDto(saved);
+
+        } catch (Exception e) {
+            logger.error("Error creating observation from appointment: {}", e.getMessage());
+            throw new RuntimeException("Failed to create observation", e);
         }
     }
 

@@ -38,6 +38,16 @@ public interface MedicalAppointmentRepository extends JpaRepository<MedicalAppoi
     );
 
     @Query("SELECT ma FROM MedicalAppointment ma " +
+            "LEFT JOIN FETCH ma.medicalTasks " +
+            "LEFT JOIN FETCH ma.medicalOffice " +
+            "LEFT JOIN FETCH ma.doctor " +
+            "LEFT JOIN FETCH ma.medicalHistory mh " +
+            "LEFT JOIN FETCH mh.patient " +
+            "LEFT JOIN FETCH ma.typeOfMedicalAppointment " +
+            "WHERE ma.id = :appointmentId")
+    MedicalAppointment findByIdWithDetails(@Param("appointmentId") Long appointmentId);
+
+    @Query("SELECT ma FROM MedicalAppointment ma " +
             "WHERE ma.typeOfMedicalAppointment IS NOT NULL " +
             "AND YEAR(ma.appointmentDate) = 1990")
     List<MedicalAppointment> findBaseAppointments();
