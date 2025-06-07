@@ -39,7 +39,7 @@ public interface MedicalAppointmentRepository extends JpaRepository<MedicalAppoi
 
     @Query("SELECT ma FROM MedicalAppointment ma " +
             "LEFT JOIN FETCH ma.medicalTasks " +
-            "LEFT JOIN FETCH ma.medicalOffices " +
+            "LEFT JOIN FETCH ma.medicalOffice " +
             "LEFT JOIN FETCH ma.doctor " +
             "LEFT JOIN FETCH ma.medicalHistory mh " +
             "LEFT JOIN FETCH mh.patient " +

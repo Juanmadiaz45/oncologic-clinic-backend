@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "Type of Treatments", description = "Operations related to treatment types")
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/type-of-treatments")
 public class TypeOfTreatmentRestController {

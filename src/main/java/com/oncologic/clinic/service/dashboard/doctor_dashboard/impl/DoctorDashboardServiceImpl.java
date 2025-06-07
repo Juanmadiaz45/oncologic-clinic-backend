@@ -129,6 +129,7 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
                 "No asignado" : appointment.getMedicalOffice().getName();
 
         return NextAppointmentDTO.builder()
+                .id(appointment.getId())
                 .time(appointment.getAppointmentDate().format(DateTimeFormatter.ofPattern("HH:mm")))
                 .patientName(appointment.getMedicalHistory().getPatient().getName())
                 .office(officeName)

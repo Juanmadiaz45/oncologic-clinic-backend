@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Medical Appointments", description = "Operations related to medical appointments")
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/medical-appointments")
 @RequiredArgsConstructor
@@ -121,6 +122,22 @@ public class MedicalAppointmentRestController {
     @GetMapping("/base")
     public ResponseEntity<List<MedicalAppointmentResponseDTO>> getBaseAppointments() {
         return ResponseEntity.ok(service.getBaseAppointments());
+    }
+
+    @Operation(summary = "Get or create appointment result for appointment")
+    @GetMapping("/{id}/appointment-result")
+    public ResponseEntity<Map<String, Object>> getOrCreateAppointmentResult(@PathVariable Long id) {
+        Map<String, Object> result = service.getOrCreateAppointmentResult(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Get prescribed medicines for treatments in appointment")
+    @GetMapping("/{id}/treatments/{treatmentId}/medicines")
+    public ResponseEntity<List<Map<String, Object>>> getTreatmentMedicines(
+            @PathVariable Long id,
+            @PathVariable Long treatmentId) {
+        List<Map<String, Object>> medicines = service.getTreatmentMedicines(treatmentId);
+        return ResponseEntity.ok(medicines);
     }
 
 }
