@@ -75,4 +75,13 @@ public class MedicalTaskRestController {
         service.deleteMedicalTask(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get medical tasks by IDs")
+    @ApiResponse(responseCode = "200", description = "List of medical tasks")
+    @GetMapping("/by-ids")
+    public ResponseEntity<List<MedicalTaskResponseDTO>> getByIds(
+            @RequestParam List<Long> ids) {
+        return ResponseEntity.ok(service.getTasksByIds(ids));
+    }
+
 }

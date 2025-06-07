@@ -1,10 +1,13 @@
 package com.oncologic.clinic.exception;
 
 import com.oncologic.clinic.exception.runtime.*;
+import com.oncologic.clinic.exception.runtime.dashboard.DashboardAccessException;
+import com.oncologic.clinic.exception.runtime.dashboard.UserNotDoctorException;
 import com.oncologic.clinic.exception.runtime.patient.AppointmentResultUpdateException;
 import com.oncologic.clinic.exception.runtime.patient.DuplicateMedicalHistoryException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -20,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -55,6 +59,43 @@ public class GlobalExceptionHandler {
                 ? "The JWT token has expired"
                 : ex.getMessage();
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, message);
+    }
+
+    // ===== DASHBOARD SPECIFIC ERRORS =====
+
+    /**
+     * Handles cases where user is not a doctor or doesn't have doctor permissions
+     * Returns 403 Forbidden instead of 500
+     */
+    @ExceptionHandler(UserNotDoctorException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotDoctorException(UserNotDoctorException ex) {
+        log.warn("User attempted to access doctor dashboard without doctor permissions: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.FORBIDDEN.value());
+        response.put("error", "Access Denied");
+        response.put("message", "You must be a doctor to access this resource");
+        response.put("path", "/doctor-dashboard");
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Handles dashboard access issues that are not user permission related
+     * Returns 503 Service Unavailable for temporary issues
+     */
+    @ExceptionHandler(DashboardAccessException.class)
+    public ResponseEntity<Map<String, Object>> handleDashboardAccessException(DashboardAccessException ex) {
+        log.error("Dashboard access error: {}", ex.getMessage(), ex);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
+        response.put("error", "Service Temporarily Unavailable");
+        response.put("message", "Dashboard service is temporarily unavailable. Please try again later.");
+
+        return new ResponseEntity<>(response, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     // ===== VALIDATION ERRORS (400 BAD REQUEST) =====
@@ -127,8 +168,14 @@ public class GlobalExceptionHandler {
     // ===== EXISTING DOMAIN ERRORS =====
 
     @ExceptionHandler(DomainNotFoundException.class)
-    public ResponseEntity<?> handleNotFound(DomainNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleNotFound(DomainNotFoundException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", "Not Found");
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(DomainCreationException.class)
@@ -173,6 +220,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        // Log the full exception for debugging
+        log.error("Unexpected error occurred", ex);
+
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -180,7 +230,10 @@ public class GlobalExceptionHandler {
         response.put("message", "An unexpected error occurred. Please try again later.");
 
         // In development, you can include more details:
-        // response.put("details", ex.getMessage());
+        if (log.isDebugEnabled()) {
+            response.put("details", ex.getMessage());
+            response.put("exception", ex.getClass().getSimpleName());
+        }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }

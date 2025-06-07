@@ -75,4 +75,12 @@ public class TypeOfMedicalAppointmentRestController {
         service.deleteTypeOfMedicalAppointment(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get medical appointment types by IDs")
+    @ApiResponse(responseCode = "200", description = "List of medical appointment types")
+    @GetMapping("/by-ids")
+    public ResponseEntity<List<TypeOfMedicalAppointmentResponseDTO>> getByIds(
+            @RequestParam List<Long> ids) {
+        return ResponseEntity.ok(service.getTypesByIds(ids));
+    }
 }

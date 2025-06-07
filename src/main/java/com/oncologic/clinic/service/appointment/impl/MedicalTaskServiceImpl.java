@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -126,5 +127,17 @@ public class MedicalTaskServiceImpl implements MedicalTaskService {
     @Override
     public MedicalTask getMedicalTaskEntityById(Long id) {
         return medicalTaskRepository.findById(id).orElseThrow(() -> new MedicalTaskNotFoundException(id));
+    }
+
+    @Override
+    public List<MedicalTaskResponseDTO> getTasksByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<MedicalTask> tasks = medicalTaskRepository.findByIds(ids);
+        return tasks.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
 }
