@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,4 +74,21 @@ public class MedicalOfficeServiceImpl implements MedicalOfficeService {
 
         medicalOfficeRepository.delete(office);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MedicalOfficeResponseDTO> getAvailableOffices(String date, String startTime, String endTime) {
+        LocalDate searchDate = LocalDate.parse(date);
+        LocalTime start = LocalTime.parse(startTime);
+        LocalTime end = LocalTime.parse(endTime);
+
+        LocalDateTime startDateTime = LocalDateTime.of(searchDate, start);
+        LocalDateTime endDateTime = LocalDateTime.of(searchDate, end);
+
+        return medicalOfficeRepository.findAvailableOffices(startDateTime, endDateTime)
+                .stream()
+                .map(medicalOfficeMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 }

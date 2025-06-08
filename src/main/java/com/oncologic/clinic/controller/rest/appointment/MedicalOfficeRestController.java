@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Medical Offices", description = "Operations related to medical office management")
 @RestController
@@ -75,4 +76,20 @@ public class MedicalOfficeRestController {
         service.deleteMedicalOffice(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get available medical offices for a time slot")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Available offices found"),
+            @ApiResponse(responseCode = "400", description = "Invalid time parameters")
+    })
+    @PostMapping("/available")
+    public ResponseEntity<List<MedicalOfficeResponseDTO>> getAvailableOffices(
+            @RequestBody Map<String, String> params) {
+        String date = params.get("date");
+        String startTime = params.get("startTime");
+        String endTime = params.get("endTime");
+
+        return ResponseEntity.ok(service.getAvailableOffices(date, startTime, endTime));
+    }
+
 }

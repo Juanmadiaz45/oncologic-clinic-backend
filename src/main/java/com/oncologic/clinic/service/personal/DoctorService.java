@@ -9,9 +9,18 @@ import java.util.List;
 
 public interface DoctorService {
     DoctorResponseDTO getDoctorById(Long id);
+
     List<DoctorResponseDTO> getAllDoctors();
+
     Doctor registerDoctor(RegisterDoctorDTO doctorDTO);
+
     DoctorResponseDTO createDoctor(DoctorDTO doctorDTO);
+
     DoctorResponseDTO updateDoctor(Long id, DoctorDTO doctorDTO);
+
     void deleteDoctor(Long id);
+
+    List<DoctorResponseDTO> searchDoctorsByName(String name);
+
+    List<DoctorResponseDTO> getDoctorsBySpeciality(Long specialityId);
 }

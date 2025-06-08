@@ -229,4 +229,20 @@ public class DoctorServiceImpl extends BasePersonalService<Doctor> implements Do
             doctor.getSpecialities().clear();
         }
     }
+
+    @Override
+    public List<DoctorResponseDTO> searchDoctorsByName(String name) {
+        return doctorRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(doctorMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<DoctorResponseDTO> getDoctorsBySpeciality(Long specialityId) {
+        return doctorRepository.findBySpecialityId(specialityId)
+                .stream()
+                .map(doctorMapper::toDto)
+                .toList();
+    }
 }

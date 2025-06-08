@@ -19,4 +19,6 @@ public interface MedicalOfficeService {
     void deleteMedicalOffice(Long id);
 
     MedicalOffice getMedicalOfficeEntityById(Long id);
+
+    List<MedicalOfficeResponseDTO> getAvailableOffices(String date, String startTime, String endTime);
 }

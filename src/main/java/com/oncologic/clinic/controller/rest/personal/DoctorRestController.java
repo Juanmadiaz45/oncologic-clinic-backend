@@ -72,4 +72,26 @@ public class DoctorRestController {
         doctorService.deleteDoctor(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Search doctors by name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctors found")
+    })
+    @GetMapping("/search")
+    public ResponseEntity<List<DoctorResponseDTO>> searchDoctorsByName(
+            @RequestParam String name) {
+        return ResponseEntity.ok(doctorService.searchDoctorsByName(name));
+    }
+
+    @Operation(summary = "Get doctors by speciality")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Doctors found"),
+            @ApiResponse(responseCode = "404", description = "Speciality not found")
+    })
+    @GetMapping("/by-speciality/{specialityId}")
+    public ResponseEntity<List<DoctorResponseDTO>> getDoctorsBySpeciality(
+            @PathVariable Long specialityId) {
+        return ResponseEntity.ok(doctorService.getDoctorsBySpeciality(specialityId));
+    }
+
 }
