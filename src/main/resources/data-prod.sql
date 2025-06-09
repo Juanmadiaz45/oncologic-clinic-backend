@@ -303,16 +303,16 @@ VALUES (1000000000000, 3, TIMESTAMP '1990-01-01 00:00:00',
 -- 3. Crear citas médicas para cada tipo (1 de enero de 1990, con diferencia de 1 hora)
 INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id,
                                   medical_history_id, medical_office_id)
-VALUES (1, 5, 1, TIMESTAMP '2025-06-05 23:00:00', NULL, 1000000000000, 1000000000000), -- Consulta general
-       (2, 5, 2, TIMESTAMP '2025-06-05 23:30:00', NULL, 1000000000000, 1000000000000), -- Revisión de rutina
-       (3, 5, 3, TIMESTAMP '2025-06-06 00:00:00', NULL, 1000000000000, 1000000000000), -- Consulta especializada
-       (4, 5, 4, TIMESTAMP '2025-06-06 00:30:00', NULL, 1000000000000, 1000000000000), -- Consulta oncológica inicial
-       (5, 5, 5, TIMESTAMP '2025-06-06 01:00:00', NULL, 1000000000000, 1000000000000), -- Sesión de quimioterapia
-       (6, 5, 6, TIMESTAMP '2025-06-06 05:00:00', NULL, 1000000000000, 1000000000000), -- Sesión de radioterapia
-       (7, 5, 7, TIMESTAMP '2025-06-06 05:30:00', NULL, 1000000000000, 1000000000000), -- Control post-tratamiento
-       (8, 5, 8, TIMESTAMP '2025-06-06 23:59:00', NULL, 1000000000000,
+VALUES (1, 5, 1, TIMESTAMP '1990-01-01 08:00:00', NULL, 1000000000000, 1000000000000), -- Consulta general
+       (2, 5, 2, TIMESTAMP '1990-01-01 09:00:00', NULL, 1000000000000, 1000000000000), -- Revisión de rutina
+       (3, 5, 3, TIMESTAMP '1990-01-01 10:00:00', NULL, 1000000000000, 1000000000000), -- Consulta especializada
+       (4, 5, 4, TIMESTAMP '1990-01-01 11:00:00', NULL, 1000000000000, 1000000000000), -- Consulta oncológica inicial
+       (5, 5, 5, TIMESTAMP '1990-01-01 12:00:00', NULL, 1000000000000, 1000000000000), -- Sesión de quimioterapia
+       (6, 5, 6, TIMESTAMP '1990-01-01 13:00:00', NULL, 1000000000000, 1000000000000), -- Sesión de radioterapia
+       (7, 5, 7, TIMESTAMP '1990-01-01 14:00:00', NULL, 1000000000000, 1000000000000), -- Control post-tratamiento
+       (8, 5, 8, TIMESTAMP '1990-01-01 15:00:00', NULL, 1000000000000,
         1000000000000),                                                                -- Consulta con nutricionista oncológico
-       (9, 5, 9, TIMESTAMP '2025-06-06 22:30:00', NULL, 1000000000000, 1000000000000);
+       (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000);
 -- Apoyo psicológico
 
 -- 3. TAREAS MÉDICAS PROTOCOLARIAS
