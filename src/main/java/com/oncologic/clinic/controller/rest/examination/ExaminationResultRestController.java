@@ -43,6 +43,15 @@ public class ExaminationResultRestController {
         return ResponseEntity.ok(examinationResultService.getAllExaminationResults());
     }
 
+    @Operation(summary = "Get examination results by medical history ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of examination results for the patient")
+    })
+    @GetMapping("/by-medical-history/{medicalHistoryId}")
+    public ResponseEntity<List<ExaminationResultResponseDTO>> getByMedicalHistoryId(@PathVariable Long medicalHistoryId) {
+        return ResponseEntity.ok(examinationResultService.getExaminationResultsByMedicalHistoryId(medicalHistoryId));
+    }
+
     @Operation(summary = "Create a new examination result")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Examination result successfully created"),

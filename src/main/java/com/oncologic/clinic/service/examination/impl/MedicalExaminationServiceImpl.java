@@ -51,6 +51,14 @@ public class MedicalExaminationServiceImpl implements MedicalExaminationService 
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<MedicalExaminationResponseDTO> getMedicalExaminationsByMedicalHistoryId(Long medicalHistoryId) {
+        return medicalExaminationRepository.findByMedicalHistoryId(medicalHistoryId).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public MedicalExaminationResponseDTO createMedicalExamination(MedicalExaminationRequestDTO requestDTO) {
         Laboratory lab = laboratoryRepository.findById(requestDTO.getLaboratoryId())

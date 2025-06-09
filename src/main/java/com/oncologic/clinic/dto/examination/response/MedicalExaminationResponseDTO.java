@@ -15,6 +15,12 @@ public class MedicalExaminationResponseDTO {
     private String id;
     private LocalDateTime dateOfRealization;
     private Long laboratoryId;
+    private String laboratoryName;
+    private String laboratoryLocation;
+    private String laboratoryTelephone;
     private Long typeOfExamId;
+    private String typeOfExamName;
+    private String typeOfExamDescription;
     private Long medicalHistoryId;
+    private String patientName;
 }

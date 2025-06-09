@@ -10,6 +10,7 @@ import java.util.List;
 public interface MedicalExaminationService {
     MedicalExaminationResponseDTO getMedicalExaminationById(String id);
     List<MedicalExaminationResponseDTO> getAllMedicalExaminations();
+    List<MedicalExaminationResponseDTO> getMedicalExaminationsByMedicalHistoryId(Long medicalHistoryId);
     MedicalExaminationResponseDTO createMedicalExamination(MedicalExaminationRequestDTO requestDTO);
     MedicalExaminationResponseDTO updateMedicalExamination(String id, MedicalExaminationUpdateDTO updateDTO) ;
     void deleteMedicalExamination(String id);

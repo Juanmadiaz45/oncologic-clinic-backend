@@ -43,6 +43,14 @@ public class ExaminationResultServiceImpl implements ExaminationResultService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ExaminationResultResponseDTO> getExaminationResultsByMedicalHistoryId(Long medicalHistoryId) {
+        return examinationResultRepository.findByMedicalHistoryId(medicalHistoryId).stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public ExaminationResultResponseDTO createExaminationResult(ExaminationResultRequestDTO requestDTO) {
         MedicalHistory medicalHistory = medicalHistoryRepository.findById(requestDTO.getMedicalHistoryId())
