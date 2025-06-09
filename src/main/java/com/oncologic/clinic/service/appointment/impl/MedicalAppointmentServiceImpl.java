@@ -9,6 +9,8 @@ import com.oncologic.clinic.entity.appointment.MedicalAppointment;
 import com.oncologic.clinic.entity.appointment.MedicalOffice;
 import com.oncologic.clinic.entity.appointment.MedicalTask;
 import com.oncologic.clinic.entity.patient.AppointmentResult;
+import com.oncologic.clinic.entity.patient.PrescribedMedicine;
+import com.oncologic.clinic.entity.patient.TypeOfTreatment;
 import com.oncologic.clinic.exception.runtime.appointment.MedicalAppointmentNotFoundException;
 import com.oncologic.clinic.exception.runtime.appointment.MedicalTaskNotFoundException;
 import com.oncologic.clinic.mapper.appointment.MedicalAppointmentMapper;
@@ -242,13 +244,13 @@ public class MedicalAppointmentServiceImpl implements MedicalAppointmentService 
                         .endDate(treatment.getEndDate())
                         .appointmentResultId(treatment.getAppointmentResult().getId())
                         .typeOfTreatmentIds(treatment.getTypeOfTreatments().stream()
-                                .map(type -> type.getId())
+                                .map(TypeOfTreatment::getId)
                                 .collect(Collectors.toList()))
                         .prescribedMedicineIds(treatment.getPrescribedMedicines().stream()
-                                .map(med -> med.getId())
+                                .map(PrescribedMedicine::getId)
                                 .collect(Collectors.toList()))
                         .medicalAppointmentIds(treatment.getMedicalAppointments().stream()
-                                .map(app -> app.getId())
+                                .map(MedicalAppointment::getId)
                                 .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());

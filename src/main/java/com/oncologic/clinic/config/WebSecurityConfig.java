@@ -48,11 +48,11 @@ public class WebSecurityConfig {
                         // Allow authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Dashboard module - solo doctores y admin
+                        // ADMIN has full access to ALL endpoints
+                        .requestMatchers("/api/**").hasRole("ADMIN")
+                        // Dashboard module - only doctors and admin
                         .requestMatchers(HttpMethod.GET, "/api/doctor-dashboard/**").hasAnyRole("DOCTOR", "ADMIN")
-
-
-                        // Appointment module - solo si no es ADMIN
+                        // Appointment module - only if not ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/medical-appointments/*/details").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/medical-appointments/*/tasks").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/medical-appointments/*/observations").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
@@ -158,10 +158,6 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").denyAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/**").denyAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").denyAll()
-
-                        // ADMIN has full access to ALL endpoints
-                        .requestMatchers("/api/**").hasRole("ADMIN")
-
                         // Any other request must be authenticated
                         .anyRequest().authenticated())
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

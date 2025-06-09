@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Medical Appointments", description = "Operations related to medical appointments")
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/medical-appointments")
 @RequiredArgsConstructor

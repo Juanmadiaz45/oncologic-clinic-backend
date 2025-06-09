@@ -4,6 +4,7 @@ import com.oncologic.clinic.dto.appointment.TypeOfMedicalAppointmentDTO;
 import com.oncologic.clinic.dto.appointment.response.TypeOfMedicalAppointmentResponseDTO;
 import com.oncologic.clinic.service.appointment.TypeOfMedicalAppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -77,10 +78,18 @@ public class TypeOfMedicalAppointmentRestController {
     }
 
     @Operation(summary = "Get medical appointment types by IDs")
-    @ApiResponse(responseCode = "200", description = "List of medical appointment types")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of medical appointment types"),
+            @ApiResponse(responseCode = "400", description = "Invalid or missing IDs parameter")
+    })
     @GetMapping("/by-ids")
     public ResponseEntity<List<TypeOfMedicalAppointmentResponseDTO>> getByIds(
-            @RequestParam List<Long> ids) {
+            @RequestParam(required = false) @Parameter(description = "Comma-separated list of IDs") List<Long> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.ok(service.getTypesByIds(ids));
     }
 }

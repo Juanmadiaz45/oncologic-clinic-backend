@@ -14,10 +14,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -98,31 +98,68 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    // ===== VALIDATION ERRORS (400 BAD REQUEST) =====
+    // ===== REQUEST PARAMETER ERRORS (400 BAD REQUEST) =====
 
     /**
-     * Handles Bean Validation errors (@Valid, @NotBlank, etc.)
-     * Returns 400 Bad Request with field-specific error details
+     * Handles missing required request parameters
+     * Returns 400 Bad Request when @RequestParam is missing
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex) {
+
+        log.warn("Missing required request parameter: {} of type {}",
+                ex.getParameterName(), ex.getParameterType());
+
         Map<String, Object> response = new HashMap<>();
-        Map<String, String> fieldErrors = new HashMap<>();
-
-        // Extract specific field errors
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            if (error instanceof FieldError fieldError) {
-                fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
-            } else {
-                fieldErrors.put("global", error.getDefaultMessage());
-            }
-        });
-
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("message", "Invalid input data provided");
-        response.put("fieldErrors", fieldErrors);
+        response.put("error", "Bad Request");
+        response.put("message", String.format("Required request parameter '%s' is missing",
+                ex.getParameterName()));
+        response.put("parameterName", ex.getParameterName());
+        response.put("parameterType", ex.getParameterType());
+        response.put("expectedFormat", getParameterFormatHelp(ex.getParameterName()));
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Provides helpful format information for common parameters
+     */
+    private String getParameterFormatHelp(String parameterName) {
+        return switch (parameterName.toLowerCase()) {
+            case "ids" -> "Expected format: ?ids=1,2,3 or ?ids=1&ids=2&ids=3";
+            case "id" -> "Expected format: ?id=123";
+            case "page" -> "Expected format: ?page=0 (zero-based)";
+            case "size" -> "Expected format: ?size=20";
+            default -> "Check the API documentation for the correct parameter format";
+        };
+    }
+
+// ===== TYPE MISMATCH ERRORS (400 BAD REQUEST) =====
+
+    /**
+     * Handles type conversion errors for request parameters
+     * Returns 400 Bad Request when parameter cannot be converted to expected type
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+
+        assert ex.getRequiredType() != null;
+        log.warn("Type mismatch for parameter '{}': expected {} but got '{}'",
+                ex.getName(), ex.getRequiredType().getSimpleName(), ex.getValue());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Bad Request");
+        response.put("message", String.format("Invalid value '%s' for parameter '%s'. Expected type: %s",
+                ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName()));
+        response.put("parameterName", ex.getName());
+        response.put("providedValue", ex.getValue());
+        response.put("expectedType", ex.getRequiredType().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
