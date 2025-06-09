@@ -32,6 +32,7 @@ public class AvailabilityRestController {
     public ResponseEntity<AvailabilityResponseDTO> createAvailability(
             @Valid @RequestBody AvailabilityDTO requestDTO) {
         AvailabilityResponseDTO createdAvailability = availabilityService.createAvailability(requestDTO);
+        System.out.println(createdAvailability);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAvailability);
     }
 

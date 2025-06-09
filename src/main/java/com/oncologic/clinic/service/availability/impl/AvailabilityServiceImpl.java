@@ -7,6 +7,7 @@ import com.oncologic.clinic.entity.availability.Status;
 import com.oncologic.clinic.entity.personal.Personal;
 import com.oncologic.clinic.exception.runtime.availability.AvailabilityNotFoundException;
 import com.oncologic.clinic.exception.runtime.availability.StatusNotFoundException;
+import com.oncologic.clinic.exception.runtime.personal.PersonalNotFoundException;
 import com.oncologic.clinic.mapper.availability.AvailabilityMapper;
 import com.oncologic.clinic.repository.availability.AvailabilityRepository;
 import com.oncologic.clinic.repository.availability.StatusRepository;
@@ -58,13 +59,15 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             availability.setStatus(status);
         }
 
+        Availability savedAvailability = availabilityRepository.save(availability);
         // Set personals if provided
         if (requestDTO.getPersonalIds() != null && !requestDTO.getPersonalIds().isEmpty()) {
-            updateAvailabilityPersonalsFromDTO(availability, requestDTO);
+            updateAvailabilityPersonalsFromDTO(savedAvailability, requestDTO);
         }
 
-        Availability savedAvailability = availabilityRepository.save(availability);
-        return mapper.toDto(savedAvailability);
+        Availability reloadedAvailability = availabilityRepository.findById(savedAvailability.getId())
+                .orElseThrow(() -> new AvailabilityNotFoundException(savedAvailability.getId()));
+        return mapper.toDto(reloadedAvailability);
     }
 
     @Override
@@ -88,8 +91,9 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             updateAvailabilityPersonalsFromDTO(availability, updateDTO);
         }
 
-        Availability updatedAvailability = availabilityRepository.save(availability);
-        return mapper.toDto(updatedAvailability);
+        Availability reloadedAvailability = availabilityRepository.findById(availability.getId())
+                .orElseThrow(() -> new AvailabilityNotFoundException(availability.getId()));
+        return mapper.toDto(reloadedAvailability);
     }
 
     @Override
@@ -102,8 +106,51 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
 
     private void updateAvailabilityPersonalsFromDTO(Availability availability, AvailabilityDTO requestDTO) {
-        Set<Personal> personals = new HashSet<>(personalRepository.findAllById(requestDTO.getPersonalIds()));
-        availability.getPersonals().clear();
-        availability.getPersonals().addAll(personals);
+        // 1. ✅ GET current and new IDs
+        Set<Long> currentPersonalIds = availability.getPersonals().stream()
+                .map(Personal::getId)
+                .collect(Collectors.toSet());
+
+        Set<Long> newPersonalIds = requestDTO.getPersonalIds() != null ?
+                new HashSet<>(requestDTO.getPersonalIds()) : new HashSet<>();
+
+        // 2. ✅ CALCULATE differences
+        Set<Long> toRemove = new HashSet<>(currentPersonalIds);
+        toRemove.removeAll(newPersonalIds); // IDs that were there but are no longer there
+
+        Set<Long> toAdd = new HashSet<>(newPersonalIds);
+        toAdd.removeAll(currentPersonalIds); // New IDs that were not there before
+
+
+        // 3. ✅ REMOVE obsolete associations
+        if (!toRemove.isEmpty()) {
+            List<Personal> personalsToRemove = personalRepository.findAllById(toRemove);
+            for (Personal personal : personalsToRemove) {
+                personal.removeAvailability(availability);
+            }
+            // Save all changes at once
+            personalRepository.saveAll(personalsToRemove);
+        }
+
+        // 4. ✅ ADD new associations
+        if (!toAdd.isEmpty()) {
+            List<Personal> personalsToAdd = personalRepository.findAllById(toAdd);
+
+            // Verify that all Personnel exist
+            if (personalsToAdd.size() != toAdd.size()) {
+                Set<Long> foundIds = personalsToAdd.stream()
+                        .map(Personal::getId)
+                        .collect(Collectors.toSet());
+                Set<Long> missingIds = new HashSet<>(toAdd);
+                missingIds.removeAll(foundIds);
+                throw new PersonalNotFoundException("Personal not found with IDs: " + missingIds);
+            }
+
+            for (Personal personal : personalsToAdd) {
+                personal.addAvailability(availability);
+            }
+            // Save all changes at once
+            personalRepository.saveAll(personalsToAdd);
+        }
     }
 }
