@@ -109,14 +109,14 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/laboratories").hasRole("LAB_TECHNICIAN")
                         .requestMatchers(HttpMethod.PUT, "/api/laboratories/**").hasRole("LAB_TECHNICIAN")
                         .requestMatchers(HttpMethod.DELETE, "/api/laboratories/**").hasRole("LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.GET, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "PATIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/medical-examinations").hasAnyRole("DOCTOR", "LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.PUT, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.GET, "/api/types-of-exam/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.POST, "/api/types-of-exam").hasRole("LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.PUT, "/api/types-of-exam/**").hasRole("LAB_TECHNICIAN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/types-of-exam/**").hasRole("LAB_TECHNICIAN")
+                        .requestMatchers(HttpMethod.GET, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/medical-examinations").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/types-of-exam/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/types-of-exam").hasAnyRole("LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/types-of-exam/**").hasAnyRole("LAB_TECHNICIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/types-of-exam/**").hasAnyRole("LAB_TECHNICIAN", "ADMIN")
                         // Medical examinations - doctors/admin can create/modify, patients can view their own
                         .requestMatchers(HttpMethod.GET, "/api/medical-examinations/by-medical-history/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/medical-examinations/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "PATIENT", "ADMIN")
@@ -130,9 +130,12 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/examination-results").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/examination-results/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/examination-results/**").hasAnyRole("DOCTOR", "LAB_TECHNICIAN", "ADMIN")
-
-                        // Patient medical data - patients can view their own data
-                        .requestMatchers(HttpMethod.GET, "/api/patient-medical/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/medical-examination-management/patients/*/examinations").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/medical-examination-management/patients/*/examinations").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/medical-examination-management/examinations/*/details").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/medical-examination-management/examinations/*").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/medical-examination-management/examinations/*").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/medical-examination-management/patients/*/medical-history/complete").hasAnyRole("DOCTOR", "ADMIN")
 
                         // Patient module
                         .requestMatchers(HttpMethod.GET, "/api/appointment-results/**").hasAnyRole("DOCTOR", "PATIENT")

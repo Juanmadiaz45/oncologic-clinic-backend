@@ -215,17 +215,4 @@ public class PatientServiceImpl implements PatientService {
                 .map(patientMapper::toDto)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long getMedicalHistoryIdByPatientId(Long patientId) {
-        Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
-
-        if (patient.getMedicalHistory() == null) {
-            throw new EntityNotFoundException("Medical history not found for patient with ID: " + patientId);
-        }
-
-        return patient.getMedicalHistory().getId();
-    }
 }

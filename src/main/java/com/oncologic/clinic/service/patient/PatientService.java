@@ -22,6 +22,5 @@ public interface PatientService {
     void deletePatient(Long id);
 
     List<PatientResponseDTO> searchPatientsByIdNumber(String idNumber);
-    Long getMedicalHistoryIdByPatientId(Long patientId);
 }
 
