@@ -48,6 +48,24 @@ public class WebSecurityConfig {
                         // Allow authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // Patient module
+                        .requestMatchers(HttpMethod.GET, "/api/users/patients/**").hasAnyRole("DOCTOR", "PATIENT", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/patients/medical-history").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users/patients").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/appointment-results/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/appointment-results").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointment-results/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/appointment-results/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/prescribed-medicines/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/prescribed-medicines").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/prescribed-medicines/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/prescribed-medicines/**").hasAnyRole("DOCTOR", "ADMIN")
+
                         // ADMIN has full access to ALL endpoints
                         .requestMatchers("/api/**").hasRole("ADMIN")
                         // Dashboard module - only doctors and admin
@@ -117,24 +135,6 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/types-of-exam").hasRole("LAB_TECHNICIAN")
                         .requestMatchers(HttpMethod.PUT, "/api/types-of-exam/**").hasRole("LAB_TECHNICIAN")
                         .requestMatchers(HttpMethod.DELETE, "/api/types-of-exam/**").hasRole("LAB_TECHNICIAN")
-
-                        // Patient module
-                        .requestMatchers(HttpMethod.GET, "/api/appointment-results/**").hasAnyRole("DOCTOR", "PATIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/appointment-results").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/appointment-results/**").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/appointment-results/**").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.GET, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "PATIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/patients/medical-history").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/patients/medical-history/**").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/patients/medical-history/**").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.GET, "/api/users/patients/**").hasAnyRole("DOCTOR", "PATIENT", "ADMINISTRATIVE")
-                        .requestMatchers(HttpMethod.POST, "/api/users/patients").hasAnyRole("DOCTOR", "ADMINISTRATIVE")
-                        .requestMatchers(HttpMethod.PUT, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE")
-                        .requestMatchers(HttpMethod.GET, "/api/prescribed-medicines/**").hasAnyRole("DOCTOR", "PATIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/prescribed-medicines").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/prescribed-medicines/**").hasRole("DOCTOR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/prescribed-medicines/**").hasRole("DOCTOR")
 
 
                         // Personal module
