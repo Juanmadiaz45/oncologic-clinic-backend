@@ -14,5 +14,7 @@ public interface ExaminationResultService {
     ExaminationResultResponseDTO createExaminationResult(ExaminationResultRequestDTO requestDTO);
     ExaminationResultResponseDTO updateExaminationResult(Long id, ExaminationResultUpdateDTO updateDTO);
     void deleteExaminationResult(Long id);
+    ExaminationResult getExaminationResultEntityById(Long id);
+    ExaminationResult createExaminationResult(ExaminationResult examinationResult);
 
 }

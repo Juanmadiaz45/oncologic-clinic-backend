@@ -13,5 +13,5 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ExaminationResultUpdateDTO {
     private LocalDateTime generationDate;
-    private byte[] resultsReport;
+    private String resultsReport;
 }

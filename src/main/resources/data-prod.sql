@@ -261,6 +261,23 @@ VALUES ('EX0002', TIMESTAMP '2023-03-04 14:30:00', 2, 2, 2);
 -- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
 -- VALUES (2, TIMESTAMP '2023-03-04 17:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-2.png'), 2);
 
+-- Initializing EXAMINATION_RESULTS
+INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
+VALUES
+    (
+        1,
+        TIMESTAMP '2023-03-03 15:00:00',
+        'Resultados dentro de parámetros normales. Hemoglobina: 14 g/dL, Leucocitos: 6.5 x10^9/L',
+        1
+    ),
+    (
+        2,
+        TIMESTAMP '2023-03-04 17:00:00',
+        'Radiografía de tórax sin hallazgos patológicos. Campos pulmonares libres.',
+        2
+    );
+
+
 -- Initializing PRESCRIBED_MEDICINES
 INSERT INTO PRESCRIBED_MEDICINES (id, medicine, prescription_date, instructions, dose, duration,
                                   frequency_of_administration, treatment_id)

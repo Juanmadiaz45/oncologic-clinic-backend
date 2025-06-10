@@ -10,6 +10,7 @@ import com.oncologic.clinic.entity.patient.AppointmentResult;
 import com.oncologic.clinic.entity.patient.MedicalHistory;
 import org.mapstruct.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,8 +55,18 @@ public interface MedicalHistoryMapper {
     }
 
     @Named("mapExaminationResultIds")
-    default List<Long> mapExaminationResultIds(List<com.oncologic.clinic.entity.examination.ExaminationResult> results) {
-        if (results == null) return null;
-        return results.stream().map(ExaminationResult::getId).collect(Collectors.toList());
+    default List<Long> mapExaminationResultIds(List<ExaminationResult> results) {
+        if (results == null || results.isEmpty()) {
+            return Collections.emptyList();
+        }
+        try {
+            return results.stream()
+                    .filter(result -> result != null && result.getId() != null)
+                    .map(ExaminationResult::getId)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error mapping examination result IDs: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }
