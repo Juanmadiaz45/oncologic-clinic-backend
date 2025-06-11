@@ -84,12 +84,30 @@ clinic in Cali. The system centralizes and automates key processes such as:
 
 ### **Application Deployment**
 
-The application is hosted on an **Apache Tomcat server** (PC 206M). Use one of the following URLs to access it:
+For this version, the application has deployed both the frontend and backend implementations. Both are on a Tomcat 
+server on a computer in classroom 206M. To access both the frontend and backend deployments, go to the following URLs:
 
-- **Local network (IASLAB connection):**  
+- **Local network (IASLAB connection). Backend deployment:**  
   [http://192.168.131.21:8080/g5/siscom/](http://192.168.131.21:8080/g5/siscom/)
-- **Remote access (ZeroTier VPN):**  
+- **Remote access (ZeroTier VPN). Backend deployment:**  
   [http://10.147.19.21:8080/g5/siscom/](http://10.147.19.21:8080/g5/siscom/)
+
+![deploy-backend.png](ANNEXES/deploy-backend.png)
+- **Local network (IASLAB connection). Frontend deployment:**
+
+  [http://192.168.131.21:8080/g5/syscom/](http://192.168.131.21:8080/g5/siscom/)
+- **Remote access (ZeroTier VPN). Frontend deployment:**
+
+  [http://10.147.19.21:8080/g5/syscom/](http://10.147.19.21:8080/g5/siscom/)
+
+![deploy-frontend.png](ANNEXES/deploy-frontend.png)
+
+**Location of deployment files:**
+
+![location-deploy1.png](ANNEXES/location-deploy1.png)
+
+![location-deploy2.png](ANNEXES/location-deploy2.png)
+
 
 ### Default Users and Passwords
 
