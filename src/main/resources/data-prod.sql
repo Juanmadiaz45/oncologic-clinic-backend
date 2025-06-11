@@ -207,6 +207,20 @@ INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id)
 VALUES (2, TIMESTAMP '2023-03-02 08:00:00', TIMESTAMP '2023-03-02 16:00:00', 2);
 INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id)
 VALUES (3, TIMESTAMP '2023-03-03 08:00:00', TIMESTAMP '2023-03-03 16:00:00', 3);
+-- AVAILABILITIES y PERSONAL_AVAILABILITIES para doctor_id = 2
+INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id) VALUES
+(4, TIMESTAMP '2025-06-11 15:00:00', TIMESTAMP '2025-06-11 15:30:00', 1),
+(5, TIMESTAMP '2025-06-11 15:30:00', TIMESTAMP '2025-06-11 16:00:00', 1),
+(6, TIMESTAMP '2025-06-11 16:00:00', TIMESTAMP '2025-06-11 16:30:00', 1),
+(7, TIMESTAMP '2025-06-11 16:30:00', TIMESTAMP '2025-06-11 17:00:00', 1),
+(8, TIMESTAMP '2025-06-11 17:00:00', TIMESTAMP '2025-06-11 17:30:00', 1);
+-- AVAILABILITIES y PERSONAL_AVAILABILITIES para doctor_id = 5
+INSERT INTO AVAILABILITIES (id, start_time, end_time, status_id) VALUES
+(9,  TIMESTAMP '2025-06-11 15:00:00', TIMESTAMP '2025-06-11 15:30:00', 1),
+(10, TIMESTAMP '2025-06-11 15:30:00', TIMESTAMP '2025-06-11 16:00:00', 1),
+(11, TIMESTAMP '2025-06-11 16:00:00', TIMESTAMP '2025-06-11 16:30:00', 1),
+(12, TIMESTAMP '2025-06-11 16:30:00', TIMESTAMP '2025-06-11 17:00:00', 1),
+(13, TIMESTAMP '2025-06-11 17:00:00', TIMESTAMP '2025-06-11 17:30:00', 1);
 
 -- Initializing PERSONAL_AVAILABILITIES
 INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
@@ -215,6 +229,18 @@ INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
 VALUES (2, 2);
 INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id)
 VALUES (5, 3);
+INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id) VALUES
+(2, 4),
+(2, 5),
+(2, 6),
+(2, 7),
+(2, 8);
+INSERT INTO PERSONAL_AVAILABILITIES (personal_id, availability_id) VALUES
+(5, 9),
+(5, 10),
+(5, 11),
+(5, 12),
+(5, 13);
 
 -- Initializing TYPE_OF_MEDICAL_APPOINTMENTS
 INSERT INTO TYPE_OF_MEDICAL_APPOINTMENTS (id, name)
@@ -277,12 +303,6 @@ INSERT INTO MEDICAL_EXAMINATIONS (id, date_of_realization, laboratory_id, type_o
 VALUES ('EX0001', TIMESTAMP '2023-03-03 11:00:00', 1, 1, 1);
 INSERT INTO MEDICAL_EXAMINATIONS (id, date_of_realization, laboratory_id, type_of_exam_id, medical_history_id)
 VALUES ('EX0002', TIMESTAMP '2023-03-04 14:30:00', 2, 2, 2);
-
--- Initializing EXAMINATION_RESULTS
--- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
--- VALUES (1, TIMESTAMP '2023-03-03 15:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-1.jpg'), 1);
--- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
--- VALUES (2, TIMESTAMP '2023-03-04 17:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-2.png'), 2);
 
 -- Initializing EXAMINATION_RESULTS
 INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
@@ -353,8 +373,22 @@ VALUES (1, 5, 1, TIMESTAMP '1990-01-01 08:00:00', NULL, 1000000000000, 100000000
        (8, 5, 8, TIMESTAMP '1990-01-01 15:00:00', NULL, 1000000000000,
         1000000000000),                                                                -- Consulta con nutricionista oncológico
        (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000),
-        (10, 5, 9, TIMESTAMP '2025-06-10 23:00:00', NULL, 1, 1);
--- Apoyo psicológico
+        (10, 5, 9, TIMESTAMP '2025-06-10 23:00:00', NULL, 1, 1); -- Apoyo psicológico
+-- MEDICAL_APPOINTMENTS: 5 por cada doctor (paciente_id: 1 y 2 alternadamente)
+INSERT INTO MEDICAL_APPOINTMENTS (id, doctor_id, type_of_medical_appointment_id, appointment_date, treatment_id, medical_history_id, medical_office_id) VALUES
+-- Doctor 2 (Consultorio 1)
+(11, 2, 1, TIMESTAMP '2025-06-11 15:00:00', NULL, 1, 1),
+(12, 2, 2, TIMESTAMP '2025-06-11 15:30:00', NULL, 2, 1),
+(13, 2, 3, TIMESTAMP '2025-06-11 16:00:00', NULL, 1, 1),
+(14, 2, 4, TIMESTAMP '2025-06-11 16:30:00', NULL, 2, 1),
+(15, 2, 5, TIMESTAMP '2025-06-11 17:00:00', NULL, 1, 1),
+-- Doctor 5 (Consultorio 2)
+(16, 5, 1, TIMESTAMP '2025-06-11 15:00:00', NULL, 2, 2),
+(17, 5, 2, TIMESTAMP '2025-06-11 15:30:00', NULL, 1, 2),
+(18, 5, 3, TIMESTAMP '2025-06-11 16:00:00', NULL, 2, 2),
+(19, 5, 4, TIMESTAMP '2025-06-11 16:30:00', NULL, 1, 2),
+(20, 5, 5, TIMESTAMP '2025-06-11 17:00:00', NULL, 2, 2);
+
 
 -- 3. TAREAS MÉDICAS PROTOCOLARIAS
 
@@ -369,6 +403,108 @@ VALUES (1, 'Revisar historia clínica previa', 10, 'PENDIENTE', 'Doctor'),
        (5, 'Evaluar síntomas actuales', 10, 'PENDIENTE', 'Doctor'),
        (6, 'Documentar hallazgos en historia clínica', 5, 'PENDIENTE', 'Doctor'),
        (7, 'Definir plan de manejo inicial', 10, 'PENDIENTE', 'Doctor');
+-- Continuando desde el último id: 91
+
+-- Cita 11
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(92, 'Revisión general del paciente', 15, 'PENDIENTE', 'Doctor'),
+(93, 'Toma de signos vitales', 5, 'PENDIENTE', 'Enfermería'),
+(94, 'Actualización de historia clínica', 10, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(11, 92),
+(11, 93),
+(11, 94);
+
+-- Cita 12
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(95, 'Evaluación de síntomas actuales', 10, 'PENDIENTE', 'Doctor'),
+(96, 'Exploración física dirigida', 15, 'PENDIENTE', 'Doctor'),
+(97, 'Revisión de resultados previos', 10, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(12, 95),
+(12, 96),
+(12, 97);
+
+-- Cita 13
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(98, 'Análisis de antecedentes personales', 10, 'PENDIENTE', 'Doctor'),
+(99, 'Detección de signos de alarma', 10, 'PENDIENTE', 'Doctor'),
+(100, 'Planificación diagnóstica inicial', 10, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(13, 98),
+(13, 99),
+(13, 100);
+
+-- Cita 14
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(101, 'Evaluación funcional general', 10, 'PENDIENTE', 'Doctor'),
+(102, 'Interrogatorio clínico', 10, 'PENDIENTE', 'Doctor'),
+(103, 'Programación de estudios complementarios', 5, 'PENDIENTE', 'Administrativo');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(14, 101),
+(14, 102),
+(14, 103);
+
+-- Cita 15
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(104, 'Revisión de efectos adversos', 8, 'PENDIENTE', 'Doctor'),
+(105, 'Ajuste de tratamiento si es necesario', 10, 'PENDIENTE', 'Doctor'),
+(106, 'Educación sobre tratamiento', 12, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(15, 104),
+(15, 105),
+(15, 106);
+
+-- Cita 16
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(107, 'Examen físico general', 15, 'PENDIENTE', 'Doctor'),
+(108, 'Evaluación de antecedentes familiares', 10, 'PENDIENTE', 'Doctor'),
+(109, 'Entrega de indicaciones médicas', 5, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(16, 107),
+(16, 108),
+(16, 109);
+
+-- Cita 17
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(110, 'Consulta sobre efectos secundarios', 10, 'PENDIENTE', 'Doctor'),
+(111, 'Toma de parámetros antropométricos', 5, 'PENDIENTE', 'Enfermería'),
+(112, 'Evaluación de respuesta clínica', 10, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(17, 110),
+(17, 111),
+(17, 112);
+
+-- Cita 18
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(113, 'Verificación de adherencia al tratamiento', 10, 'PENDIENTE', 'Doctor'),
+(114, 'Seguimiento de síntomas persistentes', 10, 'PENDIENTE', 'Doctor'),
+(115, 'Coordinación con otros servicios', 5, 'PENDIENTE', 'Administrativo');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(18, 113),
+(18, 114),
+(18, 115);
+
+-- Cita 19
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(116, 'Análisis de nuevos estudios', 10, 'PENDIENTE', 'Doctor'),
+(117, 'Control de signos vitales', 5, 'PENDIENTE', 'Enfermería'),
+(118, 'Orientación sobre cambios en estilo de vida', 10, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(19, 116),
+(19, 117),
+(19, 118);
+
+-- Cita 20
+INSERT INTO MEDICAL_TASKS (id, description, estimated_time, status, responsible) VALUES
+(119, 'Resumen de evolución clínica', 10, 'PENDIENTE', 'Doctor'),
+(120, 'Programación de próxima consulta', 5, 'PENDIENTE', 'Administrativo'),
+(121, 'Registro en sistema electrónico', 5, 'PENDIENTE', 'Doctor');
+INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id) VALUES
+(20, 119),
+(20, 120),
+(20, 121);
+
 
 INSERT INTO APPOINTMENT_TASKS (medical_appointment_id, medical_task_id)
 VALUES (1, 1),
