@@ -88,10 +88,10 @@ public class WebSecurityConfig {
 
                         // Patient module
                         .requestMatchers(HttpMethod.GET, "/api/users/patients/**").hasAnyRole("DOCTOR", "PATIENT", "ADMINISTRATIVE", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/patients/medical-history").hasAnyRole("DOCTOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "PATIENT", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/patients/medical-history").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/patients/medical-history/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users/patients").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/patients/**").hasAnyRole("DOCTOR", "ADMINISTRATIVE", "ADMIN")
