@@ -54,7 +54,7 @@ VALUES (6, 1);
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (7, 2);
 INSERT INTO USER_ROLES (user_id, role_id)
-VALUES (8, 5); -- labtech1 -> LAB_TECHNICIAN
+VALUES (8, 5);
 INSERT INTO USER_ROLES (user_id, role_id)
 VALUES (9, 4);
 INSERT INTO USER_ROLES (user_id, role_id)
@@ -87,6 +87,7 @@ INSERT INTO PERMISSIONS (id, name)
 VALUES (11, 'READ_OWN_DATA');
 
 -- Initializing ROLE_PERMISSIONS
+-- ADMIN permissions (all access)
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
 VALUES (1, 1);
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
@@ -107,8 +108,30 @@ INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
 VALUES (2, 9);
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
 VALUES (2, 10);
+
+-- PATIENT permissions (limited to own data)
 INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
 VALUES (3, 11);
+
+-- *** NEW: ADMINISTRATIVE permissions (administrative and appointment management) ***
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 3); -- READ_PATIENTS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 4); -- WRITE_PATIENTS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 5); -- READ_APPOINTMENTS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 6); -- WRITE_APPOINTMENTS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 7); -- READ_TREATMENTS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (4, 9); -- READ_EXAMINATIONS
+
+-- *** NEW: LAB_TECHNICIAN permissions (examination management) ***
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (5, 9); -- READ_EXAMINATIONS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_id)
+VALUES (5, 10); -- WRITE_EXAMINATIONS
 
 -- Initializing PERSONALS
 INSERT INTO PERSONAL (id, id_number, name, last_name, email, phone_number, date_of_hiring, status, user_id)
@@ -329,7 +352,8 @@ VALUES (1, 5, 1, TIMESTAMP '1990-01-01 08:00:00', NULL, 1000000000000, 100000000
        (7, 5, 7, TIMESTAMP '1990-01-01 14:00:00', NULL, 1000000000000, 1000000000000), -- Control post-tratamiento
        (8, 5, 8, TIMESTAMP '1990-01-01 15:00:00', NULL, 1000000000000,
         1000000000000),                                                                -- Consulta con nutricionista oncológico
-       (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000);
+       (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000),
+        (10, 5, 9, TIMESTAMP '2025-06-10 23:00:00', NULL, 1, 1);
 -- Apoyo psicológico
 
 -- 3. TAREAS MÉDICAS PROTOCOLARIAS

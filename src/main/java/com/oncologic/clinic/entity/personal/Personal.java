@@ -48,9 +48,22 @@ public class Personal {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @ManyToMany
-    @JoinTable(name = "PERSONAL_AVAILABILITIES", joinColumns = @JoinColumn(name = "personal_id"), inverseJoinColumns = @JoinColumn(name = "availability_id"))
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "PERSONAL_AVAILABILITIES",
+            joinColumns = @JoinColumn(name = "personal_id"),
+            inverseJoinColumns = @JoinColumn(name = "availability_id"))
     private Set<Availability> availabilities = new HashSet<>();
+
+    public void addAvailability(Availability availability) {
+        this.availabilities.add(availability);
+        availability.getPersonals().add(this);
+    }
+
+    public void removeAvailability(Availability availability) {
+        this.availabilities.remove(availability);
+        availability.getPersonals().remove(this);
+    }
+
 
     @Override
     public boolean equals(Object o) {
