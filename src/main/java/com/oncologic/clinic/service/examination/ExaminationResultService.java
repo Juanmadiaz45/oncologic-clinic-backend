@@ -10,8 +10,11 @@ import java.util.List;
 public interface ExaminationResultService {
     ExaminationResultResponseDTO getExaminationResultById(Long id);
     List<ExaminationResultResponseDTO> getAllExaminationResults();
+    List<ExaminationResultResponseDTO> getExaminationResultsByMedicalHistoryId(Long medicalHistoryId);
     ExaminationResultResponseDTO createExaminationResult(ExaminationResultRequestDTO requestDTO);
     ExaminationResultResponseDTO updateExaminationResult(Long id, ExaminationResultUpdateDTO updateDTO);
     void deleteExaminationResult(Long id);
+    ExaminationResult getExaminationResultEntityById(Long id);
+    ExaminationResult createExaminationResult(ExaminationResult examinationResult);
 
 }

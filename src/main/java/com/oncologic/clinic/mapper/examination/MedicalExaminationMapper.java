@@ -17,8 +17,14 @@ public interface MedicalExaminationMapper {
     MedicalExamination toEntity(MedicalExaminationRequestDTO dto);
 
     @Mapping(source = "laboratory.id", target = "laboratoryId")
+    @Mapping(source = "laboratory.name", target = "laboratoryName")
+    @Mapping(source = "laboratory.location", target = "laboratoryLocation")
+    @Mapping(source = "laboratory.telephone", target = "laboratoryTelephone")
     @Mapping(source = "typeOfExam.id", target = "typeOfExamId")
+    @Mapping(source = "typeOfExam.name", target = "typeOfExamName")
+    @Mapping(source = "typeOfExam.description", target = "typeOfExamDescription")
     @Mapping(source = "medicalHistory.id", target = "medicalHistoryId")
+    @Mapping(source = "medicalHistory.patient.name", target = "patientName")
     MedicalExaminationResponseDTO toDto(MedicalExamination entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = org.mapstruct.NullValuePropertyMappingStrategy.IGNORE)

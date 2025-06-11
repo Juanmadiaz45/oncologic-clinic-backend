@@ -1,5 +1,6 @@
 package com.oncologic.clinic.dto.examination.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ExaminationResultRequestDTO {
     private LocalDateTime generationDate;
-    private byte[] resultsReport;
+
+    @JsonProperty("resultsReportBase64")
+    private String resultsReportBase64;
+
     private Long medicalHistoryId;
 }

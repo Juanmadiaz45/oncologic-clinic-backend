@@ -284,6 +284,23 @@ VALUES ('EX0002', TIMESTAMP '2023-03-04 14:30:00', 2, 2, 2);
 -- INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
 -- VALUES (2, TIMESTAMP '2023-03-04 17:00:00', pg_read_binary_file('/docker-entrypoint-init-db.d/files/example-2.png'), 2);
 
+-- Initializing EXAMINATION_RESULTS
+INSERT INTO EXAMINATION_RESULTS (id, generation_date, results_report, medical_history_id)
+VALUES
+    (
+        1,
+        TIMESTAMP '2023-03-03 15:00:00',
+        'Resultados dentro de parámetros normales. Hemoglobina: 14 g/dL, Leucocitos: 6.5 x10^9/L',
+        1
+    ),
+    (
+        2,
+        TIMESTAMP '2023-03-04 17:00:00',
+        'Radiografía de tórax sin hallazgos patológicos. Campos pulmonares libres.',
+        2
+    );
+
+
 -- Initializing PRESCRIBED_MEDICINES
 INSERT INTO PRESCRIBED_MEDICINES (id, medicine, prescription_date, instructions, dose, duration,
                                   frequency_of_administration, treatment_id)
@@ -335,7 +352,8 @@ VALUES (1, 5, 1, TIMESTAMP '1990-01-01 08:00:00', NULL, 1000000000000, 100000000
        (7, 5, 7, TIMESTAMP '1990-01-01 14:00:00', NULL, 1000000000000, 1000000000000), -- Control post-tratamiento
        (8, 5, 8, TIMESTAMP '1990-01-01 15:00:00', NULL, 1000000000000,
         1000000000000),                                                                -- Consulta con nutricionista oncológico
-       (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000);
+       (9, 5, 9, TIMESTAMP '1990-01-01 16:00:00', NULL, 1000000000000, 1000000000000),
+        (10, 5, 9, TIMESTAMP '2025-06-10 23:00:00', NULL, 1, 1);
 -- Apoyo psicológico
 
 -- 3. TAREAS MÉDICAS PROTOCOLARIAS

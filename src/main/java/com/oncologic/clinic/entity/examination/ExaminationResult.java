@@ -22,10 +22,10 @@ public class ExaminationResult {
     @Column(name = "generation_date", nullable = false)
     private LocalDateTime generationDate;
 
-    @Column(name = "results_report", nullable = false)
-    private byte[] resultsReport;
+    @Column(name = "results_report", columnDefinition = "TEXT")
+    private String resultsReport;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medical_history_id", nullable = false)
     private MedicalHistory medicalHistory;
 }
