@@ -11,9 +11,9 @@ clinic in Cali. The system centralizes and automates key processes such as:
 
 ### Authors
 
-- Santiago Valencia - A00395902
-- Juan Manuel Díaz - A00394477
-- Esteban Gaviria - A00396019
+- [Santiago Valencia](https://github.com/Tiago0507)
+- [Juan Manuel Díaz](https://github.com/Juanmadiaz45)
+- [Esteban Gaviria](https://github.com/EstebanGZam)
 
 ### Technologies Used
 
